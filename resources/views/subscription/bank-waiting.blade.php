@@ -39,7 +39,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Montant :</span>
-                        <span class="text-xl font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} FCFA</span>
+                        <span class="text-xl font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} MGA</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Date prévue :</span>
@@ -224,7 +224,7 @@
 <script>
     function sendReceipt() {
         // Trigger email client with pre-filled subject
-        window.location.href = 'mailto:paiement@codelearn.com?subject=Reçu%20virement%20CODE-{{ strtoupper($plan) }}-{{ auth()->user()->id }}-{{ date('Ymd') }}&body=Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint le reçu de mon virement.%0D%0A%0D%0ARéférence : CODE-{{ strtoupper($plan) }}-{{ auth()->user()->id }}-{{ date('Ymd') }}%0D%0AMontant : {{ number_format($planDetails['price'], 0) }} FCFA%0D%0ANom : {{ auth()->user()->name }}%0D%0A%0D%0ACordialement';
+        window.location.href = 'mailto:paiement@codelearn.com?subject=Reçu%20virement%20CODE-{{ strtoupper($plan) }}-{{ auth()->user()->id }}-{{ date('Ymd') }}&body=Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint le reçu de mon virement.%0D%0A%0D%0ARéférence : CODE-{{ strtoupper($plan) }}-{{ auth()->user()->id }}-{{ date('Ymd') }}%0D%0AMontant : {{ number_format($planDetails['price'], 0) }} MGA%0D%0ANom : {{ auth()->user()->name }}%0D%0A%0D%0ACordialement';
     }
     
     document.addEventListener('DOMContentLoaded', function() {

@@ -14,6 +14,12 @@
             <p class="text-gray-600 mt-2">Consultez tous vos paiements et téléchargez vos factures</p>
         </div>
 
+        @php
+            $completedPayments = $payments->where('status', 'completed');
+            $totalMga = $completedPayments->where('currency', 'MGA')->sum('amount');
+            $totalUsd = $completedPayments->where('currency', 'USD')->sum('amount');
+        @endphp
+
         <!-- Stats Summary -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6">
@@ -65,9 +71,10 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Total dépensé</p>
-                        <p class="text-2xl font-bold text-gray-900">
-                            {{ number_format($payments->where('status', 'completed')->sum('amount'), 0) }} €
-                        </p>
+                        <div class="text-2xl font-bold text-gray-900">
+                            <div>{{ number_format($totalMga, 0) }} MGA</div>
+                            <div class="text-base text-gray-500">{{ number_format($totalUsd, 2) }} USD</div>
+                        </div>
                     </div>
                 </div>
             </div>

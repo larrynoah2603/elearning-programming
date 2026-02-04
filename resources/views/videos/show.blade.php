@@ -25,7 +25,7 @@
                         poster="{{ $video->thumbnail_url }}"
                         data-video-id="{{ $video->id }}"
                         @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
-                        <source src="{{ url('/elearning-programming/storage/app/public/' . $video->video_file) }}" type="video/mp4">
+                        <source src="{{ $video->video_url }}" type="video/mp4">
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
                 </div>

@@ -165,14 +165,7 @@ class Video extends Model
             return null;
         }
 
-        // URL corrigée pour votre structure de projet
-        return url('/elearning-programming/storage/app/public/filename.mp4' . $this->video_file);
-        
-        // Si vous préférez utiliser Storage::url(), modifiez config/filesystems.php :
-        // 'public' => [
-        //     'url' => env('APP_URL', 'http://localhost') . '/elearning-programming/storage',
-        // ]
-        // return Storage::url($this->video_file);
+        return Storage::url($this->video_file);
     }
 
     /**
@@ -185,10 +178,7 @@ class Video extends Model
             return asset('images/default-video-thumbnail.jpg');
         }
 
-        // URL corrigée pour votre structure de projet
-        return url('/elearning-programming/storage/app/public/' . $this->thumbnail);
-        
-        // return Storage::url($this->thumbnail);
+        return Storage::url($this->thumbnail);
     }
 
     /**
