@@ -39,7 +39,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Équivalent :</span>
-                        <span class="font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} FCFA</span>
+                        <span class="font-bold text-primary-600">{{ number_format($planDetails['price_usd'], 2) }} USD</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Adresse de réception :</span>

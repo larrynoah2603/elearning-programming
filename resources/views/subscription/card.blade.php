@@ -26,7 +26,7 @@
                             <p class="text-sm text-gray-500">{{ $planDetails['days'] }} jours</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-lg font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} FCFA</div>
+                            <div class="text-lg font-bold text-primary-600">{{ number_format($planDetails['price_usd'], 2) }} USD</div>
                             <div class="text-sm text-gray-500">TTC</div>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
                         <label class="flex items-start">
                             <input type="checkbox" name="terms" class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500" required>
                             <span class="ml-2 text-sm text-gray-600">
-                                J'autorise le prélèvement de {{ number_format($planDetails['price'], 0) }} FCFA sur ma carte.
+                                J'autorise le prélèvement de {{ number_format($planDetails['price_usd'], 2) }} USD sur ma carte.
                                 Je comprends que cette transaction est sécurisée et cryptée.
                             </span>
                         </label>
@@ -157,7 +157,7 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-primary w-full py-3">
-                        <i class="fas fa-lock mr-2"></i> Payer {{ number_format($planDetails['price'], 0) }} FCFA
+                        <i class="fas fa-lock mr-2"></i> Payer {{ number_format($planDetails['price_usd'], 2) }} USD
                     </button>
                 </form>
             </div>

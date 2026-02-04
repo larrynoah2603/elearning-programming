@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subscription;
 use App\Models\Payment;
+use App\Services\OrangeSmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -984,6 +985,22 @@ class SubscriptionController extends Controller
                 'status' => 'active',
             ]
         );
+
+        $payment = Payment::find($paymentId);
+        if ($payment && $payment->phone_number) {
+            try {
+                app(OrangeSmsService::class)->sendPremiumActivation(
+                    $payment->phone_number,
+                    $planDetails['name'],
+                    $user->subscription_expires_at
+                );
+            } catch (\Exception $e) {
+                \Log::warning('Orange SMS error: ' . $e->getMessage(), [
+                    'payment_id' => $paymentId,
+                    'user_id' => $user->id,
+                ]);
+            }
+        }
     }
 
     /**
