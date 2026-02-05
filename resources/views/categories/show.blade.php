@@ -6,7 +6,7 @@
 <div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Avertissement pour les leçons premium non accessibles -->
-        @if($lesson->access_level == 'subscribed' && (!auth()->check() || !auth()->user()?->isSubscribed()))
+        @if(($hasPremiumLessons ?? false) && (!auth()->check() || !auth()->user()?->isSubscribed()))
             <div class="bg-gradient-to-r from-warning-500 to-orange-600 rounded-xl p-6 mb-6 text-white">
                 <div class="flex flex-col md:flex-row items-center justify-between">
                     <div class="mb-4 md:mb-0">
@@ -14,7 +14,7 @@
                             <i class="fas fa-crown mr-2 text-yellow-300"></i> Contenu Premium
                         </h3>
                         <p class="text-white/90">
-                            Cette leçon est réservée aux membres Premium. 
+                            Certaines leçons sont réservées aux membres Premium. 
                             <span class="font-semibold">Vous pouvez la prévisualiser mais le téléchargement est limité.</span>
                         </p>
                     </div>
