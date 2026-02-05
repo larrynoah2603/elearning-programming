@@ -86,7 +86,7 @@
             <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
                 <h4 class="font-bold text-gray-900 mb-3">Valider votre paiement</h4>
                 <p class="text-sm text-gray-600 mb-4">Saisissez le code reçu par SMS Orange Money pour activer immédiatement votre compte Premium.</p>
-                @if(session('fallback_validation_code'))
+                @if(config('app.debug') && session('fallback_validation_code'))
                     <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
                         Mode test: code de validation <strong>{{ session('fallback_validation_code') }}</strong>
                     </div>

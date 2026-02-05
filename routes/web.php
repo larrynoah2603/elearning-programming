@@ -71,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
     
     // Subscription Checkout
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
-    Route::post('/subscription/payment', [SubscriptionController::class, 'processPayment'])->name('subscription.payment');
 });
 
 // Admin Routes
@@ -170,7 +169,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/abonnement/traiter/card', [SubscriptionController::class, 'processCard'])->name('subscription.process-card');
     
     // Vérification des paiements
-    Route::post('/abonnement/webhook/crypto', [SubscriptionController::class, 'cryptoWebhook'])->name('subscription.crypto-webhook');
+    Route::post('/abonnement/webhook/crypto', [SubscriptionController::class, 'verifyCryptoWebhook'])->name('subscription.crypto-webhook');
     Route::get('/abonnement/verifier/{id}', [SubscriptionController::class, 'verifyPayment'])->name('subscription.verify');
     Route::post('/abonnement/confirmer-bank', [SubscriptionController::class, 'confirmBank'])->name('subscription.confirm-bank')->middleware('admin');
     

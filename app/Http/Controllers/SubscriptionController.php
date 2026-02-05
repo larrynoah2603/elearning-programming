@@ -719,7 +719,7 @@ class SubscriptionController extends Controller
         $metadata = $payment->metadata ?? [];
         $expectedCode = $metadata['validation_code'] ?? null;
 
-        if (!$expectedCode || !$this->verifyMobileMoneyPayment($payment->phone_number, $validated['validation_code']) || $validated['validation_code'] !== $expectedCode) {
+        if (!$expectedCode || !$this->verifyMobileMoneyPayment($validated['validation_code']) || $validated['validation_code'] !== $expectedCode) {
             return back()->with('error', 'Code de validation invalide. Veuillez vérifier le SMS Orange Money.');
         }
 
@@ -1065,7 +1065,7 @@ class SubscriptionController extends Controller
     /**
      * Helper: Verify Mobile Money payment (simulated).
      */
-    private function verifyMobileMoneyPayment($phoneNumber, $confirmationCode): bool
+    private function verifyMobileMoneyPayment(string $confirmationCode): bool
     {
         // Simulation
         return strlen($confirmationCode) === 6 && is_numeric($confirmationCode);
