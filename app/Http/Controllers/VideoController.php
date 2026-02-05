@@ -86,20 +86,76 @@ class VideoController extends Controller
     /**
      * Stream video file from storage (fix lecture sans lien symbolique public/storage).
      */
-    public function stream(Video $video)
+    public function stream(string $video)
     {
+        $video = Video::query()
+            ->where('id', $video)
+            ->orWhere('slug', $video)
+            ->firstOrFail();
+
         if (!$video->isAccessibleBy(auth()->user())) {
             abort(403);
         }
 
-        if (!$video->video_file || !Storage::disk('public')->exists($video->video_file)) {
+        if (!$video->video_file) {
             abort(404);
         }
 
-        $path = Storage::disk('public')->path($video->video_file);
+        if (filter_var($video->video_file, FILTER_VALIDATE_URL)) {
+            return redirect()->away($video->video_file);
+        }
 
-        return response()->file($path, [
-            'Content-Type' => Storage::disk('public')->mimeType($video->video_file) ?? 'video/mp4',
+        $candidates = [
+            ltrim($video->video_file, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/'),
+            ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
+        ];
+
+        $resolvedPublicPath = collect($candidates)
+            ->unique()
+            ->first(fn (string $path) => Storage::disk('public')->exists($path));
+
+        if ($resolvedPublicPath) {
+            $path = Storage::disk('public')->path($resolvedPublicPath);
+
+            return response()->file($path, [
+                'Content-Type' => Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4',
+                'Accept-Ranges' => 'bytes',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+
+        $resolvedLocalPath = collect($candidates)
+            ->unique()
+            ->first(fn (string $path) => Storage::disk('local')->exists($path));
+
+        if ($resolvedLocalPath) {
+            $path = Storage::disk('local')->path($resolvedLocalPath);
+
+            return response()->file($path, [
+                'Content-Type' => Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4',
+                'Accept-Ranges' => 'bytes',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+
+        $absoluteCandidates = [
+            $video->video_file,
+            public_path(ltrim($video->video_file, '/')),
+            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
+            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
+            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $video->video_file), '/')),
+        ];
+
+        $absolutePath = collect($absoluteCandidates)
+            ->first(fn (string $path) => is_file($path));
+
+        if (!$absolutePath) {
+            abort(404);
+        }
+
+        return response()->file($absolutePath, [
+            'Content-Type' => mime_content_type($absolutePath) ?: 'video/mp4',
             'Accept-Ranges' => 'bytes',
             'Cache-Control' => 'public, max-age=3600',
         ]);

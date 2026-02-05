@@ -55,13 +55,13 @@
                 <h3 class="text-lg font-semibold mb-4">Ressources</h3>
                 <ul class="space-y-2">
                     <li>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Documentation</a>
+                        <a href="{{ route('about') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Documentation</a>
                     </li>
                     <li>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a>
+                        <a href="{{ route('categories.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a>
                     </li>
                     <li>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">FAQ</a>
+                        <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white transition-colors text-sm">FAQ</a>
                     </li>
                     <li>
                         <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Contact</a>
@@ -78,15 +78,15 @@
                 <ul class="space-y-2 text-sm text-gray-400">
                     <li class="flex items-start">
                         <i class="fas fa-map-marker-alt mt-1 mr-2 text-primary-500"></i>
-                        <span>123 Rue de la Programmation<br>75000 Paris, France</span>
+                        <span>LOT II i 68 y Bis Amboniloha<br>Madagascar</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-envelope mr-2 text-primary-500"></i>
-                        <a href="mailto:contact@codelearn.fr" class="hover:text-white transition-colors">contact@codelearn.fr</a>
+                        <a href="mailto:larrynoah@gmail.com" class="hover:text-white transition-colors">larrynoah@gmail.com</a>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-phone mr-2 text-primary-500"></i>
-                        <a href="tel:+33123456789" class="hover:text-white transition-colors">+33 1 23 45 67 89</a>
+                        <a href="tel:+330200310" class="hover:text-white transition-colors">+33 02 00 310</a>
                     </li>
                 </ul>
             </div>

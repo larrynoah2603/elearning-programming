@@ -165,6 +165,10 @@ class Video extends Model
             return null;
         }
 
+        if (filter_var($this->video_file, FILTER_VALIDATE_URL)) {
+            return $this->video_file;
+        }
+
         return route('videos.stream', $this->id);
     }
 
@@ -173,9 +177,18 @@ class Video extends Model
      */
     public function getThumbnailUrlAttribute(): ?string
     {
+        $defaultThumbnail = asset('images/default-video-thumbnail.svg');
+
         if (!$this->thumbnail) {
-            // URL par défaut si pas de thumbnail
-            return asset('images/default-video-thumbnail.jpg');
+            return $defaultThumbnail;
+        }
+
+        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
+            return $this->thumbnail;
+        }
+
+        if (!Storage::disk('public')->exists($this->thumbnail)) {
+            return $defaultThumbnail;
         }
 
         return Storage::url($this->thumbnail);
