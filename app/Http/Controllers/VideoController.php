@@ -111,18 +111,51 @@ class VideoController extends Controller
             ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
         ];
 
-        $resolvedPath = collect($candidates)
+        $resolvedPublicPath = collect($candidates)
             ->unique()
             ->first(fn (string $path) => Storage::disk('public')->exists($path));
 
-        if (!$resolvedPath) {
+        if ($resolvedPublicPath) {
+            $path = Storage::disk('public')->path($resolvedPublicPath);
+
+            return response()->file($path, [
+                'Content-Type' => Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4',
+                'Accept-Ranges' => 'bytes',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+
+        $resolvedLocalPath = collect($candidates)
+            ->unique()
+            ->first(fn (string $path) => Storage::disk('local')->exists($path));
+
+        if ($resolvedLocalPath) {
+            $path = Storage::disk('local')->path($resolvedLocalPath);
+
+            return response()->file($path, [
+                'Content-Type' => Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4',
+                'Accept-Ranges' => 'bytes',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+
+        $absoluteCandidates = [
+            $video->video_file,
+            public_path(ltrim($video->video_file, '/')),
+            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
+            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
+            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $video->video_file), '/')),
+        ];
+
+        $absolutePath = collect($absoluteCandidates)
+            ->first(fn (string $path) => is_file($path));
+
+        if (!$absolutePath) {
             abort(404);
         }
 
-        $path = Storage::disk('public')->path($resolvedPath);
-
-        return response()->file($path, [
-            'Content-Type' => Storage::disk('public')->mimeType($resolvedPath) ?? 'video/mp4',
+        return response()->file($absolutePath, [
+            'Content-Type' => mime_content_type($absolutePath) ?: 'video/mp4',
             'Accept-Ranges' => 'bytes',
             'Cache-Control' => 'public, max-age=3600',
         ]);

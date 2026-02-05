@@ -54,15 +54,17 @@
                     <h2 class="text-lg font-bold text-gray-900 mb-4">
                         <i class="fas fa-book-open mr-2 text-primary-500"></i> Contenu de la leçon
                     </h2>
-                    <div class="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                        <div class="text-center">
-                            <i class="fas fa-file-pdf text-6xl text-danger-500 mb-4"></i>
-                            <p class="text-gray-600 mb-4">Prévisualisation du PDF</p>
-                            <a href="{{ route('lessons.download', $lesson) }}" class="btn btn-primary">
-                                <i class="fas fa-download mr-2"></i> Télécharger pour voir
-                            </a>
-                        </div>
+                    <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: 75vh; min-height: 520px;">
+                        <iframe
+                            src="{{ route('lessons.preview', $lesson) }}"
+                            class="w-full h-full"
+                            title="Lecture du PDF {{ $lesson->title }}"
+                            loading="lazy">
+                        </iframe>
                     </div>
+                    <p class="text-xs text-gray-500 mt-3">
+                        Si la prévisualisation ne s'affiche pas, utilisez le bouton de téléchargement ci-dessus.
+                    </p>
                 </div>
 
                 <!-- Exercises -->

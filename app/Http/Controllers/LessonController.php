@@ -235,6 +235,25 @@ public function show(string $slug)
         return back()->with('success', "Leçon {$status} avec succès.");
     }
 
+
+    /**
+     * Preview lesson PDF inline.
+     */
+    public function previewPdf(Lesson $lesson)
+    {
+        if (!$lesson->pdf_file || !Storage::disk('public')->exists($lesson->pdf_file)) {
+            abort(404);
+        }
+
+        $path = Storage::disk('public')->path($lesson->pdf_file);
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $lesson->slug . '.pdf"',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
+
     /**
      * Download lesson PDF.
      */

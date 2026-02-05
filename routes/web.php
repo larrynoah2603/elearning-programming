@@ -31,6 +31,7 @@ Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])-
 // Public Content Routes (Free content only for non-subscribed users)
 Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
 Route::get('/lessons/{slug}', [LessonController::class, 'show'])->name('lessons.show');
+Route::get('/lessons/{lesson}/preview', [LessonController::class, 'previewPdf'])->name('lessons.preview');
 Route::get('/lessons/{lesson}/download', [LessonController::class, 'download'])->name('lessons.download');
 
 Route::get('/exercises', [ExerciseController::class, 'index'])->name('exercises.index');
