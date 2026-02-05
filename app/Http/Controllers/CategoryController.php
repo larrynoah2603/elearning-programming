@@ -32,6 +32,9 @@ class CategoryController extends Controller
 public function show(Request $request, string $slug)
 {
     $category = Category::where('slug', $slug)
+        ->withCount(['lessons' => function ($q) {
+            $q->active();
+        }])
         ->firstOrFail();
 
     // Récupérer les leçons de cette catégorie avec filtrage
@@ -54,6 +57,11 @@ public function show(Request $request, string $slug)
         $query->where('level', $request->level);
     }
 
+    $hasPremiumLessons = $category->lessons()
+        ->active()
+        ->where('access_level', 'subscribed')
+        ->exists();
+
     // Cohérence accès: visiteurs/comptes free ne voient que le contenu gratuit
     if (!auth()->check() || !auth()->user()->isSubscribed()) {
         $query->where('access_level', 'free');
@@ -61,7 +69,7 @@ public function show(Request $request, string $slug)
 
     $lessons = $query->get();
 
-    return view('categories.show', compact('category', 'lessons'));
+    return view('categories.show', compact('category', 'lessons', 'hasPremiumLessons'));
 }
 
     /**

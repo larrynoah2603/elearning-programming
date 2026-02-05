@@ -165,6 +165,10 @@ class Video extends Model
             return null;
         }
 
+        if (filter_var($this->video_file, FILTER_VALIDATE_URL)) {
+            return $this->video_file;
+        }
+
         return route('videos.stream', $this->id);
     }
 

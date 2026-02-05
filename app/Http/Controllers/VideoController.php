@@ -92,18 +92,37 @@ class VideoController extends Controller
             ->where('id', $video)
             ->orWhere('slug', $video)
             ->firstOrFail();
+
         if (!$video->isAccessibleBy(auth()->user())) {
             abort(403);
         }
 
-        if (!$video->video_file || !Storage::disk('public')->exists($video->video_file)) {
+        if (!$video->video_file) {
             abort(404);
         }
 
-        $path = Storage::disk('public')->path($video->video_file);
+        if (filter_var($video->video_file, FILTER_VALIDATE_URL)) {
+            return redirect()->away($video->video_file);
+        }
+
+        $candidates = [
+            ltrim($video->video_file, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/'),
+            ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
+        ];
+
+        $resolvedPath = collect($candidates)
+            ->unique()
+            ->first(fn (string $path) => Storage::disk('public')->exists($path));
+
+        if (!$resolvedPath) {
+            abort(404);
+        }
+
+        $path = Storage::disk('public')->path($resolvedPath);
 
         return response()->file($path, [
-            'Content-Type' => Storage::disk('public')->mimeType($video->video_file) ?? 'video/mp4',
+            'Content-Type' => Storage::disk('public')->mimeType($resolvedPath) ?? 'video/mp4',
             'Accept-Ranges' => 'bytes',
             'Cache-Control' => 'public, max-age=3600',
         ]);
