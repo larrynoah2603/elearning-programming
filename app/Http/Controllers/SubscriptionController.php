@@ -340,16 +340,27 @@ class SubscriptionController extends Controller
                 'operator' => $operator['name'],
                 'phone_number' => $phone,
                 'status' => 'pending',
-                'metadata' => json_encode([
+                'metadata' => [
                     'plan' => $validated['plan'],
                     'operator_key' => $validated['operator'],
                     'commission' => $operator['commission'],
                     'phone_original' => $validated['phone_number'],
-                ]),
+                    'validation_code' => $this->generateValidationCode(),
+                ],
             ]);
 
+            $validationCode = $payment->metadata['validation_code'];
+            $smsSent = app(OrangeSmsService::class)->sendPaymentValidationCode(
+                $phone,
+                $validationCode,
+                number_format((float) $payment->amount, 0, '', ' ')
+            );
+
             return redirect()->route('subscription.mobile-money-waiting', $payment->id)
-                ->with('success', 'Demande de paiement envoyée. Vous recevrez un code de confirmation sur votre téléphone.');
+                ->with('success', $smsSent
+                    ? 'Demande de paiement envoyée. Un SMS Orange Money avec code de validation a été envoyé.'
+                    : 'Demande de paiement envoyée. Entrez le code affiché ci-dessous pour valider le paiement.')
+                ->with('fallback_validation_code', $smsSent ? null : $validationCode);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::warning('Validation error in processMobileMoney', [
@@ -421,11 +432,11 @@ class SubscriptionController extends Controller
                 'receiving_address' => $receivingAddress,
                 'status' => 'pending',
                 'expires_at' => now()->addHours(2),
-                'metadata' => json_encode([
+                'metadata' => [
                     'plan' => $validated['plan'],
                     'user_wallet' => $validated['wallet_address'],
                     'user_email' => $validated['email'],
-                ]),
+                ],
             ]);
 
             session()->put('crypto_payment_id', $payment->id);
@@ -488,13 +499,13 @@ class SubscriptionController extends Controller
                 'payment_method' => 'bank_transfer',
                 'bank_name' => $validated['bank_name'],
                 'status' => 'pending',
-                'metadata' => json_encode([
+                'metadata' => [
                     'plan' => $validated['plan'],
                     'transfer_date' => $validated['transfer_date'],
                     'user_email' => $validated['email'],
                     'additional_info' => $validated['additional_info'] ?? '',
                     'reference' => $referenceNumber,
-                ]),
+                ],
             ]);
 
             return redirect()->route('subscription.bank-waiting', $payment->id)
@@ -565,12 +576,12 @@ class SubscriptionController extends Controller
                 'status' => 'completed',
                 'confirmed_at' => now(),
                 'card_last4' => substr(preg_replace('/\s+/', '', $validated['card_number']), -4),
-                'metadata' => json_encode([
+                'metadata' => [
                     'plan' => $validated['plan'],
                     'cardholder_name' => $validated['cardholder_name'],
                     'expiry_date' => $validated['expiry_date'],
                     'user_email' => $validated['email'],
-                ]),
+                ],
             ]);
 
             // Activer l'abonnement
@@ -630,8 +641,8 @@ class SubscriptionController extends Controller
 
             // Activer l'abonnement
             $user = $payment->user;
-            $metadata = json_decode($payment->metadata, true);
-            $this->activateSubscription($user, $metadata['plan'], $payment->id);
+            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+            $this->activateSubscription($user, $metadata['plan'] ?? 'monthly', $payment->id);
 
             return response()->json(['status' => 'success']);
 
@@ -664,19 +675,19 @@ class SubscriptionController extends Controller
                 'verified_at' => now(),
                 'verified_by' => Auth::id(),
                 'reference' => $validated['reference'],
-                'metadata' => json_encode(array_merge(
-                    json_decode($payment->metadata, true),
+                'metadata' => array_merge(
+                    is_array($payment->metadata) ? $payment->metadata : [],
                     [
                         'bank_reference' => $validated['reference'],
                         'confirmation_date' => $validated['confirmation_date'],
                         'verified_by_user' => Auth::user()->name,
                     ]
-                )),
+                ),
             ]);
 
             $user = $payment->user;
-            $metadata = json_decode($payment->metadata, true);
-            $this->activateSubscription($user, $metadata['plan'], $payment->id);
+            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+            $this->activateSubscription($user, $metadata['plan'] ?? 'monthly', $payment->id);
 
             return back()->with('success', 'Paiement bancaire vérifié et abonnement activé.');
 
@@ -684,6 +695,46 @@ class SubscriptionController extends Controller
             \Log::error('Confirm bank error: ' . $e->getMessage());
             return back()->with('error', 'Erreur lors de la confirmation du virement.');
         }
+    }
+
+    /**
+     * Confirm Mobile Money payment using validation code.
+     */
+    public function confirmMobileMoneyCode(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'validation_code' => 'required|digits:6',
+        ]);
+
+        $payment = Payment::findOrFail($id);
+
+        if ($payment->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($payment->status === 'completed') {
+            return back()->with('success', 'Ce paiement est déjà confirmé.');
+        }
+
+        $metadata = $payment->metadata ?? [];
+        $expectedCode = $metadata['validation_code'] ?? null;
+
+        if (!$expectedCode || !$this->verifyMobileMoneyPayment($validated['validation_code']) || $validated['validation_code'] !== $expectedCode) {
+            return back()->with('error', 'Code de validation invalide. Veuillez vérifier le SMS Orange Money.');
+        }
+
+        $payment->update([
+            'status' => 'completed',
+            'confirmed_at' => now(),
+            'metadata' => array_merge($metadata, [
+                'validated_at' => now()->format('Y-m-d H:i:s'),
+            ]),
+        ]);
+
+        $this->activateSubscription($payment->user, $metadata['plan'] ?? 'monthly', $payment->id);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Paiement validé. Votre compte est maintenant Premium.');
     }
 
     /**
@@ -726,10 +777,13 @@ class SubscriptionController extends Controller
                 ->with('info', 'Vous n\'avez pas d\'abonnement actif.');
         }
         
-        $subscription = $user->activeSubscription();
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
         
         if (!$subscription) {
-            $user->update(['is_subscribed' => false]);
+            $user->update(['role' => 'free']);
             return redirect()->route('subscription.plans');
         }
         
@@ -753,7 +807,7 @@ class SubscriptionController extends Controller
             
             // Désactiver l'abonnement
             $user->update([
-                'is_subscribed' => false,
+                'role' => 'free',
             ]);
             
             // Mettre à jour l'abonnement actif
@@ -769,10 +823,10 @@ class SubscriptionController extends Controller
                     'cancellation_reason' => $validated['reason'] === 'other' 
                         ? $validated['reason_other'] 
                         : $validated['reason'],
-                    'metadata' => json_encode([
+                    'metadata' => [
                         'feedback' => $validated['feedback'] ?? null,
                         'cancelled_at' => now()->format('Y-m-d H:i:s'),
-                    ]),
+                    ],
                 ]);
             }
 
@@ -803,7 +857,7 @@ class SubscriptionController extends Controller
             ->first();
 
         if (!$subscription) {
-            $user->update(['is_subscribed' => false]);
+            $user->update(['role' => 'free']);
             return redirect()->route('subscription.plans');
         }
 
@@ -882,7 +936,7 @@ class SubscriptionController extends Controller
             ]);
             
             $user->update([
-                'is_subscribed' => true,
+                'role' => 'subscribed',
                 'subscription_expires_at' => $subscription->end_date,
             ]);
 
@@ -968,7 +1022,7 @@ class SubscriptionController extends Controller
         $planDetails = $this->getPlanDetails($plan);
         
         $user->update([
-            'is_subscribed' => true,
+            'role' => 'subscribed',
             'subscription_expires_at' => now()->addDays($planDetails['days']),
         ]);
         
@@ -1004,9 +1058,17 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Helper: Generate Mobile Money validation code.
+     */
+    private function generateValidationCode(): string
+    {
+        return (string) random_int(100000, 999999);
+    }
+
+    /**
      * Helper: Verify Mobile Money payment (simulated).
      */
-    private function verifyMobileMoneyPayment($phoneNumber, $confirmationCode): bool
+    private function verifyMobileMoneyPayment(string $confirmationCode): bool
     {
         // Simulation
         return strlen($confirmationCode) === 6 && is_numeric($confirmationCode);

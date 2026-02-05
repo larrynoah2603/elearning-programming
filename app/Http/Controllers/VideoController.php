@@ -82,6 +82,29 @@ class VideoController extends Controller
         return view('videos.show', compact('video', 'progress', 'relatedVideos'));
     }
 
+
+    /**
+     * Stream video file from storage (fix lecture sans lien symbolique public/storage).
+     */
+    public function stream(Video $video)
+    {
+        if (!$video->isAccessibleBy(auth()->user())) {
+            abort(403);
+        }
+
+        if (!$video->video_file || !Storage::disk('public')->exists($video->video_file)) {
+            abort(404);
+        }
+
+        $path = Storage::disk('public')->path($video->video_file);
+
+        return response()->file($path, [
+            'Content-Type' => Storage::disk('public')->mimeType($video->video_file) ?? 'video/mp4',
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
+
     /**
      * Update video progress.
      */

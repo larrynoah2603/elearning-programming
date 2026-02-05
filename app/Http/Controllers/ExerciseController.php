@@ -117,6 +117,11 @@ class ExerciseController extends Controller
      */
     public function saveProgress(Request $request, Exercise $exercise)
     {
+        // Check access
+        if (!$exercise->isAccessibleBy(auth()->user())) {
+            return response()->json(['error' => 'Subscription required'], 403);
+        }
+
         $validated = $request->validate([
             'code' => 'required|string|max:50000',
         ]);
