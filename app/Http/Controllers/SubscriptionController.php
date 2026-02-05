@@ -641,8 +641,8 @@ class SubscriptionController extends Controller
 
             // Activer l'abonnement
             $user = $payment->user;
-            $metadata = json_decode($payment->metadata, true);
-            $this->activateSubscription($user, $metadata['plan'], $payment->id);
+            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+            $this->activateSubscription($user, $metadata['plan'] ?? 'monthly', $payment->id);
 
             return response()->json(['status' => 'success']);
 
@@ -675,19 +675,19 @@ class SubscriptionController extends Controller
                 'verified_at' => now(),
                 'verified_by' => Auth::id(),
                 'reference' => $validated['reference'],
-                'metadata' => json_encode(array_merge(
-                    json_decode($payment->metadata, true),
+                'metadata' => array_merge(
+                    is_array($payment->metadata) ? $payment->metadata : [],
                     [
                         'bank_reference' => $validated['reference'],
                         'confirmation_date' => $validated['confirmation_date'],
                         'verified_by_user' => Auth::user()->name,
                     ]
-                )),
+                ),
             ]);
 
             $user = $payment->user;
-            $metadata = json_decode($payment->metadata, true);
-            $this->activateSubscription($user, $metadata['plan'], $payment->id);
+            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+            $this->activateSubscription($user, $metadata['plan'] ?? 'monthly', $payment->id);
 
             return back()->with('success', 'Paiement bancaire vérifié et abonnement activé.');
 

@@ -49,7 +49,7 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Code marchand :</span>
                         @php
-                            $metadata = json_decode($payment->metadata, true);
+                            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
                             $plan = $metadata['plan'] ?? 'monthly';
                         @endphp
                         <span class="font-mono font-bold">CODELEARN{{ strtoupper($plan) }}</span>
