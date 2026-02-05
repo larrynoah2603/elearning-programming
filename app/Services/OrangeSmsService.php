@@ -9,7 +9,30 @@ use Illuminate\Support\Facades\Log;
 
 class OrangeSmsService
 {
+
+    public function sendPaymentValidationCode(string $phoneNumber, string $code, string $amountMga): bool
+    {
+        $message = sprintf(
+            'CodeLearn: votre code de validation Orange Money est %s pour %s MGA. Ne partagez ce code avec personne.',
+            $code,
+            $amountMga
+        );
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     public function sendPremiumActivation(string $phoneNumber, string $planName, Carbon $expiresAt): bool
+    {
+        $message = sprintf(
+            'Votre compte CodeLearn est maintenant Premium (%s). Expire le %s. Merci pour votre confiance.',
+            $planName,
+            $expiresAt->format('d/m/Y')
+        );
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
+    private function sendMessage(string $phoneNumber, string $message): bool
     {
         $accessToken = $this->getAccessToken();
         if (!$accessToken) {
@@ -21,12 +44,6 @@ class OrangeSmsService
             Log::warning('Orange SMS: numéro invalide pour envoi', ['phone' => $phoneNumber]);
             return false;
         }
-
-        $message = sprintf(
-            'Votre compte CodeLearn est maintenant Premium (%s). Expire le %s. Merci pour votre confiance.',
-            $planName,
-            $expiresAt->format('d/m/Y')
-        );
 
         $baseUrl = rtrim(config('services.orange_sms.base_url', env('ORANGE_SMS_BASE_URL', 'https://api.orange.com')), '/');
         $sender = $this->formatSenderAddress(config('services.orange_sms.sender', env('ORANGE_SMS_SENDER', 'CODELEARN')));

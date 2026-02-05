@@ -49,7 +49,7 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Code marchand :</span>
                         @php
-                            $metadata = json_decode($payment->metadata, true);
+                            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
                             $plan = $metadata['plan'] ?? 'monthly';
                         @endphp
                         <span class="font-mono font-bold">CODELEARN{{ strtoupper($plan) }}</span>
@@ -80,6 +80,25 @@
                         <span>Votre abonnement sera activé automatiquement</span>
                     </li>
                 </ol>
+            </div>
+
+
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <h4 class="font-bold text-gray-900 mb-3">Valider votre paiement</h4>
+                <p class="text-sm text-gray-600 mb-4">Saisissez le code reçu par SMS Orange Money pour activer immédiatement votre compte Premium.</p>
+                @if(config('app.debug') && session('fallback_validation_code'))
+                    <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+                        Mode test: code de validation <strong>{{ session('fallback_validation_code') }}</strong>
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('subscription.confirm-mobile-money', $payment->id) }}" class="flex flex-col sm:flex-row gap-3">
+                    @csrf
+                    <input type="text" name="validation_code" maxlength="6" pattern="[0-9]{6}" required
+                           class="form-input flex-1" placeholder="Code à 6 chiffres">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle mr-2"></i> Confirmer
+                    </button>
+                </form>
             </div>
 
             <!-- Status -->

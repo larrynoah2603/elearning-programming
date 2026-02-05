@@ -294,3 +294,23 @@ Pour toute question ou problème :
 ---
 
 Développé avec ❤️ pour les étudiants en programmation.
+
+
+## Simulation locale: passage compte gratuit -> premium
+
+1. Connectez-vous avec un compte utilisateur standard.
+2. Allez sur `Abonnement` puis choisissez un plan.
+3. Choisissez **Mobile Money** et validez le formulaire.
+4. En environnement local (`APP_DEBUG=true`), si l'API Orange SMS n'est pas configurée, un code de secours s'affiche sur la page d'attente.
+5. Saisissez le code dans le formulaire **Valider votre paiement** pour activer le compte premium.
+
+### Variables Orange SMS (optionnel en local)
+
+```env
+ORANGE_SMS_BASE_URL=https://api.orange.com
+ORANGE_SMS_CLIENT_ID=...
+ORANGE_SMS_CLIENT_SECRET=...
+ORANGE_SMS_SENDER=CODELEARN
+```
+
+Sans ces variables, le flux reste testable en local via le code de secours (affiché uniquement en mode debug).
