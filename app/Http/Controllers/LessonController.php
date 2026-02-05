@@ -23,12 +23,9 @@ class LessonController extends Controller
         }
 
         // Filter by access level based on user
-       /* if (!auth()->check() || !auth()->user()->isSubscribed()) {
+        if (!auth()->check() || !auth()->user()->isSubscribed()) {
             $query->where('access_level', 'free');
         } elseif ($request->has('access') && $request->access !== 'all') {
-            $query->where('access_level', $request->access);
-        }*/
-        if ($request->has('access') && $request->access !== 'all') {
             $query->where('access_level', $request->access);
         }
 

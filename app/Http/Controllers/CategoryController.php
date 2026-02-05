@@ -54,6 +54,11 @@ public function show(Request $request, string $slug)
         $query->where('level', $request->level);
     }
 
+    // Cohérence accès: visiteurs/comptes free ne voient que le contenu gratuit
+    if (!auth()->check() || !auth()->user()->isSubscribed()) {
+        $query->where('access_level', 'free');
+    }
+
     $lessons = $query->get();
 
     return view('categories.show', compact('category', 'lessons'));

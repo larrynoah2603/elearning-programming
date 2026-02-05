@@ -113,12 +113,14 @@ class ExerciseSubmission extends Model
      */
     public function submit(string $code): void
     {
-        $this->update([
+        $this->fill([
             'submitted_code' => $code,
             'status' => 'soumis',
             'submitted_at' => now(),
-            'attempts' => $this->attempts + 1,
+            'attempts' => ($this->attempts ?? 0) + 1,
         ]);
+
+        $this->save();
     }
 
     /**

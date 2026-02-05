@@ -96,7 +96,13 @@ class VideoController extends Controller
             abort(404);
         }
 
-        return Storage::disk('public')->response($video->video_file);
+        $path = Storage::disk('public')->path($video->video_file);
+
+        return response()->file($path, [
+            'Content-Type' => Storage::disk('public')->mimeType($video->video_file) ?? 'video/mp4',
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 
     /**
