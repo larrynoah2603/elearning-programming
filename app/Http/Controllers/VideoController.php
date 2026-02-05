@@ -86,8 +86,12 @@ class VideoController extends Controller
     /**
      * Stream video file from storage (fix lecture sans lien symbolique public/storage).
      */
-    public function stream(Video $video)
+    public function stream(string $video)
     {
+        $video = Video::query()
+            ->where('id', $video)
+            ->orWhere('slug', $video)
+            ->firstOrFail();
         if (!$video->isAccessibleBy(auth()->user())) {
             abort(403);
         }
