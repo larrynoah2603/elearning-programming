@@ -777,10 +777,13 @@ class SubscriptionController extends Controller
                 ->with('info', 'Vous n\'avez pas d\'abonnement actif.');
         }
         
-        $subscription = $user->activeSubscription();
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
         
         if (!$subscription) {
-            $user->update(['is_subscribed' => false]);
+            $user->update(['role' => 'free']);
             return redirect()->route('subscription.plans');
         }
         
@@ -804,7 +807,7 @@ class SubscriptionController extends Controller
             
             // Désactiver l'abonnement
             $user->update([
-                'is_subscribed' => false,
+                'role' => 'free',
             ]);
             
             // Mettre à jour l'abonnement actif
@@ -854,7 +857,7 @@ class SubscriptionController extends Controller
             ->first();
 
         if (!$subscription) {
-            $user->update(['is_subscribed' => false]);
+            $user->update(['role' => 'free']);
             return redirect()->route('subscription.plans');
         }
 
@@ -933,7 +936,7 @@ class SubscriptionController extends Controller
             ]);
             
             $user->update([
-                'is_subscribed' => true,
+                'role' => 'subscribed',
                 'subscription_expires_at' => $subscription->end_date,
             ]);
 
@@ -1019,7 +1022,7 @@ class SubscriptionController extends Controller
         $planDetails = $this->getPlanDetails($plan);
         
         $user->update([
-            'is_subscribed' => true,
+            'role' => 'subscribed',
             'subscription_expires_at' => now()->addDays($planDetails['days']),
         ]);
         
