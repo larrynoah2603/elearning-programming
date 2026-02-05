@@ -37,6 +37,7 @@ Route::get('/exercises', [ExerciseController::class, 'index'])->name('exercises.
 Route::get('/exercises/{slug}', [ExerciseController::class, 'show'])->name('exercises.show');
 
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
+Route::get('/video-stream/{video}', [VideoController::class, 'stream'])->name('videos.stream');
 Route::get('/videos/{slug}', [VideoController::class, 'show'])->name('videos.show');
 
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -70,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
     
     // Subscription Checkout
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
-    Route::post('/subscription/payment', [SubscriptionController::class, 'processPayment'])->name('subscription.payment');
 });
 
 // Admin Routes
@@ -163,12 +163,13 @@ Route::middleware(['auth'])->group(function () {
     
     // Traitement des paiements (POST)
     Route::post('/abonnement/traiter/mobile-money', [SubscriptionController::class, 'processMobileMoney'])->name('subscription.process-mobile-money');
+    Route::post('/abonnement/confirmer/mobile-money/{id}', [SubscriptionController::class, 'confirmMobileMoneyCode'])->name('subscription.confirm-mobile-money');
     Route::post('/abonnement/traiter/crypto', [SubscriptionController::class, 'processCrypto'])->name('subscription.process-crypto');
     Route::post('/abonnement/traiter/bank', [SubscriptionController::class, 'processBank'])->name('subscription.process-bank');
     Route::post('/abonnement/traiter/card', [SubscriptionController::class, 'processCard'])->name('subscription.process-card');
     
     // Vérification des paiements
-    Route::post('/abonnement/webhook/crypto', [SubscriptionController::class, 'cryptoWebhook'])->name('subscription.crypto-webhook');
+    Route::post('/abonnement/webhook/crypto', [SubscriptionController::class, 'verifyCryptoWebhook'])->name('subscription.crypto-webhook');
     Route::get('/abonnement/verifier/{id}', [SubscriptionController::class, 'verifyPayment'])->name('subscription.verify');
     Route::post('/abonnement/confirmer-bank', [SubscriptionController::class, 'confirmBank'])->name('subscription.confirm-bank')->middleware('admin');
     
