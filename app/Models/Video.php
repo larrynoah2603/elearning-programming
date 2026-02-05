@@ -165,7 +165,7 @@ class Video extends Model
             return null;
         }
 
-        return Storage::url($this->video_file);
+        return route('videos.stream', $this->id);
     }
 
     /**
