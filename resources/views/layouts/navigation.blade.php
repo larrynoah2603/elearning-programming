@@ -16,6 +16,12 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    @if(request()->routeIs('admin.*'))
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">Tableau admin</a>
+                        <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'nav-link-active' : '' }}">Utilisateurs</a>
+                        <a href="{{ route('admin.submissions.pending') }}" class="nav-link {{ request()->routeIs('admin.submissions.*') ? 'nav-link-active' : '' }}">Soumissions</a>
+                        <a href="{{ route('admin.statistics') }}" class="nav-link {{ request()->routeIs('admin.statistics') ? 'nav-link-active' : '' }}">Statistiques</a>
+                    @else
                     <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'nav-link-active' : '' }}">
                         Accueil
                     </a>
@@ -31,11 +37,15 @@
                     <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'nav-link-active' : '' }}">
                         Catégories
                     </a>
+                    @endif
                 </div>
             </div>
 
             <!-- Right Navigation -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
+                <button id="dark-mode-toggle" type="button" class="mr-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" aria-label="Basculer le mode nuit">
+                    <i class="fas fa-moon"></i>
+                </button>
                 @auth
                     <!-- Admin Link -->
                     @if(auth()->user()->isAdmin())
@@ -78,7 +88,7 @@
                              class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
                              style="display: none;">
                             <div class="py-1">
-                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-tachometer-alt mr-2"></i> Tableau de bord
                                 </a>
                                 <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -124,21 +134,42 @@
     <!-- Responsive Navigation Menu -->
     <div x-show="open" class="sm:hidden" style="display: none;">
         <div class="pt-2 pb-3 space-y-1">
-            <a href="{{ route('home') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                Accueil
-            </a>
-            <a href="{{ route('lessons.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('lessons.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                Leçons
-            </a>
-            <a href="{{ route('exercises.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('exercises.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                Exercices
-            </a>
-            <a href="{{ route('videos.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('videos.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                Vidéos
-            </a>
-            <a href="{{ route('categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                Catégories
-            </a>
+            @if(request()->routeIs('admin.*'))
+                <a href="{{ route('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.dashboard') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Tableau admin
+                </a>
+                <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Utilisateurs
+                </a>
+                <a href="{{ route('admin.submissions.pending') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.submissions.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Soumissions
+                </a>
+                <a href="{{ route('admin.statistics') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.statistics') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Statistiques
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Accueil
+                </a>
+                <a href="{{ route('lessons.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('lessons.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Leçons
+                </a>
+                <a href="{{ route('exercises.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('exercises.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Exercices
+                </a>
+                <a href="{{ route('videos.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('videos.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Vidéos
+                </a>
+                <a href="{{ route('categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Catégories
+                </a>
+            @endif
+        </div>
+
+        <div class="px-4 pb-2">
+            <button id="dark-mode-toggle-mobile" type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Basculer le mode nuit">
+                <i class="fas fa-moon"></i> Mode nuit
+            </button>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -157,7 +188,7 @@
                 </div>
 
                 <div class="mt-3 space-y-1">
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
+                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
                         Tableau de bord
                     </a>
                     <a href="{{ route('profile') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
