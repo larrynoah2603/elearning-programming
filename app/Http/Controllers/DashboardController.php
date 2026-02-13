@@ -18,6 +18,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         // Stats for all users
         $stats = [
             'completed_exercises' => $user->completed_exercises_count,
