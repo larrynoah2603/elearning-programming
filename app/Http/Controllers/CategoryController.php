@@ -72,6 +72,15 @@ public function show(Request $request, string $slug)
     return view('categories.show', compact('category', 'lessons', 'hasPremiumLessons'));
 }
 
+
+    /**
+     * Show the form for creating a category.
+     */
+    public function create()
+    {
+        return view('admin.categories.create');
+    }
+
     /**
      * Store a newly created category.
      */
