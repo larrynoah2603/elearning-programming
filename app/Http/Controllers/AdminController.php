@@ -268,8 +268,8 @@ class AdminController extends Controller
 
         // Video statistics
         $videoStats = [
-            'total_views' => Video::sum('views_count'),
-            'most_viewed' => Video::orderBy('views_count', 'desc')
+            'total_views' => Video::sum('views'),
+            'most_viewed' => Video::orderBy('views', 'desc')
                 ->take(5)
                 ->get(),
         ];

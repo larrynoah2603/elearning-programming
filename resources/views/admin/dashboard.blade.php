@@ -104,9 +104,9 @@
                     @forelse($pendingSubmissions as $submission)
                         <div class="px-6 py-4 flex items-center justify-between">
                             <div>
-                                <h4 class="font-medium text-gray-900">{{ $submission->exercise->title }}</h4>
+                                <h4 class="font-medium text-gray-900">{{ $submission->exercise?->title ?? 'Exercice supprimé' }}</h4>
                                 <p class="text-sm text-gray-500">
-                                    Par {{ $submission->user->name }} • {{ $submission->submitted_at->diffForHumans() }}
+                                    Par {{ $submission->user?->name ?? 'Utilisateur supprimé' }} • {{ $submission->submitted_at->diffForHumans() }}
                                 </p>
                             </div>
                             <a href="{{ route('admin.submissions.correct', $submission) }}" class="btn btn-primary btn-sm">
@@ -185,13 +185,13 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2">
-                                            {{ substr($submission->user->name, 0, 1) }}
+                                            {{ strtoupper(substr($submission->user?->name ?? '?', 0, 1)) }}
                                         </div>
-                                        <span class="text-sm text-gray-900">{{ $submission->user->name }}</span>
+                                        <span class="text-sm text-gray-900">{{ $submission->user?->name ?? 'Utilisateur supprimé' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $submission->exercise->title }}
+                                    {{ $submission->exercise?->title ?? 'Exercice supprimé' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="badge badge-{{ $submission->status_badge_color }}">
