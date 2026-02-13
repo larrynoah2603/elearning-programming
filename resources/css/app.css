@@ -221,3 +221,14 @@ code {
         @apply bg-slate-700;
     }
 }
+
+
+@layer base {
+    html, body {
+        overflow-x: hidden;
+    }
+
+    img, video, iframe, canvas, svg {
+        max-width: 100%;
+    }
+}
