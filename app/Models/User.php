@@ -61,7 +61,22 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return in_array($this->normalizedRole(), ['admin', 'administrateur'], true);
+        return in_array($this->normalizedRole(), ['admin', 'administrateur'], true)
+            || $this->isConfiguredAdminEmail();
+    }
+
+    /**
+     * Check if user email is in configured admin list.
+     */
+    private function isConfiguredAdminEmail(): bool
+    {
+        $admins = config('app.admin_emails', []);
+
+        if (!is_array($admins)) {
+            return false;
+        }
+
+        return in_array(strtolower(trim((string) $this->email)), $admins, true);
     }
 
     /**
