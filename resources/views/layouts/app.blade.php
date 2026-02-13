@@ -16,9 +16,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Scripts -->
+    <script>
+        (() => {
+            const saved = localStorage.getItem('darkMode');
+            if (saved === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-50">
+<body class="font-sans antialiased bg-gray-50 text-gray-900 transition-colors duration-200 dark:bg-slate-900 dark:text-gray-100">
     <div class="min-h-screen">
         <!-- Navigation -->
         @include('layouts.navigation')
