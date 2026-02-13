@@ -181,3 +181,43 @@ code {
 .difficulty-hard {
     @apply text-danger-600 bg-danger-50;
 }
+
+@layer base {
+    .dark nav {
+        @apply bg-slate-900 border-slate-700;
+    }
+
+    .dark footer {
+        @apply bg-slate-900 border-slate-700;
+    }
+
+    .dark .bg-white {
+        @apply bg-slate-800 text-gray-100;
+    }
+
+    .dark .text-gray-900 {
+        @apply text-gray-100;
+    }
+
+    .dark .text-gray-800 {
+        @apply text-gray-200;
+    }
+
+    .dark .text-gray-700,
+    .dark .text-gray-600,
+    .dark .text-gray-500 {
+        @apply text-gray-300;
+    }
+
+    .dark .border-gray-100,
+    .dark .border-gray-200,
+    .dark .border-gray-300 {
+        @apply border-slate-700;
+    }
+
+    .dark .bg-gray-50,
+    .dark .bg-gray-100,
+    .dark .bg-gray-200 {
+        @apply bg-slate-700;
+    }
+}
