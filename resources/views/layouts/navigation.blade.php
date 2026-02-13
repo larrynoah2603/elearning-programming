@@ -16,9 +16,13 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    @if(request()->routeIs('admin.*'))
+                    @if(auth()->check() && auth()->user()->isAdmin() && request()->routeIs('admin.*'))
                         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">Tableau admin</a>
                         <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'nav-link-active' : '' }}">Utilisateurs</a>
+                        <a href="{{ route('admin.lessons.index') }}" class="nav-link {{ request()->routeIs('admin.lessons.*') ? 'nav-link-active' : '' }}">Leçons</a>
+                        <a href="{{ route('admin.exercises.index') }}" class="nav-link {{ request()->routeIs('admin.exercises.*') ? 'nav-link-active' : '' }}">Exercices</a>
+                        <a href="{{ route('admin.videos.index') }}" class="nav-link {{ request()->routeIs('admin.videos.*') ? 'nav-link-active' : '' }}">Vidéos</a>
+                        <a href="{{ route('admin.categories.index') }}" class="nav-link {{ request()->routeIs('admin.categories.*') ? 'nav-link-active' : '' }}">Catégories</a>
                         <a href="{{ route('admin.submissions.pending') }}" class="nav-link {{ request()->routeIs('admin.submissions.*') ? 'nav-link-active' : '' }}">Soumissions</a>
                         <a href="{{ route('admin.statistics') }}" class="nav-link {{ request()->routeIs('admin.statistics') ? 'nav-link-active' : '' }}">Statistiques</a>
                     @else
@@ -134,19 +138,15 @@
     <!-- Responsive Navigation Menu -->
     <div x-show="open" class="sm:hidden" style="display: none;">
         <div class="pt-2 pb-3 space-y-1">
-            @if(request()->routeIs('admin.*'))
-                <a href="{{ route('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.dashboard') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                    Tableau admin
-                </a>
-                <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                    Utilisateurs
-                </a>
-                <a href="{{ route('admin.submissions.pending') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.submissions.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                    Soumissions
-                </a>
-                <a href="{{ route('admin.statistics') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.statistics') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                    Statistiques
-                </a>
+            @if(auth()->check() && auth()->user()->isAdmin() && request()->routeIs('admin.*'))
+                <a href="{{ route('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.dashboard') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Tableau admin</a>
+                <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Utilisateurs</a>
+                <a href="{{ route('admin.lessons.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.lessons.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Leçons</a>
+                <a href="{{ route('admin.exercises.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.exercises.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Exercices</a>
+                <a href="{{ route('admin.videos.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.videos.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Vidéos</a>
+                <a href="{{ route('admin.categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Catégories</a>
+                <a href="{{ route('admin.submissions.pending') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.submissions.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Soumissions</a>
+                <a href="{{ route('admin.statistics') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.statistics') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Statistiques</a>
             @else
                 <a href="{{ route('home') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Accueil
