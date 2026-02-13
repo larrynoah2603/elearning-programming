@@ -49,11 +49,34 @@ class User extends Authenticatable
     }
 
     /**
+     * Get normalized role value.
+     */
+    public function normalizedRole(): string
+    {
+        return strtolower(trim((string) $this->role));
+    }
+
+    /**
      * Check if user is admin
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->normalizedRole(), ['admin', 'administrateur'], true)
+            || $this->isConfiguredAdminEmail();
+    }
+
+    /**
+     * Check if user email is in configured admin list.
+     */
+    private function isConfiguredAdminEmail(): bool
+    {
+        $admins = config('app.admin_emails', []);
+
+        if (!is_array($admins)) {
+            return false;
+        }
+
+        return in_array(strtolower(trim((string) $this->email)), $admins, true);
     }
 
     /**
@@ -61,7 +84,7 @@ class User extends Authenticatable
      */
     public function isFree(): bool
     {
-        return $this->role === 'free';
+        return $this->normalizedRole() === 'free';
     }
 
     /**
@@ -69,11 +92,11 @@ class User extends Authenticatable
      */
     public function isSubscribed(): bool
     {
-        if ($this->role === 'admin') {
+        if ($this->isAdmin()) {
             return true;
         }
         
-        if ($this->role === 'subscribed' && $this->subscription_expires_at) {
+        if ($this->normalizedRole() === 'subscribed' && $this->subscription_expires_at) {
             return $this->subscription_expires_at->isFuture();
         }
         
@@ -85,7 +108,7 @@ class User extends Authenticatable
      */
     public function isSubscriptionExpired(): bool
     {
-        if ($this->role === 'subscribed' && $this->subscription_expires_at) {
+        if ($this->normalizedRole() === 'subscribed' && $this->subscription_expires_at) {
             return $this->subscription_expires_at->isPast();
         }
         
@@ -118,8 +141,8 @@ class User extends Authenticatable
      */
     public function getRoleBadgeColorAttribute(): string
     {
-        return match($this->role) {
-            'admin' => 'danger',
+        return match($this->normalizedRole()) {
+            'admin', 'administrateur' => 'danger',
             'subscribed' => 'success',
             'free' => 'info',
             default => 'secondary',
