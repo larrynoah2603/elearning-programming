@@ -64,6 +64,19 @@
                         <textarea name="instructions" rows="4" class="form-textarea mt-1 w-full" required></textarea>
                     </div>
 
+                    <!-- Hint -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Indice (optionnel)</label>
+                        <textarea
+                            name="hints"
+                            rows="3"
+                            class="form-textarea mt-1 w-full"
+                            placeholder="Ex: Pense à utiliser une boucle pour parcourir chaque élément du tableau."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Si vous laissez ce champ vide, un indice par défaut sera généré automatiquement.
+                        </p>
+                    </div>
+
                     <!-- Lesson -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Leçon associée</label>

@@ -185,6 +185,10 @@ class ExerciseController extends Controller
             $validated['points'] = $validated['difficulty'] === 'simple' ? 10 : 20;
         }
 
+        if (blank($validated['hints'] ?? null)) {
+            $validated['hints'] = $this->getDefaultHint($validated['programming_language']);
+        }
+
         $exercise = Exercise::create($validated);
 
         return redirect()->route('admin.exercises.index')
@@ -305,5 +309,22 @@ class ExerciseController extends Controller
             'html_css' => 'HTML/CSS',
             'sql' => 'SQL',
         ];
+    }
+
+    /**
+     * Get a default hint when admin doesn't provide one.
+     */
+    private function getDefaultHint(string $language): string
+    {
+        return match ($language) {
+            'python' => 'Décompose le problème en petites étapes puis teste chaque étape avec print() avant de finaliser ton code.',
+            'javascript' => 'Vérifie la valeur des variables avec console.log() à chaque étape clé pour comprendre le flux du programme.',
+            'java' => 'Commence par écrire la logique en pseudo-code, puis implémente méthode par méthode en testant les cas simples.',
+            'cpp' => 'Commence par une solution simple et valide, puis améliore-la progressivement en vérifiant les types et les boucles.',
+            'php' => 'Teste les entrées intermédiaires avec var_dump() pour vérifier les données avant le rendu final.',
+            'html_css' => 'Structure d’abord le HTML puis ajuste le style CSS petit à petit en inspectant chaque élément.',
+            'sql' => 'Construit ta requête étape par étape : SELECT + FROM, puis ajoute WHERE et ORDER BY en vérifiant chaque résultat.',
+            default => 'Relis l’énoncé, découpe le problème en sous-problèmes et valide chaque partie avant d’assembler la solution.',
+        };
     }
 }
