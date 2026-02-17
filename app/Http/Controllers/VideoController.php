@@ -86,7 +86,7 @@ class VideoController extends Controller
     /**
      * Stream video file from storage (fix lecture sans lien symbolique public/storage).
      */
-    public function stream(string $video)
+    public function stream(Request $request, string $video)
     {
         $video = Video::query()
             ->where('id', $video)
@@ -105,60 +105,77 @@ class VideoController extends Controller
             return redirect()->away($video->video_file);
         }
 
-        $candidates = [
-            ltrim($video->video_file, '/'),
-            ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/'),
-            ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
-        ];
+        $resolvedVideo = $this->resolveVideoPath((string) $video->video_file);
 
-        $resolvedPublicPath = collect($candidates)
-            ->unique()
-            ->first(fn (string $path) => Storage::disk('public')->exists($path));
-
-        if ($resolvedPublicPath) {
-            $path = Storage::disk('public')->path($resolvedPublicPath);
-
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+        if (!$resolvedVideo) {
+            abort(404, 'Vidéo introuvable sur le serveur.');
         }
 
-        $resolvedLocalPath = collect($candidates)
-            ->unique()
-            ->first(fn (string $path) => Storage::disk('local')->exists($path));
+        $absolutePath = $resolvedVideo['path'];
+        $mimeType = $resolvedVideo['mime'];
 
-        if ($resolvedLocalPath) {
-            $path = Storage::disk('local')->path($resolvedLocalPath);
+        $size = filesize($absolutePath);
+        $start = 0;
+        $end = $size - 1;
+        $status = 200;
 
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+        $range = $request->header('Range');
+
+        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
+            $status = 206;
+
+            if ($matches[1] !== '') {
+                $start = (int) $matches[1];
+            }
+
+            if ($matches[2] !== '') {
+                $end = (int) $matches[2];
+            }
+
+            $start = max(0, min($start, $size - 1));
+            $end = max($start, min($end, $size - 1));
         }
 
-        $absoluteCandidates = [
-            $video->video_file,
-            public_path(ltrim($video->video_file, '/')),
-            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $video->video_file), '/')),
-        ];
+        $length = $end - $start + 1;
 
-        $absolutePath = collect($absoluteCandidates)
-            ->first(fn (string $path) => is_file($path));
-
-        if (!$absolutePath) {
-            abort(404);
-        }
-
-        return response()->file($absolutePath, [
-            'Content-Type' => mime_content_type($absolutePath) ?: 'video/mp4',
+        $headers = [
+            'Content-Type' => $mimeType,
             'Accept-Ranges' => 'bytes',
+            'Content-Length' => (string) $length,
+            'Content-Disposition' => 'inline; filename="' . basename($absolutePath) . '"',
             'Cache-Control' => 'public, max-age=3600',
-        ]);
+        ];
+
+        if ($status === 206) {
+            $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
+        }
+
+        return response()->stream(function () use ($absolutePath, $start, $end) {
+            $chunkSize = 8192;
+            $handle = fopen($absolutePath, 'rb');
+
+            if ($handle === false) {
+                return;
+            }
+
+            fseek($handle, $start);
+            $bytesLeft = $end - $start + 1;
+
+            while (!feof($handle) && $bytesLeft > 0) {
+                $readLength = min($chunkSize, $bytesLeft);
+                $buffer = fread($handle, $readLength);
+
+                if ($buffer === false) {
+                    break;
+                }
+
+                echo $buffer;
+                flush();
+                $bytesLeft -= strlen($buffer);
+            }
+
+            fclose($handle);
+        }, $status, $headers);
     }
 
     /**
@@ -414,6 +431,62 @@ class VideoController extends Controller
         $status = $video->is_active ? 'activée' : 'désactivée';
 
         return back()->with('success', "Vidéo {$status} avec succès.");
+    }
+
+    /**
+     * Resolve video absolute path from multiple legacy/new storage formats.
+     */
+    private function resolveVideoPath(string $videoFile): ?array
+    {
+        $normalizedPath = str_replace('\\', '/', trim($videoFile));
+        $basename = basename($normalizedPath);
+
+        $relativeCandidates = collect([
+            ltrim($normalizedPath, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/'),
+            ltrim(Str::replaceFirst('public/', '', $normalizedPath), '/'),
+            ltrim(Str::replaceFirst('storage/app/public/', '', $normalizedPath), '/'),
+            ltrim(Str::replaceFirst('app/public/', '', $normalizedPath), '/'),
+            $basename ? 'videos/' . $basename : null,
+        ])->filter()->unique()->values();
+
+        foreach ($relativeCandidates as $relativePath) {
+            if (Storage::disk('public')->exists($relativePath)) {
+                return [
+                    'path' => Storage::disk('public')->path($relativePath),
+                    'mime' => Storage::disk('public')->mimeType($relativePath) ?: 'video/mp4',
+                ];
+            }
+        }
+
+        foreach ($relativeCandidates as $relativePath) {
+            if (Storage::disk('local')->exists($relativePath)) {
+                return [
+                    'path' => Storage::disk('local')->path($relativePath),
+                    'mime' => Storage::disk('local')->mimeType($relativePath) ?: 'video/mp4',
+                ];
+            }
+        }
+
+        $absoluteCandidates = collect([
+            $normalizedPath,
+            public_path(ltrim($normalizedPath, '/')),
+            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/')),
+            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/')),
+            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $normalizedPath), '/')),
+            $basename ? storage_path('app/public/videos/' . $basename) : null,
+        ])->filter()->unique();
+
+        $absolutePath = $absoluteCandidates->first(fn (string $path) => is_file($path));
+
+        if (!$absolutePath) {
+            return null;
+        }
+
+        return [
+            'path' => $absolutePath,
+            'mime' => mime_content_type($absolutePath) ?: 'video/mp4',
+        ];
     }
 
     /**
