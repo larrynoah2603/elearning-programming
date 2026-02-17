@@ -86,7 +86,7 @@ class VideoController extends Controller
     /**
      * Stream video file from storage (fix lecture sans lien symbolique public/storage).
      */
-    public function stream(string $video)
+    public function stream(Request $request, string $video)
     {
         $video = Video::query()
             ->where('id', $video)
@@ -105,60 +105,120 @@ class VideoController extends Controller
             return redirect()->away($video->video_file);
         }
 
+        $normalizedPath = str_replace('\\', '/', $video->video_file);
+
         $candidates = [
-            ltrim($video->video_file, '/'),
-            ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/'),
-            ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
+            ltrim($normalizedPath, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/'),
+            ltrim(Str::replaceFirst('public/', '', $normalizedPath), '/'),
         ];
 
         $resolvedPublicPath = collect($candidates)
             ->unique()
             ->first(fn (string $path) => Storage::disk('public')->exists($path));
 
+        $absolutePath = null;
+        $mimeType = 'video/mp4';
+
         if ($resolvedPublicPath) {
-            $path = Storage::disk('public')->path($resolvedPublicPath);
-
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+            $absolutePath = Storage::disk('public')->path($resolvedPublicPath);
+            $mimeType = Storage::disk('public')->mimeType($resolvedPublicPath) ?? $mimeType;
         }
-
-        $resolvedLocalPath = collect($candidates)
-            ->unique()
-            ->first(fn (string $path) => Storage::disk('local')->exists($path));
-
-        if ($resolvedLocalPath) {
-            $path = Storage::disk('local')->path($resolvedLocalPath);
-
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
-        }
-
-        $absoluteCandidates = [
-            $video->video_file,
-            public_path(ltrim($video->video_file, '/')),
-            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $video->video_file), '/')),
-        ];
-
-        $absolutePath = collect($absoluteCandidates)
-            ->first(fn (string $path) => is_file($path));
 
         if (!$absolutePath) {
+            $resolvedLocalPath = collect($candidates)
+                ->unique()
+                ->first(fn (string $path) => Storage::disk('local')->exists($path));
+
+            if ($resolvedLocalPath) {
+                $absolutePath = Storage::disk('local')->path($resolvedLocalPath);
+                $mimeType = Storage::disk('local')->mimeType($resolvedLocalPath) ?? $mimeType;
+            }
+        }
+
+        if (!$absolutePath) {
+            $absoluteCandidates = [
+                $normalizedPath,
+                public_path(ltrim($normalizedPath, '/')),
+                public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/')),
+                storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $normalizedPath), '/')),
+                storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $normalizedPath), '/')),
+            ];
+
+            $absolutePath = collect($absoluteCandidates)
+                ->first(fn (string $path) => is_file($path));
+
+            if ($absolutePath) {
+                $mimeType = mime_content_type($absolutePath) ?: $mimeType;
+            }
+        }
+
+        if (!$absolutePath || !is_file($absolutePath)) {
             abort(404);
         }
 
-        return response()->file($absolutePath, [
-            'Content-Type' => mime_content_type($absolutePath) ?: 'video/mp4',
+        $size = filesize($absolutePath);
+        $start = 0;
+        $end = $size - 1;
+        $status = 200;
+
+        $range = $request->header('Range');
+
+        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
+            $status = 206;
+
+            if ($matches[1] !== '') {
+                $start = (int) $matches[1];
+            }
+
+            if ($matches[2] !== '') {
+                $end = (int) $matches[2];
+            }
+
+            $start = max(0, min($start, $size - 1));
+            $end = max($start, min($end, $size - 1));
+        }
+
+        $length = $end - $start + 1;
+
+        $headers = [
+            'Content-Type' => $mimeType,
             'Accept-Ranges' => 'bytes',
+            'Content-Length' => (string) $length,
+            'Content-Disposition' => 'inline; filename="' . basename($absolutePath) . '"',
             'Cache-Control' => 'public, max-age=3600',
-        ]);
+        ];
+
+        if ($status === 206) {
+            $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
+        }
+
+        return response()->stream(function () use ($absolutePath, $start, $end) {
+            $chunkSize = 8192;
+            $handle = fopen($absolutePath, 'rb');
+
+            if ($handle === false) {
+                return;
+            }
+
+            fseek($handle, $start);
+            $bytesLeft = $end - $start + 1;
+
+            while (!feof($handle) && $bytesLeft > 0) {
+                $readLength = min($chunkSize, $bytesLeft);
+                $buffer = fread($handle, $readLength);
+
+                if ($buffer === false) {
+                    break;
+                }
+
+                echo $buffer;
+                flush();
+                $bytesLeft -= strlen($buffer);
+            }
+
+            fclose($handle);
+        }, $status, $headers);
     }
 
     /**
