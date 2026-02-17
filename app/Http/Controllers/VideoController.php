@@ -101,11 +101,23 @@ class VideoController extends Controller
             abort(404);
         }
 
-        if (filter_var($video->video_file, FILTER_VALIDATE_URL)) {
-            return redirect()->away($video->video_file);
+        $videoFile = (string) $video->video_file;
+
+        if (filter_var($videoFile, FILTER_VALIDATE_URL)) {
+            $parsed = parse_url($videoFile);
+            $urlHost = strtolower((string) ($parsed['host'] ?? ''));
+            $requestHost = strtolower($request->getHost());
+
+            $isLocalHost = in_array($urlHost, [$requestHost, 'localhost', '127.0.0.1'], true);
+
+            if (!$isLocalHost) {
+                return redirect()->away($videoFile);
+            }
+
+            $videoFile = urldecode((string) ($parsed['path'] ?? ''));
         }
 
-        $resolvedVideo = $this->resolveVideoPath((string) $video->video_file);
+        $resolvedVideo = $this->resolveVideoPath($videoFile);
 
         if (!$resolvedVideo) {
             abort(404, 'Vidéo introuvable sur le serveur.');
@@ -438,7 +450,7 @@ class VideoController extends Controller
      */
     private function resolveVideoPath(string $videoFile): ?array
     {
-        $normalizedPath = str_replace('\\', '/', trim($videoFile));
+        $normalizedPath = str_replace('\\', '/', trim((string) parse_url($videoFile, PHP_URL_PATH) ?: $videoFile));
         $basename = basename($normalizedPath);
 
         $relativeCandidates = collect([
