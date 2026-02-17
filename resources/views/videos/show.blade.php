@@ -25,7 +25,7 @@
                         poster="{{ $video->thumbnail_url }}"
                         data-video-id="{{ $video->id }}"
                         @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
-                        <source src="{{ $video->video_url }}" type="{{ $video->video_mime_type }}">
+                        <source src="{{ $video->video_url }}">
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
                 </div>
@@ -179,6 +179,12 @@
             // Mark as completed when video ends
             videoPlayer.addEventListener('ended', function() {
                 markCompleted();
+            });
+
+            // Better user feedback when the browser cannot decode/open the video format
+            videoPlayer.addEventListener('error', function() {
+                const message = 'Vidéo indisponible : format non supporté ou fichier inaccessible.';
+                console.error(message, videoPlayer.error);
             });
             
             async function updateProgress(currentTime, watchedDuration) {

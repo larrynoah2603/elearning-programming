@@ -126,6 +126,10 @@ class VideoController extends Controller
         $absolutePath = $resolvedVideo['path'];
         $mimeType = $resolvedVideo['mime'];
 
+        if (!str_starts_with((string) $mimeType, 'video/')) {
+            $mimeType = $this->guessVideoMimeTypeByPath($absolutePath);
+        }
+
         $size = filesize($absolutePath);
         $start = 0;
         $end = $size - 1;
@@ -499,6 +503,19 @@ class VideoController extends Controller
             'path' => $absolutePath,
             'mime' => mime_content_type($absolutePath) ?: 'video/mp4',
         ];
+    }
+
+    /**
+     * Guess a safe video MIME type using file extension.
+     */
+    private function guessVideoMimeTypeByPath(string $path): string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'webm' => 'video/webm',
+            'ogg', 'ogv' => 'video/ogg',
+            'm3u8' => 'application/vnd.apple.mpegurl',
+            default => 'video/mp4',
+        };
     }
 
     /**
