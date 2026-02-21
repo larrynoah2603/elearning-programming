@@ -79,35 +79,20 @@
             </div>
             
             <div class="hidden lg:block relative">
-                <div class="relative z-10 bg-gray-900 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
-                    <div class="flex items-center px-4 py-3 bg-gray-800 border-b border-gray-700">
-                        <div class="flex space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        </div>
-                        <div class="ml-4 text-sm text-gray-400">main.py</div>
-                    </div>
-                    <div class="p-6 font-mono text-sm">
-                        <div class="text-purple-400">def <span class="text-yellow-300">calculer_moyenne</span>(notes):</div>
-                        <div class="pl-4 text-gray-300">"""Calcule la moyenne d'une liste de notes"""</div>
-                        <div class="pl-4 text-gray-300">total = <span class="text-orange-400">sum</span>(notes)</div>
-                        <div class="pl-4 text-gray-300">moyenne = total / <span class="text-orange-400">len</span>(notes)</div>
-                        <div class="pl-4 text-purple-400">return <span class="text-green-400">round</span>(moyenne, <span class="text-orange-400">2</span>)</div>
-                        <div class="mt-4 text-gray-300">notes = [<span class="text-orange-400">15</span>, <span class="text-orange-400">18</span>, <span class="text-orange-400">12</span>, <span class="text-orange-400">16</span>]</div>
-                        <div class="text-gray-300">resultat = <span class="text-yellow-300">calculer_moyenne</span>(notes)</div>
-                        <div class="text-purple-400">print</div>
-                        <div class="text-gray-300">(<span class="text-green-400">f"Moyenne: <span class="text-blue-400">{resultat}</span>/20"</span>)</div>
-                        <div class="mt-4 text-green-400"># Output: Moyenne: 15.25/20</div>
-                    </div>
+                <div class="relative z-10 rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+                    <img src="{{ asset('images/home/hero-ai-programming.svg') }}" alt="Illustration IA et programmation" class="w-full h-[430px] object-cover">
                 </div>
-                
+
+                <div class="absolute -bottom-10 -left-10 w-72 rounded-2xl bg-white p-3 shadow-xl border border-white/40">
+                    <img src="{{ asset('images/home/hero-learning-scenes.svg') }}" alt="Illustration scènes d'apprentissage en programmation" class="w-full h-40 object-cover rounded-xl">
+                </div>
+
                 <!-- Floating elements -->
                 <div class="absolute -top-4 -right-4 bg-white rounded-lg shadow-lg p-4 animate-bounce" style="animation-duration: 3s;">
-                    <i class="fab fa-python text-4xl text-yellow-500"></i>
+                    <i class="fas fa-brain text-3xl text-secondary-600"></i>
                 </div>
-                <div class="absolute -bottom-4 -left-4 bg-white rounded-lg shadow-lg p-4 animate-bounce" style="animation-duration: 4s;">
-                    <i class="fab fa-js text-4xl text-yellow-400"></i>
+                <div class="absolute -bottom-4 right-8 bg-white rounded-lg shadow-lg p-4 animate-bounce" style="animation-duration: 4s;">
+                    <i class="fas fa-code text-3xl text-primary-600"></i>
                 </div>
             </div>
         </div>
