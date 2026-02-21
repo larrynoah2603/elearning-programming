@@ -1,0 +1,25 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Illustration IA et programmation</title>
+  <desc id="desc">Visuel stylisé d'un développeur avec un écran et des éléments IA.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#19B7A2"/>
+      <stop offset="100%" stop-color="#0C9B92"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="210" cy="220" r="65" fill="#F6C941"/>
+  <circle cx="995" cy="345" r="80" fill="#F6C941"/>
+  <rect x="390" y="115" width="420" height="280" rx="14" fill="#12141A" stroke="#D0D6DE" stroke-width="6"/>
+  <text x="600" y="280" font-size="120" text-anchor="middle" fill="#2CE675" font-family="monospace">&lt;/&gt;</text>
+  <rect x="368" y="395" width="464" height="44" rx="10" fill="#D8DEE8"/>
+  <rect x="440" y="435" width="320" height="55" rx="10" fill="#BFC7D3"/>
+  <rect x="370" y="496" width="460" height="22" rx="10" fill="#7E8794" opacity=".45"/>
+  <path d="M430 505C450 670 750 670 770 505" fill="#8A929E"/>
+  <rect x="420" y="540" width="360" height="260" rx="28" fill="#A8AFBA"/>
+  <rect x="575" y="555" width="50" height="220" rx="12" fill="#7A818E"/>
+  <circle cx="960" cy="290" r="90" fill="#34373C"/>
+  <circle cx="1015" cy="250" r="55" fill="#34373C"/>
+  <circle cx="1050" cy="315" r="45" fill="#34373C"/>
+  <text x="215" y="238" font-size="64" text-anchor="middle" fill="#fff" font-family="sans-serif">AI</text>
+</svg>
