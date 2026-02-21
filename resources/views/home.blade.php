@@ -28,6 +28,38 @@
                         <i class="fas fa-crown mr-2"></i> Voir les offres Premium
                     </a>
                 </div>
+
+                <div class="mt-8">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary-100 mb-3">Catégories populaires</p>
+                    @php
+                        $heroLanguages = ($categories ?? collect())->isNotEmpty()
+                            ? ($categories ?? collect())
+                            : collect([
+                                (object) ['name' => 'Python', 'icon' => 'fab fa-python'],
+                                (object) ['name' => 'JavaScript', 'icon' => 'fab fa-js'],
+                                (object) ['name' => 'Java', 'icon' => 'fab fa-java'],
+                                (object) ['name' => 'PHP', 'icon' => 'fab fa-php'],
+                                (object) ['name' => 'SQL', 'icon' => 'fas fa-database'],
+                            ]);
+                    @endphp
+                    <div class="hero-language-loop">
+                        <div class="hero-language-track">
+                            @foreach($heroLanguages as $category)
+                                <span class="hero-language-pill">
+                                    <i class="{{ $category->icon ?? 'fas fa-code' }}"></i>
+                                    {{ $category->name }}
+                                </span>
+                            @endforeach
+
+                            @foreach($heroLanguages as $category)
+                                <span class="hero-language-pill" aria-hidden="true">
+                                    <i class="{{ $category->icon ?? 'fas fa-code' }}"></i>
+                                    {{ $category->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Stats -->
                 <div class="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/20">
