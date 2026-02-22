@@ -137,15 +137,15 @@
                         <div class="px-6 py-4 flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                                    {{ substr($user->name, 0, 1) }}
+                                    {{ strtoupper(substr($user?->name ?? '?', 0, 1)) }}
                                 </div>
                                 <div>
-                                    <h4 class="font-medium text-gray-900">{{ $user->name }}</h4>
-                                    <p class="text-sm text-gray-500">{{ $user->email }}</p>
+                                    <h4 class="font-medium text-gray-900">{{ $user?->name ?? 'Utilisateur supprimé' }}</h4>
+                                    <p class="text-sm text-gray-500">{{ $user?->email ?? 'Email indisponible' }}</p>
                                 </div>
                             </div>
-                            <span class="badge badge-{{ $user->role_badge_color }}">
-                                {{ $user->subscription_status }}
+                            <span class="badge badge-{{ $user?->role_badge_color ?? 'gray' }}">
+                                {{ $user?->subscription_status ?? 'Statut indisponible' }}
                             </span>
                         </div>
                     @empty
