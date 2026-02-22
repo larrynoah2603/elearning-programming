@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('title', $video->title . ' - CodeLearn'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -23,7 +25,7 @@
                         poster="<?php echo e($video->thumbnail_url); ?>"
                         data-video-id="<?php echo e($video->id); ?>"
                         <?php if($progress): ?> data-current-time="<?php echo e($progress->current_time); ?>" <?php endif; ?>>
-                        <source src="<?php echo e(url('/elearning-programming/storage/app/public/' . $video->video_file)); ?>" type="video/mp4">
+                        <source src="<?php echo e($video->video_url); ?>" type="video/mp4">
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
                 </div>

@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('title', 'Administration - CodeLearn'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -102,9 +104,9 @@
                     <?php $__empty_1 = true; $__currentLoopData = $pendingSubmissions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $submission): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <div class="px-6 py-4 flex items-center justify-between">
                             <div>
-                                <h4 class="font-medium text-gray-900"><?php echo e($submission->exercise->title); ?></h4>
+                                <h4 class="font-medium text-gray-900"><?php echo e($submission->exercise?->title ?? 'Exercice supprimé'); ?></h4>
                                 <p class="text-sm text-gray-500">
-                                    Par <?php echo e($submission->user->name); ?> • <?php echo e($submission->submitted_at->diffForHumans()); ?>
+                                    Par <?php echo e($submission->user?->name ?? 'Utilisateur supprimé'); ?> • <?php echo e($submission->submitted_at->diffForHumans()); ?>
 
                                 </p>
                             </div>
@@ -186,14 +188,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2">
-                                            <?php echo e(substr($submission->user->name, 0, 1)); ?>
+                                            <?php echo e(strtoupper(substr($submission->user?->name ?? '?', 0, 1))); ?>
 
                                         </div>
-                                        <span class="text-sm text-gray-900"><?php echo e($submission->user->name); ?></span>
+                                        <span class="text-sm text-gray-900"><?php echo e($submission->user?->name ?? 'Utilisateur supprimé'); ?></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <?php echo e($submission->exercise->title); ?>
+                                    <?php echo e($submission->exercise?->title ?? 'Exercice supprimé'); ?>
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

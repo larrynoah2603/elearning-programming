@@ -26,7 +26,7 @@
                             <p class="text-sm text-gray-500"><?php echo e($planDetails['days']); ?> jours</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-lg font-bold text-primary-600">$<?php echo e(number_format($planDetails['price'], 2)); ?></div>
+                            <div class="text-lg font-bold text-primary-600">$<?php echo e(number_format($planDetails['price_usd'], 2)); ?></div>
                             <div class="text-sm text-gray-500">USD</div>
                         </div>
                     </div>
@@ -46,9 +46,9 @@
                             </div>
                             <div class="text-right">
                                 <div class="font-mono font-bold">
-                                    <?php echo e(number_format($planDetails['price'] / ($cryptoRates['btc'] ?? 45000), 6)); ?> BTC
+                                    <?php echo e(number_format($planDetails['price_usd'] / ($cryptoRates['btc'] ?? 45000), 6)); ?> BTC
                                 </div>
-                                <div class="text-sm text-gray-500">≈ $<?php echo e(number_format($planDetails['price'], 2)); ?></div>
+                                <div class="text-sm text-gray-500">≈ $<?php echo e(number_format($planDetails['price_usd'], 2)); ?></div>
                             </div>
                         </div>
 
@@ -63,9 +63,9 @@
                             </div>
                             <div class="text-right">
                                 <div class="font-mono font-bold">
-                                    <?php echo e(number_format($planDetails['price'] / ($cryptoRates['eth'] ?? 3000), 4)); ?> ETH
+                                    <?php echo e(number_format($planDetails['price_usd'] / ($cryptoRates['eth'] ?? 3000), 4)); ?> ETH
                                 </div>
-                                <div class="text-sm text-gray-500">≈ $<?php echo e(number_format($planDetails['price'], 2)); ?></div>
+                                <div class="text-sm text-gray-500">≈ $<?php echo e(number_format($planDetails['price_usd'], 2)); ?></div>
                             </div>
                         </div>
 
@@ -80,7 +80,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="font-mono font-bold">
-                                    <?php echo e(number_format($planDetails['price'], 2)); ?> USDT
+                                    <?php echo e(number_format($planDetails['price_usd'], 2)); ?> USDT
                                 </div>
                                 <div class="text-sm text-gray-500">Tether</div>
                             </div>

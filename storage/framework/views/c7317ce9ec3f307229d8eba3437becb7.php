@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('title', 'Nouvelle Leçon - CodeLearn'); ?>
 
 <?php $__env->startSection('content'); ?>
