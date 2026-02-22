@@ -1,107 +1,57 @@
 <footer class="bg-gray-900 text-white mt-auto">
+    @php
+        $footerImages = [
+            '/images/home/footer/footer-1.jpg',
+            '/images/home/footer/footer-2.jpg',
+            '/images/home/footer/footer-3.jpg',
+            '/images/home/footer/footer-4.jpg',
+            '/images/home/footer/footer-5.jpg',
+        ];
+    @endphp
+
+    <style>
+        @keyframes footer-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .footer-marquee-track {
+            width: max-content;
+            animation: footer-scroll 28s linear infinite;
+        }
+    </style>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- Brand -->
-            <div>
-                <div class="flex items-center space-x-2 mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-code text-white text-lg"></i>
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold mb-3">Galerie du footer en boucle</h3>
+            <p class="text-gray-400 text-sm">Remplacez uniquement les chemins d'images dans <code>$footerImages</code> pour mettre votre contenu.</p>
+        </div>
+
+        <div class="relative overflow-hidden mb-10">
+            <div class="footer-marquee-track flex gap-4">
+                @foreach(array_merge($footerImages, $footerImages) as $index => $image)
+                    <div class="w-[220px] h-[130px] rounded-xl overflow-hidden border border-gray-800 bg-gray-800/40 flex-shrink-0">
+                        <img
+                            src="{{ $image }}"
+                            alt="Image footer {{ ($index % count($footerImages)) + 1 }}"
+                            class="w-full h-full object-cover"
+                            loading="lazy"
+                        >
                     </div>
-                    <span class="font-bold text-xl">CodeLearn</span>
-                </div>
-                <p class="text-gray-400 text-sm mb-4">
-                    Plateforme e-learning de programmation pour les lycéens. Apprenez à coder de manière interactive et amusante.
-                </p>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Quick Links -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Liens rapides</h3>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('home') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Accueil</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('lessons.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Leçons</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('exercises.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Exercices</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('videos.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Vidéos</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('subscription.plans') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Tarifs</a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Resources -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Ressources</h3>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('about') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Documentation</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('categories.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white transition-colors text-sm">FAQ</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Contact</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('about') }}" class="text-gray-400 hover:text-white transition-colors text-sm">À propos</a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Contact -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Contact</h3>
-                <ul class="space-y-2 text-sm text-gray-400">
-                    <li class="flex items-start">
-                        <i class="fas fa-map-marker-alt mt-1 mr-2 text-primary-500"></i>
-                        <span>LOT II i 68 y Bis Amboniloha<br>Madagascar</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-envelope mr-2 text-primary-500"></i>
-                        <a href="mailto:larrynoah@gmail.com" class="hover:text-white transition-colors">larrynoah@gmail.com</a>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-phone mr-2 text-primary-500"></i>
-                        <a href="tel:+330200310" class="hover:text-white transition-colors">+33 02 00 310</a>
-                    </li>
-                </ul>
+                @endforeach
             </div>
         </div>
 
         <!-- Bottom Bar -->
-        <div class="border-t border-gray-800 mt-8 pt-8">
+        <div class="border-t border-gray-800 pt-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400 text-sm">
                     &copy; {{ date('Y') }} CodeLearn. Tous droits réservés.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Mentions légales</a>
+                    <a href="{{ route('home') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Accueil</a>
+                    <a href="{{ route('subscription.plans') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Tarifs</a>
+                    <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
                 </div>
             </div>
         </div>

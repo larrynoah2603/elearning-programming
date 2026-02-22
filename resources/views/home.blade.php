@@ -300,65 +300,46 @@
 
 <!-- Testimonials Section -->
 <section class="py-20 bg-gray-50">
+    @php
+        $testimonialImages = [
+            '/images/home/testimonials/testimonial-1.jpg',
+            '/images/home/testimonials/testimonial-2.jpg',
+            '/images/home/testimonials/testimonial-3.jpg',
+            '/images/home/testimonials/testimonial-4.jpg',
+            '/images/home/testimonials/testimonial-5.jpg',
+        ];
+    @endphp
+
+    <style>
+        @keyframes testimonials-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .testimonials-marquee-track {
+            width: max-content;
+            animation: testimonials-scroll 24s linear infinite;
+        }
+    </style>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
             <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Ce que disent nos élèves</h2>
-            <p class="text-lg text-gray-600">Découvrez les témoignages de nos apprenants.</p>
+            <p class="text-lg text-gray-600">Ajoutez simplement vos images dans le tableau pour alimenter le défilement automatique.</p>
         </div>
-        
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-white rounded-xl shadow-sm p-8">
-                <div class="flex items-center mb-4">
-                    <div class="flex text-yellow-400">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star"></i>
-                        @endfor
+
+        <div class="relative overflow-hidden">
+            <div class="testimonials-marquee-track flex gap-6">
+                @foreach(array_merge($testimonialImages, $testimonialImages) as $index => $image)
+                    <div class="w-[280px] sm:w-[320px] md:w-[360px] h-[220px] sm:h-[250px] rounded-2xl overflow-hidden shadow-md bg-white flex-shrink-0">
+                        <img
+                            src="{{ $image }}"
+                            alt="Témoignage visuel {{ ($index % count($testimonialImages)) + 1 }}"
+                            class="w-full h-full object-cover"
+                            loading="lazy"
+                        >
                     </div>
-                </div>
-                <p class="text-gray-600 mb-6">"CodeLearn m'a permis de découvrir la programmation de manière ludique. Les exercices sont bien structurés et les vidéos très pédagogiques."</p>
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold">ML</div>
-                    <div class="ml-4">
-                        <div class="font-bold text-gray-900">Marie L.</div>
-                        <div class="text-gray-500 text-sm">Lycéenne, Terminale S</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-8">
-                <div class="flex items-center mb-4">
-                    <div class="flex text-yellow-400">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star"></i>
-                        @endfor
-                    </div>
-                </div>
-                <p class="text-gray-600 mb-6">"Grâce à la version Premium, j'ai pu accéder à des exercices plus complexes qui m'ont vraiment fait progresser. Je recommande !"</p>
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-secondary-500 rounded-full flex items-center justify-center text-white font-bold">TD</div>
-                    <div class="ml-4">
-                        <div class="font-bold text-gray-900">Thomas D.</div>
-                        <div class="text-gray-500 text-sm">Étudiant en informatique</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-8">
-                <div class="flex items-center mb-4">
-                    <div class="flex text-yellow-400">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star"></i>
-                        @endfor
-                    </div>
-                </div>
-                <p class="text-gray-600 mb-6">"En tant que professeur, j'utilise CodeLearn pour compléter mes cours. La plateforme est parfaitement adaptée au programme de lycée."</p>
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-success-500 rounded-full flex items-center justify-center text-white font-bold">PM</div>
-                    <div class="ml-4">
-                        <div class="font-bold text-gray-900">Pierre M.</div>
-                        <div class="text-gray-500 text-sm">Professeur de NSI</div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
