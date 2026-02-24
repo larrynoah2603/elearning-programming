@@ -196,7 +196,8 @@ class User extends Authenticatable
     {
         return $this->exerciseSubmissions()
             ->where('status', 'reussi')
-            ->count();
+            ->distinct()
+            ->count('exercise_id');
     }
 
     /**
@@ -204,10 +205,12 @@ class User extends Authenticatable
      */
     public function getTotalPointsAttribute(): int
     {
-        return (int) ($this->exerciseSubmissions()
-            ->join('exercises', 'exercise_submissions.exercise_id', '=', 'exercises.id')
-            ->where('exercise_submissions.status', 'reussi')
-            ->sum('exercises.points') ?? 0);
+        return (int) (Exercise::query()
+            ->whereHas('submissions', function ($query) {
+                $query->where('user_id', $this->id)
+                    ->where('status', 'reussi');
+            })
+            ->sum('points') ?? 0);
     }
 
     /**
@@ -217,7 +220,8 @@ class User extends Authenticatable
     {
         return $this->videoProgress()
             ->where('is_completed', true)
-            ->count();
+            ->distinct()
+            ->count('video_id');
     }
 
     /**
