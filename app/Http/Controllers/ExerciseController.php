@@ -134,7 +134,12 @@ class ExerciseController extends Controller
         ]);
 
         $submission->submitted_code = $validated['code'];
-        $submission->status = 'en_cours';
+
+        // Ne pas écraser une soumission déjà envoyée/corrigée.
+        if (!in_array($submission->status, ['soumis', 'corrige', 'reussi', 'echoue'], true)) {
+            $submission->status = 'en_cours';
+        }
+
         $submission->save();
 
         return response()->json([
