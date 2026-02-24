@@ -30,7 +30,7 @@
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ $plan['name'] }}</h3>
                             <div class="flex items-baseline mb-6">
                                 <!-- CORRIGÉ: Utiliser price_mga au lieu de price -->
-                                <span class="text-5xl font-bold text-gray-900">{{ number_format($plan['price_mga'], 0) }} MGA</span>
+                                <span class="text-5xl font-bold text-gray-900">{{ number_format($plan['price_mga'], 0) }} Ar</span>
                                 <span class="text-gray-500 ml-2">/{{ $plan['period'] }}</span>
                             </div>
                             <!-- Équivalent en USD -->

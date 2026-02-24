@@ -24,7 +24,7 @@
                         <p class="text-sm text-gray-500">{{ $planDetails['days'] }} jours</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-2xl font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} MGA</p>
+                        <p class="text-2xl font-bold text-primary-600">{{ number_format($planDetails['price'], 0) }} Ar</p>
                         <p class="text-sm text-gray-500">≈ ${{ number_format($planDetails['price_usd'] ?? ($planDetails['price'] / 4500), 2) }} USD</p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@
                         </div>
                         <div>
                             <p class="font-medium text-gray-900">Confirmez le montant</p>
-                            <p class="text-gray-600 text-sm">{{ number_format($planDetails['price'], 0) }} MGA</p>
+                            <p class="text-gray-600 text-sm">{{ number_format($planDetails['price'], 0) }} Ar</p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                     <label class="flex items-start">
                         <input type="checkbox" name="terms" class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500" required>
                         <span class="ml-2 text-sm text-gray-600">
-                            J'autorise le prélèvement de {{ number_format($planDetails['price'], 0) }} MGA sur mon compte Mobile Money
+                            J'autorise le prélèvement de {{ number_format($planDetails['price'], 0) }} Ar sur mon compte Mobile Money
                             et j'accepte les <a href="#" class="text-primary-600 hover:text-primary-700">conditions de service</a>.
                         </span>
                     </label>

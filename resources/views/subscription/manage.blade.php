@@ -158,12 +158,12 @@
                                             </div>
                                             <p class="text-sm text-gray-600">
                                                 {{ $payment->created_at->format('d/m/Y H:i') }} • 
-                                                {{ number_format($payment->amount, 0) }} {{ $payment->currency }}
+                                                {{ number_format($payment->amount, 0) }} {{ $payment->currency_display }}
                                             </p>
                                         </div>
                                         <div class="text-right">
                                             <div class="font-bold text-gray-900">
-                                                {{ number_format($payment->amount, 0) }} {{ $payment->currency }}
+                                                {{ number_format($payment->amount, 0) }} {{ $payment->currency_display }}
                                             </div>
                                             <a href="{{ route('subscription.invoice', $payment->id) }}" 
                                                class="text-sm text-primary-600 hover:text-primary-700">
