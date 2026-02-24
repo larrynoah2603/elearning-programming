@@ -7,6 +7,7 @@ use App\Models\Video;
 use App\Models\VideoProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class VideoController extends Controller
@@ -163,16 +164,23 @@ class VideoController extends Controller
         $status = 200;
 
         $range = request()->header('Range');
-        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
+        if ($range && preg_match('/bytes=(\d*)-(\d*)/i', $range, $matches)) {
             $rangeStart = $matches[1] === '' ? null : (int) $matches[1];
             $rangeEnd = $matches[2] === '' ? null : (int) $matches[2];
 
-            if ($rangeStart !== null) {
-                $start = $rangeStart;
-            }
+            if ($rangeStart === null && $rangeEnd !== null) {
+                // Suffix-byte-range-spec: bytes=-500 (last 500 bytes)
+                $suffixLength = min($rangeEnd, $size);
+                $start = max(0, $size - $suffixLength);
+                $end = $size - 1;
+            } else {
+                if ($rangeStart !== null) {
+                    $start = $rangeStart;
+                }
 
-            if ($rangeEnd !== null) {
-                $end = min($rangeEnd, $end);
+                if ($rangeEnd !== null) {
+                    $end = min($rangeEnd, $end);
+                }
             }
 
             if ($start > $end || $start >= $size) {
@@ -192,6 +200,8 @@ class VideoController extends Controller
             'Accept-Ranges' => 'bytes',
             'Content-Length' => (string) $length,
             'Cache-Control' => 'public, max-age=3600',
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
         ];
 
         if ($status === 206) {
@@ -321,8 +331,9 @@ class VideoController extends Controller
             'order' => 'nullable|integer|min:0',
         ]);
 
-        // Handle video upload
+        // Handle video upload + normalize to web-compatible MP4 when possible
         $videoPath = $request->file('video_file')->store('videos', 'public');
+        $videoPath = $this->normalizeVideoForWeb($videoPath);
         $validated['video_file'] = $videoPath;
 
         // Handle thumbnail upload
@@ -415,8 +426,9 @@ class VideoController extends Controller
             }
 
             $videoPath = $request->file('video_file')->store('videos', 'public');
+            $videoPath = $this->normalizeVideoForWeb($videoPath);
             $validated['video_file'] = $videoPath;
-            
+
             // Auto-detect duration for new video
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
@@ -511,6 +523,48 @@ class VideoController extends Controller
         }
 
         return $slug;
+    }
+
+    /**
+     * Convert uploaded video to a browser-friendly MP4 (H.264/AAC) when ffmpeg is available.
+     */
+    private function normalizeVideoForWeb(string $publicPath): string
+    {
+        $sourceAbsolutePath = Storage::disk('public')->path($publicPath);
+
+        if (!is_file($sourceAbsolutePath)) {
+            return $publicPath;
+        }
+
+        $ffmpegPath = trim(shell_exec('which ffmpeg') ?: '');
+        if ($ffmpegPath === '') {
+            return $publicPath;
+        }
+
+        $pathInfo = pathinfo($publicPath);
+        $targetRelativePath = trim(($pathInfo['dirname'] ?? 'videos').'/'.$pathInfo['filename'].'-web.mp4', '/');
+        $targetAbsolutePath = Storage::disk('public')->path($targetRelativePath);
+
+        // Ensure output directory exists
+        File::ensureDirectoryExists(dirname($targetAbsolutePath));
+
+        $command = sprintf(
+            '%s -y -i %s -c:v libx264 -preset veryfast -crf 23 -c:a aac -b:a 128k -movflags +faststart %s 2>&1',
+            escapeshellarg($ffmpegPath),
+            escapeshellarg($sourceAbsolutePath),
+            escapeshellarg($targetAbsolutePath)
+        );
+
+        shell_exec($command);
+
+        if (!is_file($targetAbsolutePath) || filesize($targetAbsolutePath) <= 0) {
+            return $publicPath;
+        }
+
+        // Replace original file with converted version to keep one storage path
+        Storage::disk('public')->delete($publicPath);
+
+        return $targetRelativePath;
     }
 
     /**
