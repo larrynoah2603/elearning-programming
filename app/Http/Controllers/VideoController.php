@@ -163,16 +163,23 @@ class VideoController extends Controller
         $status = 200;
 
         $range = request()->header('Range');
-        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
+        if ($range && preg_match('/bytes=(\d*)-(\d*)/i', $range, $matches)) {
             $rangeStart = $matches[1] === '' ? null : (int) $matches[1];
             $rangeEnd = $matches[2] === '' ? null : (int) $matches[2];
 
-            if ($rangeStart !== null) {
-                $start = $rangeStart;
-            }
+            if ($rangeStart === null && $rangeEnd !== null) {
+                // Suffix-byte-range-spec: bytes=-500 (last 500 bytes)
+                $suffixLength = min($rangeEnd, $size);
+                $start = max(0, $size - $suffixLength);
+                $end = $size - 1;
+            } else {
+                if ($rangeStart !== null) {
+                    $start = $rangeStart;
+                }
 
-            if ($rangeEnd !== null) {
-                $end = min($rangeEnd, $end);
+                if ($rangeEnd !== null) {
+                    $end = min($rangeEnd, $end);
+                }
             }
 
             if ($start > $end || $start >= $size) {
@@ -192,6 +199,8 @@ class VideoController extends Controller
             'Accept-Ranges' => 'bytes',
             'Content-Length' => (string) $length,
             'Cache-Control' => 'public, max-age=3600',
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
         ];
 
         if ($status === 206) {
