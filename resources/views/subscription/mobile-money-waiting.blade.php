@@ -39,8 +39,8 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Montant :</span>
-                        <!-- AFFICHER EN MGA -->
-                        <span class="text-xl font-bold text-primary-600">{{ number_format($payment->amount, 0) }} MGA</span>
+                        <!-- AFFICHER EN ARIARY -->
+                        <span class="text-xl font-bold text-primary-600">{{ number_format($payment->amount, 0) }} Ar</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Référence :</span>

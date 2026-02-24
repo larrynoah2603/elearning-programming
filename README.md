@@ -104,6 +104,38 @@ php artisan serve
 
 Accédez à l'application : http://localhost:8000
 
+
+## Dépannage (Windows / PowerShell)
+
+### Avertissement `Module "openssl" is already loaded`
+
+Si PowerShell affiche cet avertissement au lancement de `php artisan serve`, cela vient en général d'un double chargement de l'extension OpenSSL dans `php.ini`.
+
+1. Vérifiez le fichier chargé :
+```bash
+php --ini
+```
+2. Ouvrez le `php.ini` listé et gardez une seule ligne OpenSSL (exemple) :
+```ini
+extension=openssl
+```
+3. Supprimez ou commentez les doublons éventuels (dans `php.ini`, `conf.d`, ou versions PHP multiples de WAMP).
+4. Redémarrez PowerShell / WAMP puis relancez :
+```bash
+php artisan serve
+```
+
+### Les vidéos ne se lisent pas
+
+Exécutez d'abord le lien de stockage puis videz le cache :
+
+```bash
+php artisan storage:link
+php artisan optimize:clear
+```
+
+Ensuite vérifiez qu'un fichier vidéo existe dans `storage/app/public/videos` et que l'URL de stream `/video-stream/{id}` répond bien.
+
 ## Comptes de démonstration
 
 | Rôle | Email | Mot de passe |

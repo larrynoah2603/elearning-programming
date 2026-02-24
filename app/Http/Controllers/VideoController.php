@@ -105,10 +105,11 @@ class VideoController extends Controller
             return redirect()->away($video->video_file);
         }
 
+        $normalized = str_replace('\\', '/', trim($video->video_file));
         $candidates = [
-            ltrim($video->video_file, '/'),
-            ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/'),
-            ltrim(Str::replaceFirst('public/', '', $video->video_file), '/'),
+            ltrim($normalized, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $normalized), '/'),
+            ltrim(Str::replaceFirst('public/', '', $normalized), '/'),
         ];
 
         $resolvedPublicPath = collect($candidates)
@@ -116,13 +117,10 @@ class VideoController extends Controller
             ->first(fn (string $path) => Storage::disk('public')->exists($path));
 
         if ($resolvedPublicPath) {
-            $path = Storage::disk('public')->path($resolvedPublicPath);
+            $absolutePath = Storage::disk('public')->path($resolvedPublicPath);
+            $mimeType = Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4';
 
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('public')->mimeType($resolvedPublicPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+            return $this->streamVideoResponse($absolutePath, $mimeType);
         }
 
         $resolvedLocalPath = collect($candidates)
@@ -130,21 +128,18 @@ class VideoController extends Controller
             ->first(fn (string $path) => Storage::disk('local')->exists($path));
 
         if ($resolvedLocalPath) {
-            $path = Storage::disk('local')->path($resolvedLocalPath);
+            $absolutePath = Storage::disk('local')->path($resolvedLocalPath);
+            $mimeType = Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4';
 
-            return response()->file($path, [
-                'Content-Type' => Storage::disk('local')->mimeType($resolvedLocalPath) ?? 'video/mp4',
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+            return $this->streamVideoResponse($absolutePath, $mimeType);
         }
 
         $absoluteCandidates = [
-            $video->video_file,
-            public_path(ltrim($video->video_file, '/')),
-            public_path('storage/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/public/' . ltrim(Str::replaceFirst('storage/', '', $video->video_file), '/')),
-            storage_path('app/' . ltrim(Str::replaceFirst('public/', '', $video->video_file), '/')),
+            $normalized,
+            public_path(ltrim($normalized, '/')),
+            public_path('storage/'.ltrim(Str::replaceFirst('storage/', '', $normalized), '/')),
+            storage_path('app/public/'.ltrim(Str::replaceFirst('storage/', '', $normalized), '/')),
+            storage_path('app/'.ltrim(Str::replaceFirst('public/', '', $normalized), '/')),
         ];
 
         $absolutePath = collect($absoluteCandidates)
@@ -154,11 +149,87 @@ class VideoController extends Controller
             abort(404);
         }
 
-        return response()->file($absolutePath, [
-            'Content-Type' => mime_content_type($absolutePath) ?: 'video/mp4',
+        return $this->streamVideoResponse($absolutePath, mime_content_type($absolutePath) ?: 'video/mp4');
+    }
+
+    /**
+     * Return an HTTP response that supports byte range requests.
+     */
+    private function streamVideoResponse(string $absolutePath, string $mimeType)
+    {
+        $size = filesize($absolutePath);
+        $start = 0;
+        $end = $size - 1;
+        $status = 200;
+
+        $range = request()->header('Range');
+        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
+            $rangeStart = $matches[1] === '' ? null : (int) $matches[1];
+            $rangeEnd = $matches[2] === '' ? null : (int) $matches[2];
+
+            if ($rangeStart !== null) {
+                $start = $rangeStart;
+            }
+
+            if ($rangeEnd !== null) {
+                $end = min($rangeEnd, $end);
+            }
+
+            if ($start > $end || $start >= $size) {
+                return response('', 416, [
+                    'Content-Range' => "bytes */{$size}",
+                    'Accept-Ranges' => 'bytes',
+                ]);
+            }
+
+            $status = 206;
+        }
+
+        $length = $end - $start + 1;
+
+        $headers = [
+            'Content-Type' => $mimeType,
             'Accept-Ranges' => 'bytes',
+            'Content-Length' => (string) $length,
             'Cache-Control' => 'public, max-age=3600',
-        ]);
+        ];
+
+        if ($status === 206) {
+            $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
+        }
+
+        return response()->stream(function () use ($absolutePath, $start, $end) {
+            $handle = fopen($absolutePath, 'rb');
+
+            if (!$handle) {
+                return;
+            }
+
+            try {
+                fseek($handle, $start);
+                $remaining = $end - $start + 1;
+                $chunkSize = 1024 * 1024;
+
+                while ($remaining > 0 && !feof($handle)) {
+                    $readLength = min($chunkSize, $remaining);
+                    $buffer = fread($handle, $readLength);
+
+                    if ($buffer === false) {
+                        break;
+                    }
+
+                    echo $buffer;
+                    $remaining -= strlen($buffer);
+
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                    }
+                    flush();
+                }
+            } finally {
+                fclose($handle);
+            }
+        }, $status, $headers);
     }
 
     /**

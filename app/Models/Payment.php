@@ -103,6 +103,19 @@ class Payment extends Model
         return $statuses[$this->status] ?? $this->status;
     }
 
+
+
+    /**
+     * Get currency display label.
+     */
+    public function getCurrencyDisplayAttribute(): string
+    {
+        return match (strtoupper($this->currency ?? '')) {
+            'MGA' => 'Ar',
+            default => strtoupper($this->currency ?? ''),
+        };
+    }
+
     /**
      * Check if payment is expired.
      */

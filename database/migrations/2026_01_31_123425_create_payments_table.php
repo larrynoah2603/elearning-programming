@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('transaction_id')->unique();
             $table->decimal('amount', 10, 2);
             $table->decimal('crypto_amount', 18, 8)->nullable(); // Pour les crypto paiements
-            $table->string('currency', 10)->default('EUR');
+            $table->string('currency', 10)->default('MGA');
             $table->enum('payment_method', ['card', 'mobile_money', 'cryptocurrency', 'bank_transfer']);
             $table->enum('status', ['pending', 'completed', 'failed', 'expired'])->default('pending');
             
