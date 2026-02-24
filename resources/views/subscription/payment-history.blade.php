@@ -203,4 +203,40 @@
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('subscription.invoice', $payment->id) }}" 
-                                               class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:
+                                               class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                <i class="fas fa-file-invoice mr-2"></i> Facture
+                                            </a>
+
+                                            @if($payment->status === 'failed' || $payment->status === 'expired')
+                                                <a href="{{ route('subscription.payment-method', 'monthly') }}"
+                                                   class="inline-flex items-center px-3 py-2 border border-primary-300 rounded-md text-sm font-medium text-primary-700 hover:bg-primary-50 transition-colors">
+                                                    <i class="fas fa-redo mr-2"></i> Réessayer
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-200">
+                    {{ $payments->withQueryString()->links() }}
+                </div>
+            @else
+                <div class="text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-receipt text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Aucun paiement pour le moment</h3>
+                    <p class="text-gray-600 mb-6">Votre historique apparaîtra ici après votre premier paiement.</p>
+                    <a href="{{ route('subscription.plans') }}" class="btn btn-primary">
+                        <i class="fas fa-crown mr-2"></i> Voir les formules
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection
