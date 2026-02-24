@@ -204,9 +204,10 @@ class User extends Authenticatable
      */
     public function getTotalPointsAttribute(): int
     {
-        return $this->exerciseSubmissions()
-            ->where('status', 'reussi')
-            ->sum('score') ?? 0;
+        return (int) ($this->exerciseSubmissions()
+            ->join('exercises', 'exercise_submissions.exercise_id', '=', 'exercises.id')
+            ->where('exercise_submissions.status', 'reussi')
+            ->sum('exercises.points') ?? 0);
     }
 
     /**

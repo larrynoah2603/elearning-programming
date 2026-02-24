@@ -203,6 +203,7 @@
 <script>
     // Auto-save progress
     let autoSaveInterval;
+    let isSubmitting = false;
     const codeEditor = document.getElementById('code-editor');
     
     const feedbackBox = document.getElementById('submission-feedback');
@@ -260,6 +261,10 @@
             if (submitBtn) {
                 submitBtn.disabled = true;
             }
+            isSubmitting = true;
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
             
             try {
                 const response = await fetch('{{ route('exercises.submit', ['exercise' => $exercise->id]) }}', {
@@ -291,11 +296,16 @@
                 if (submitBtn) {
                     submitBtn.disabled = false;
                 }
+                isSubmitting = false;
             }
         });
     }
 
     async function saveProgress() {
+        if (!codeEditor || isSubmitting) {
+            return;
+        }
+
         const code = codeEditor.value;
         
         try {

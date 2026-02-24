@@ -254,6 +254,18 @@
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </a>
                     </div>
+
+
+                    <!-- Subscription Policy Reminder -->
+                    <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                        <h4 class="font-bold text-amber-900 mb-2">
+                            <i class="fas fa-info-circle mr-2"></i>Bon à savoir
+                        </h4>
+                        <ul class="space-y-2 text-sm text-amber-800">
+                            <li>• Annulez votre abonnement à tout moment depuis votre espace personnel. Vous conserverez l'accès jusqu'à la fin de la période payée.</li>
+                            <li>• Passez à une formule supérieure à tout moment. La différence est calculée au prorata de la période restante.</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Billing Information -->
