@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #1f2937; }
+      .label { font: 16px Arial, sans-serif; fill: #111827; }
+      .small { font: 14px Arial, sans-serif; fill: #111827; }
+      .state { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; rx: 12; }
+      .line { stroke: #374151; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0,0 10,4 0,8" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <text x="550" y="50" text-anchor="middle" class="title">Diagramme d'état - Cycle d'une soumission d'exercice</text>
+
+  <circle cx="120" cy="120" r="20" fill="#111827"/>
+
+  <rect x="220" y="90" width="200" height="70" class="state"/>
+  <text x="320" y="131" text-anchor="middle" class="label">Brouillon</text>
+
+  <rect x="500" y="90" width="220" height="70" class="state"/>
+  <text x="610" y="131" text-anchor="middle" class="label">Soumise</text>
+
+  <rect x="800" y="90" width="220" height="70" class="state"/>
+  <text x="910" y="131" text-anchor="middle" class="label">En cours d'évaluation</text>
+
+  <rect x="220" y="280" width="220" height="70" class="state"/>
+  <text x="330" y="322" text-anchor="middle" class="label">À corriger</text>
+
+  <rect x="500" y="280" width="220" height="70" class="state"/>
+  <text x="610" y="322" text-anchor="middle" class="label">Validée</text>
+
+  <rect x="800" y="280" width="220" height="70" class="state"/>
+  <text x="910" y="322" text-anchor="middle" class="label">Refusée</text>
+
+  <rect x="500" y="480" width="220" height="70" class="state"/>
+  <text x="610" y="522" text-anchor="middle" class="label">Archivée</text>
+
+  <circle cx="950" cy="520" r="23" fill="#111827"/>
+  <circle cx="950" cy="520" r="13" fill="#ffffff"/>
+
+  <path d="M140 120 L220 120" class="line"/>
+  <path d="M420 120 L500 120" class="line"/>
+  <text x="455" y="108" class="small">soumettre()</text>
+
+  <path d="M720 120 L800 120" class="line"/>
+  <text x="760" y="108" class="small">attribuerCorrecteur()</text>
+
+  <path d="M910 160 L910 280" class="line"/>
+  <text x="925" y="228" class="small">échec</text>
+
+  <path d="M800 315 L720 315" class="line"/>
+  <text x="760" y="302" class="small">re-soumission</text>
+
+  <path d="M610 160 L610 280" class="line"/>
+  <text x="625" y="228" class="small">correction OK</text>
+
+  <path d="M330 280 L330 160" class="line"/>
+  <text x="346" y="220" class="small">modifier()</text>
+
+  <path d="M610 350 L610 480" class="line"/>
+  <text x="626" y="420" class="small">clôture session</text>
+
+  <path d="M720 515 L927 520" class="line"/>
+</svg>
