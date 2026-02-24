@@ -88,6 +88,8 @@
                                     class="w-full font-mono text-sm p-4 bg-gray-900 text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                     placeholder="Écrivez votre code ici...">{{ $submission?->submitted_code ?? $exercise->starter_code }}</textarea>
                             </div>
+
+                            <div id="submission-feedback" class="hidden mb-4 rounded-lg p-3 text-sm"></div>
                             
                             <div class="flex justify-between items-center">
                                 <button type="button" id="save-progress" class="btn bg-gray-100 text-gray-700 hover:bg-gray-200">
@@ -203,6 +205,35 @@
     let autoSaveInterval;
     const codeEditor = document.getElementById('code-editor');
     
+    const feedbackBox = document.getElementById('submission-feedback');
+
+    function showFeedback(message, type = 'success') {
+        if (!feedbackBox) {
+            return;
+        }
+
+        feedbackBox.className = 'mb-4 rounded-lg p-3 text-sm';
+        feedbackBox.classList.remove('hidden');
+
+        if (type === 'success') {
+            feedbackBox.classList.add('bg-success-50', 'text-success-700', 'border', 'border-success-200');
+        } else {
+            feedbackBox.classList.add('bg-danger-50', 'text-danger-700', 'border', 'border-danger-200');
+        }
+
+        feedbackBox.textContent = message;
+    }
+
+    async function parseResponse(response) {
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+            return response.json();
+        }
+
+        return { message: await response.text() };
+    }
+
     if (codeEditor) {
         // Auto-save every 30 seconds
         autoSaveInterval = setInterval(() => {
@@ -219,28 +250,47 @@
             e.preventDefault();
             
             const code = codeEditor.value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            if (!code.trim()) {
+                showFeedback('Veuillez écrire du code avant de soumettre.', 'error');
+                return;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
             
             try {
-                const response = await fetch('{{ route('exercises.submit', $exercise) }}', {
+                const response = await fetch('{{ route('exercises.submit', ['exercise' => $exercise->id]) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({ code })
                 });
 
-                const data = await response.json();
+                const data = await parseResponse(response);
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erreur lors de la soumission.');
+                }
 
                 if (data.success) {
-                    alert(data.message);
-                    window.location.reload();
+                    showFeedback(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 900);
                 } else {
-                    alert(data.message || 'Une erreur est survenue');
+                    showFeedback(data.message || 'Une erreur est survenue.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Une erreur est survenue lors de la soumission');
+                showFeedback(error.message || 'Une erreur est survenue lors de la soumission.', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
             }
         });
     }
@@ -249,16 +299,21 @@
         const code = codeEditor.value;
         
         try {
-            const response = await fetch('{{ route('exercises.progress', $exercise) }}', {
+            const response = await fetch('{{ route('exercises.progress', ['exercise' => $exercise->id]) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({ code })
             });
 
-            const data = await response.json();
+            const data = await parseResponse(response);
+
+            if (!response.ok) {
+                return;
+            }
 
             if (data.success) {
                 // Show temporary success message

@@ -49,6 +49,7 @@ class Video extends Model
         'level_badge_color',
         'duration_display',
         'views_count',
+        'video_mime_type',
     ];
 
     /**
@@ -254,6 +255,26 @@ class Video extends Model
     public function getViewsCountAttribute(): int
     {
         return $this->views ?? 0;
+    }
+
+
+
+    /**
+     * Get video MIME type for HTML5 source.
+     */
+    public function getVideoMimeTypeAttribute(): string
+    {
+        if (!$this->video_file) {
+            return 'video/mp4';
+        }
+
+        $extension = strtolower(pathinfo(parse_url($this->video_file, PHP_URL_PATH) ?: $this->video_file, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'webm' => 'video/webm',
+            'ogg', 'ogv' => 'video/ogg',
+            default => 'video/mp4',
+        };
     }
 
     /**
