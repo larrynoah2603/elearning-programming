@@ -103,17 +103,24 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        $stats = [
+            'completed_exercises' => $user->completed_exercises_count,
+            'total_points' => $user->total_points,
+            'watched_videos' => $user->watched_videos_count,
+        ];
+
         $allSubmissions = ExerciseSubmission::with('exercise')
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate(10);
+            ->paginate(10, ['*'], 'submissions_page');
 
         $allVideoProgress = VideoProgress::with('video')
             ->where('user_id', $user->id)
-            ->latest()
-            ->paginate(10);
+            ->where('is_completed', true)
+            ->latest('completed_at')
+            ->paginate(10, ['*'], 'videos_page');
 
-        return view('profile', compact('user', 'allSubmissions', 'allVideoProgress'));
+        return view('profile', compact('user', 'stats', 'allSubmissions', 'allVideoProgress'));
     }
 
     /**
