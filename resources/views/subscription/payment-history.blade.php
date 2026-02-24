@@ -72,7 +72,7 @@
                     <div>
                         <p class="text-sm text-gray-600">Total dépensé</p>
                         <div class="text-2xl font-bold text-gray-900">
-                            <div>{{ number_format($totalMga, 0) }} MGA</div>
+                            <div>{{ number_format($totalMga, 0) }} Ar</div>
                             <div class="text-base text-gray-500">{{ number_format($totalUsd, 2) }} USD</div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@
                                     
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-gray-900">
-                                            {{ number_format($payment->amount, 0) }} {{ $payment->currency }}
+                                            {{ number_format($payment->amount, 0) }} {{ $payment->currency_display }}
                                         </div>
                                         @if($payment->crypto_amount)
                                             <div class="text-xs text-gray-500">

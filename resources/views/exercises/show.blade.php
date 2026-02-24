@@ -53,6 +53,25 @@
                     <div class="prose max-w-none text-gray-600">
                         {!! nl2br(e($exercise->instructions)) !!}
                     </div>
+
+                    @if($exercise->hints)
+                        <div class="mt-4">
+                            <button
+                                type="button"
+                                onclick="document.getElementById('hints').classList.toggle('hidden')"
+                                class="btn bg-warning-100 text-warning-700 hover:bg-warning-200"
+                            >
+                                <i class="fas fa-lightbulb mr-2"></i> Afficher l'indice
+                            </button>
+                        </div>
+
+                        <div id="hints" class="hidden mt-4 p-4 bg-warning-50 border-l-4 border-warning-500 rounded-lg">
+                            <h4 class="font-bold text-warning-800 mb-2">
+                                <i class="fas fa-lightbulb mr-2"></i> Indice
+                            </h4>
+                            <p class="text-warning-700">{{ $exercise->hints }}</p>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Code Editor -->
@@ -75,27 +94,12 @@
                                     <i class="fas fa-save mr-2"></i> Sauvegarder
                                 </button>
                                 <div class="space-x-3">
-                                    @if($exercise->hints)
-                                        <button type="button" onclick="document.getElementById('hints').classList.toggle('hidden')" class="btn bg-warning-100 text-warning-700 hover:bg-warning-200">
-                                            <i class="fas fa-lightbulb mr-2"></i> Indice
-                                        </button>
-                                    @endif
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-paper-plane mr-2"></i> Soumettre
                                     </button>
                                 </div>
                             </div>
                         </form>
-
-                        <!-- Hints -->
-                        @if($exercise->hints)
-                            <div id="hints" class="hidden mt-6 p-4 bg-warning-50 border-l-4 border-warning-500 rounded-lg">
-                                <h4 class="font-bold text-warning-800 mb-2">
-                                    <i class="fas fa-lightbulb mr-2"></i> Indice
-                                </h4>
-                                <p class="text-warning-700">{{ $exercise->hints }}</p>
-                            </div>
-                        @endif
 
                         <!-- Submission Status -->
                         @if($submission)

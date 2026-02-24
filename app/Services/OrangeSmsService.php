@@ -13,7 +13,7 @@ class OrangeSmsService
     public function sendPaymentValidationCode(string $phoneNumber, string $code, string $amountMga): bool
     {
         $message = sprintf(
-            'CodeLearn: votre code de validation Orange Money est %s pour %s MGA. Ne partagez ce code avec personne.',
+            'CodeLearn: votre code de validation Orange Money est %s pour %s Ar. Ne partagez ce code avec personne.',
             $code,
             $amountMga
         );
