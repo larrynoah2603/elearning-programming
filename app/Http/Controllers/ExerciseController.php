@@ -128,12 +128,21 @@ class ExerciseController extends Controller
             ]);
         }
 
+        $latestSubmission = $submission->fresh();
+
         return response()->json([
             'success' => true,
             'message' => $aiCorrection !== null
                 ? 'Votre solution a été soumise et pré-corrigée automatiquement par IA.'
                 : 'Votre solution a été soumise avec succès. Elle sera corrigée prochainement.',
-            'submission' => $submission->fresh(),
+            'submission' => $latestSubmission,
+            'report' => [
+                'status' => $latestSubmission->status_display,
+                'score' => $latestSubmission->score,
+                'feedback' => $latestSubmission->feedback,
+                'requires_human_review' => (bool) $latestSubmission->ai_requires_human_review,
+                'ai_model' => $latestSubmission->ai_model,
+            ],
         ]);
     }
 
