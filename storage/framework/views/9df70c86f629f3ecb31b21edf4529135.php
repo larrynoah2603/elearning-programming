@@ -198,6 +198,57 @@
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <!-- Watched Videos History -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Historique des vidéos vues</h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vidéo</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progression</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Terminée le</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <?php $__empty_1 = true; $__currentLoopData = $allVideoProgress ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $progress): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <tr>
+                                        <td class="px-4 py-3">
+                                            <a href="<?php echo e(route('videos.show', $progress->video->slug)); ?>" class="text-primary-600 hover:text-primary-700">
+                                                <?php echo e($progress->video->title); ?>
+
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">
+                                            <?php echo e($progress->progress_percentage); ?>%
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">
+                                            <?php echo e($progress->completed_at?->format('d/m/Y') ?? '-'); ?>
+
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-8 text-center text-gray-500">
+                                            <i class="fas fa-video text-4xl mb-4 text-gray-300"></i>
+                                            <p>Aucune vidéo terminée pour le moment.</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <?php if($allVideoProgress ?? false): ?>
+                        <div class="mt-4">
+                            <?php echo e($allVideoProgress->links()); ?>
+
+                        </div>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </div>

@@ -99,14 +99,37 @@
                             <?php endif; ?>
                         </div>
 
-                        <?php if($exercise->access_level == 'subscribed' && (!auth()->check() || !auth()->user()->isSubscribed())): ?>
-                            <a href="<?php echo e(route('subscription.plans')); ?>" class="btn btn-secondary w-full">
-                                <i class="fas fa-lock mr-2"></i> Débloquer
-                            </a>
-                        <?php else: ?>
-                            <a href="<?php echo e(route('exercises.show', $exercise->slug)); ?>" class="btn btn-primary w-full">
-                                <i class="fas fa-play mr-2"></i> Commencer
-                            </a>
+                        <div class="grid grid-cols-2 gap-2">
+                            <?php if($exercise->hints): ?>
+                                <button
+                                    type="button"
+                                    class="btn bg-warning-100 text-warning-700 hover:bg-warning-200 text-sm"
+                                    onclick="toggleHint('hint-<?php echo e($exercise->id); ?>')"
+                                >
+                                    <i class="fas fa-lightbulb mr-1"></i> Indice
+                                </button>
+                            <?php else: ?>
+                                <span class="btn bg-gray-100 text-gray-400 text-sm cursor-not-allowed">
+                                    <i class="fas fa-lightbulb mr-1"></i> Sans indice
+                                </span>
+                            <?php endif; ?>
+
+                            <?php if($exercise->access_level == 'subscribed' && (!auth()->check() || !auth()->user()->isSubscribed())): ?>
+                                <a href="<?php echo e(route('subscription.plans')); ?>" class="btn btn-secondary text-sm text-center">
+                                    <i class="fas fa-lock mr-1"></i> Débloquer
+                                </a>
+                            <?php else: ?>
+                                <a href="<?php echo e(route('exercises.show', $exercise->slug)); ?>" class="btn btn-primary text-sm text-center">
+                                    <i class="fas fa-play mr-1"></i> Commencer
+                                </a>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if($exercise->hints): ?>
+                            <div id="hint-<?php echo e($exercise->id); ?>" class="hidden mt-3 p-3 bg-warning-50 border-l-4 border-warning-500 rounded-lg text-sm text-warning-700">
+                                <?php echo e($exercise->hints); ?>
+
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -127,5 +150,13 @@
     </div>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    function toggleHint(hintId) {
+        document.getElementById(hintId)?.classList.toggle('hidden');
+    }
+</script>
+<?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\wamp64\www\elearning-programming\resources\views/exercises/index.blade.php ENDPATH**/ ?>

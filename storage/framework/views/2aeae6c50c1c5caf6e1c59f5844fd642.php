@@ -160,13 +160,13 @@
                                             </div>
                                             <p class="text-sm text-gray-600">
                                                 <?php echo e($payment->created_at->format('d/m/Y H:i')); ?> • 
-                                                <?php echo e(number_format($payment->amount, 0)); ?> <?php echo e($payment->currency); ?>
+                                                <?php echo e(number_format($payment->amount, 0)); ?> <?php echo e($payment->currency_display); ?>
 
                                             </p>
                                         </div>
                                         <div class="text-right">
                                             <div class="font-bold text-gray-900">
-                                                <?php echo e(number_format($payment->amount, 0)); ?> <?php echo e($payment->currency); ?>
+                                                <?php echo e(number_format($payment->amount, 0)); ?> <?php echo e($payment->currency_display); ?>
 
                                             </div>
                                             <a href="<?php echo e(route('subscription.invoice', $payment->id)); ?>" 
@@ -257,6 +257,18 @@
                             </div>
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </a>
+                    </div>
+
+
+                    <!-- Subscription Policy Reminder -->
+                    <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                        <h4 class="font-bold text-amber-900 mb-2">
+                            <i class="fas fa-info-circle mr-2"></i>Bon à savoir
+                        </h4>
+                        <ul class="space-y-2 text-sm text-amber-800">
+                            <li>• Annulez votre abonnement à tout moment depuis votre espace personnel. Vous conserverez l'accès jusqu'à la fin de la période payée.</li>
+                            <li>• Passez à une formule supérieure à tout moment. La différence est calculée au prorata de la période restante.</li>
+                        </ul>
                     </div>
                 </div>
 

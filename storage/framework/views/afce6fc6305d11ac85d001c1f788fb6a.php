@@ -35,7 +35,7 @@
                 <!-- Price -->
                 <div class="text-center md:text-right">
                     <!-- CORRECTION ICI : utiliser price au lieu de price_mga -->
-                    <div class="text-3xl font-bold text-primary-600"><?php echo e(number_format($planDetails['price'], 0)); ?> MGA</div>
+                    <div class="text-3xl font-bold text-primary-600"><?php echo e(number_format($planDetails['price'], 0)); ?> Ar</div>
                     <!-- CORRECTION ICI : utiliser price_usd si disponible -->
                     <p class="text-gray-500">soit $<?php echo e(number_format($planDetails['price_usd'] ?? ($planDetails['price'] / 4500), 2)); ?> USD</p>
                 </div>

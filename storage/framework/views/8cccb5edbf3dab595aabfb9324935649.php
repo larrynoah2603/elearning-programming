@@ -27,7 +27,7 @@
                         </div>
                         <input id="name" name="name" type="text" autocomplete="name" required 
                             class="form-input pl-10 w-full" 
-                            placeholder="Jean Dupont"
+                            placeholder="Larry Noah"
                             value="<?php echo e(old('name')); ?>">
                     </div>
                 </div>
