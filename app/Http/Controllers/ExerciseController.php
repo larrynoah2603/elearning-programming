@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
+use App\Services\DeepseekCorrectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -105,10 +106,43 @@ class ExerciseController extends Controller
 
         $submission->submit($validated['code']);
 
+        $submission->load('exercise');
+        $aiCorrection = app(DeepseekCorrectionService::class)->evaluate($submission);
+
+        if ($aiCorrection !== null) {
+            $status = $aiCorrection['requires_human_review']
+                ? 'corrige'
+                : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
+
+            $submission->update([
+                'score' => $aiCorrection['score'],
+                'feedback' => $aiCorrection['feedback'],
+                'status' => $status,
+                'corrected_at' => now(),
+                'corrected_by' => null,
+                'ai_score' => $aiCorrection['score'],
+                'ai_feedback' => $aiCorrection['feedback'],
+                'ai_requires_human_review' => $aiCorrection['requires_human_review'],
+                'ai_corrected_at' => now(),
+                'ai_model' => $aiCorrection['model'],
+            ]);
+        }
+
+        $latestSubmission = $submission->fresh();
+
         return response()->json([
             'success' => true,
-            'message' => 'Votre solution a été soumise avec succès. Elle sera corrigée prochainement.',
-            'submission' => $submission->fresh(),
+            'message' => $aiCorrection !== null
+                ? 'Votre solution a été soumise et pré-corrigée automatiquement par IA.'
+                : 'Votre solution a été soumise avec succès. Elle sera corrigée prochainement.',
+            'submission' => $latestSubmission,
+            'report' => [
+                'status' => $latestSubmission->status_display,
+                'score' => $latestSubmission->score,
+                'feedback' => $latestSubmission->feedback,
+                'requires_human_review' => (bool) $latestSubmission->ai_requires_human_review,
+                'ai_model' => $latestSubmission->ai_model,
+            ],
         ]);
     }
 

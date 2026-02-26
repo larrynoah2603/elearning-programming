@@ -16,7 +16,12 @@ class ExerciseSubmission extends Model
         'submitted_code',
         'status',
         'score',
+        'ai_score',
         'feedback',
+        'ai_feedback',
+        'ai_requires_human_review',
+        'ai_corrected_at',
+        'ai_model',
         'attempts',
         'submitted_at',
         'corrected_at',
@@ -28,6 +33,9 @@ class ExerciseSubmission extends Model
         'corrected_at' => 'datetime',
         'attempts' => 'integer',
         'score' => 'integer',
+        'ai_score' => 'integer',
+        'ai_requires_human_review' => 'boolean',
+        'ai_corrected_at' => 'datetime',
     ];
 
     /**
@@ -59,7 +67,13 @@ class ExerciseSubmission extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('status', 'soumis');
+        return $query->where(function ($q) {
+            $q->where('status', 'soumis')
+                ->orWhere(function ($qq) {
+                    $qq->where('status', 'corrige')
+                        ->where('ai_requires_human_review', true);
+                });
+        });
     }
 
     /**
@@ -101,7 +115,7 @@ class ExerciseSubmission extends Model
         return match($this->status) {
             'en_cours' => 'En cours',
             'soumis' => 'Soumis',
-            'corrige' => 'Corrigé',
+            'corrige' => $this->ai_requires_human_review ? 'À valider (IA)' : 'Corrigé',
             'reussi' => 'Réussi',
             'echoue' => 'Échoué',
             default => $this->status,
@@ -136,6 +150,7 @@ class ExerciseSubmission extends Model
             'status' => $status,
             'corrected_at' => now(),
             'corrected_by' => $correctedBy,
+            'ai_requires_human_review' => false,
         ]);
     }
 
@@ -152,7 +167,7 @@ class ExerciseSubmission extends Model
      */
     public function isPendingCorrection(): bool
     {
-        return $this->status === 'soumis';
+        return $this->status === 'soumis' || ($this->status === 'corrige' && $this->ai_requires_human_review);
     }
 
     /**
