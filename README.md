@@ -136,6 +136,34 @@ php artisan optimize:clear
 
 Ensuite vérifiez qu'un fichier vidéo existe dans `storage/app/public/videos` et que l'URL de stream `/video-stream/{id}` répond bien.
 
+Cause fréquente : les chemins seedés (ex: `videos/introduction-python-1.mp4`) ne correspondent pas aux vrais fichiers du dossier `storage/app/public/videos`.
+Dans ce cas, mettez à jour le champ `video_file` en base avec le nom réel du fichier.
+
+### Mot de passe oublié (Gmail SMTP)
+
+Le projet supporte maintenant l'envoi d'email de réinitialisation via Gmail SMTP.
+
+1. Activez la validation en 2 étapes sur le compte Google.
+2. Générez un **mot de passe d'application**.
+3. Renseignez `.env` :
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=votre-adresse@gmail.com
+MAIL_PASSWORD=votre_mot_de_passe_application
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=votre-adresse@gmail.com
+MAIL_FROM_NAME="CodeLearn"
+```
+
+4. Videz le cache de configuration :
+
+```bash
+php artisan config:clear
+```
+
 ## Comptes de démonstration
 
 | Rôle | Email | Mot de passe |

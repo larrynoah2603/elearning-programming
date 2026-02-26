@@ -97,7 +97,7 @@
                     <label for="remember_me" class="ml-2 block text-sm text-slate-300">Se souvenir de moi</label>
                 </div>
                 <div class="text-sm">
-                    <a href="#" class="font-medium text-indigo-400 hover:text-indigo-300">Mot de passe oublié ?</a>
+                    <a href="{{ route('password.request') }}" class="font-medium text-indigo-400 hover:text-indigo-300">Mot de passe oublié ?</a>
                 </div>
             </div>
 
