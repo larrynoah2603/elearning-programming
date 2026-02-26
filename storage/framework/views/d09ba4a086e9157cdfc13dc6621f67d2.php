@@ -108,25 +108,28 @@
                         </form>
 
                         <!-- Submission Status -->
-                        <?php if($submission): ?>
-                            <div class="mt-6 p-4 bg-<?php echo e($submission->status_badge_color); ?>-50 border-l-4 border-<?php echo e($submission->status_badge_color); ?>-500 rounded-lg">
-                                <h4 class="font-bold text-<?php echo e($submission->status_badge_color); ?>-800 mb-2">
-                                    Statut : <?php echo e($submission->status_display); ?>
+                        <div id="submission-report" class="mt-6 <?php if(!$submission): ?> hidden <?php endif; ?> p-4 bg-<?php echo e($submission?->status_badge_color ?? 'secondary'); ?>-50 border-l-4 border-<?php echo e($submission?->status_badge_color ?? 'secondary'); ?>-500 rounded-lg">
+                            <h4 id="submission-status" class="font-bold text-<?php echo e($submission?->status_badge_color ?? 'secondary'); ?>-800 mb-2">
+                                Statut : <?php echo e($submission?->status_display ?? 'En attente'); ?>
 
-                                </h4>
-                                <?php if($submission->score !== null): ?>
-                                    <p class="text-<?php echo e($submission->status_badge_color); ?>-700">
-                                        Score : <?php echo e($submission->score); ?>/100
-                                    </p>
-                                <?php endif; ?>
-                                <?php if($submission->feedback): ?>
-                                    <p class="text-<?php echo e($submission->status_badge_color); ?>-700 mt-2">
-                                        <strong>Feedback :</strong> <?php echo e($submission->feedback); ?>
+                            </h4>
 
-                                    </p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+                            <p id="submission-score" class="text-<?php echo e($submission?->status_badge_color ?? 'secondary'); ?>-700 <?php if($submission?->score === null): ?> hidden <?php endif; ?>">
+                                Score : <?php echo e($submission?->score); ?>/100
+                            </p>
+
+                            <p id="submission-human-review" class="text-warning-700 mt-2 <?php if(!($submission?->ai_requires_human_review)): ?> hidden <?php endif; ?>">
+                                <strong>Note :</strong> Cette correction automatique nécessite une validation humaine par l'administration.
+                            </p>
+
+                            <p id="submission-feedback-text" class="text-<?php echo e($submission?->status_badge_color ?? 'secondary'); ?>-700 mt-2 <?php if(!$submission?->feedback): ?> hidden <?php endif; ?>">
+                                <strong>Feedback :</strong> <span id="submission-feedback-content"><?php echo e($submission?->feedback); ?></span>
+                            </p>
+
+                            <p id="submission-ai-model" class="text-xs text-gray-500 mt-2 <?php if(!$submission?->ai_model): ?> hidden <?php endif; ?>">
+                                Modèle IA : <span><?php echo e($submission?->ai_model); ?></span>
+                            </p>
+                        </div>
                     </div>
                 <?php else: ?>
                     <div class="bg-white rounded-xl shadow-sm p-8 text-center">
@@ -214,6 +217,62 @@
     const codeEditor = document.getElementById('code-editor');
     
     const feedbackBox = document.getElementById('submission-feedback');
+    const reportBox = document.getElementById('submission-report');
+    const reportStatus = document.getElementById('submission-status');
+    const reportScore = document.getElementById('submission-score');
+    const reportHumanReview = document.getElementById('submission-human-review');
+    const reportFeedbackText = document.getElementById('submission-feedback-text');
+    const reportFeedbackContent = document.getElementById('submission-feedback-content');
+    const reportAiModel = document.getElementById('submission-ai-model');
+
+    function renderSubmissionReport(report) {
+        if (!reportBox || !report) {
+            return;
+        }
+
+        reportBox.classList.remove('hidden');
+
+        if (reportStatus) {
+            reportStatus.textContent = `Statut : ${report.status ?? 'Soumis'}`;
+        }
+
+        if (reportScore) {
+            if (report.score === null || report.score === undefined) {
+                reportScore.classList.add('hidden');
+            } else {
+                reportScore.classList.remove('hidden');
+                reportScore.textContent = `Score : ${report.score}/100`;
+            }
+        }
+
+        if (reportFeedbackText && reportFeedbackContent) {
+            if (report.feedback) {
+                reportFeedbackText.classList.remove('hidden');
+                reportFeedbackContent.textContent = report.feedback;
+            } else {
+                reportFeedbackText.classList.add('hidden');
+                reportFeedbackContent.textContent = '';
+            }
+        }
+
+        if (reportHumanReview) {
+            if (report.requires_human_review) {
+                reportHumanReview.classList.remove('hidden');
+            } else {
+                reportHumanReview.classList.add('hidden');
+            }
+        }
+
+        const modelTarget = reportAiModel?.querySelector('span');
+        if (reportAiModel && modelTarget) {
+            if (report.ai_model) {
+                reportAiModel.classList.remove('hidden');
+                modelTarget.textContent = report.ai_model;
+            } else {
+                reportAiModel.classList.add('hidden');
+            }
+        }
+    }
 
     function showFeedback(message, type = 'success') {
         if (!feedbackBox) {
@@ -292,7 +351,7 @@
 
                 if (data.success) {
                     showFeedback(data.message, 'success');
-                    setTimeout(() => window.location.reload(), 900);
+                    renderSubmissionReport(data.report);
                 } else {
                     showFeedback(data.message || 'Une erreur est survenue.', 'error');
                 }
