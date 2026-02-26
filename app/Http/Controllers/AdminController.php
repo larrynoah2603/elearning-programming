@@ -51,7 +51,7 @@ class AdminController extends Controller
 
         // Pending submissions
         $pendingSubmissions = ExerciseSubmission::with(['user', 'exercise'])
-            ->where('status', 'soumis')
+            ->pending()
             ->latest()
             ->take(10)
             ->get();
@@ -178,7 +178,7 @@ class AdminController extends Controller
     public function pendingSubmissions()
     {
         $submissions = ExerciseSubmission::with(['user', 'exercise'])
-            ->where('status', 'soumis')
+            ->pending()
             ->latest()
             ->paginate(20);
 
@@ -210,6 +210,10 @@ class AdminController extends Controller
             $validated['feedback'],
             auth()->id()
         );
+
+        $submission->update([
+            'ai_requires_human_review' => false,
+        ]);
 
         return redirect()->route('admin.submissions.pending')
             ->with('success', 'Correction soumise avec succès.');
