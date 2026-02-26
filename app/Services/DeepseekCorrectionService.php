@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\ExerciseSubmission;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DeepseekCorrectionService
 {
@@ -39,17 +41,28 @@ class DeepseekCorrectionService
             $submission->submitted_code,
         ];
 
-        $response = Http::timeout(25)
-            ->withToken($apiKey)
-            ->post($baseUrl.'/chat/completions', [
-                'model' => $model,
-                'temperature' => 0.2,
-                'response_format' => ['type' => 'json_object'],
-                'messages' => [
-                    ['role' => 'system', 'content' => 'Tu es un assistant de correction automatique de code.'],
-                    ['role' => 'user', 'content' => implode("\n", $prompt)],
-                ],
+        try {
+            $response = Http::timeout((int) config('services.deepseek.timeout', 25))
+                ->retry(2, 300)
+                ->withToken($apiKey)
+                ->post($baseUrl.'/chat/completions', [
+                    'model' => $model,
+                    'temperature' => 0.2,
+                    'response_format' => ['type' => 'json_object'],
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'Tu es un assistant de correction automatique de code.'],
+                        ['role' => 'user', 'content' => implode("\n", $prompt)],
+                    ],
+                ]);
+        } catch (ConnectionException $e) {
+            Log::warning('DeepSeek API connection failed during correction.', [
+                'submission_id' => $submission->id,
+                'exercise_id' => $submission->exercise_id,
+                'error' => $e->getMessage(),
             ]);
+
+            return null;
+        }
 
         if (!$response->successful()) {
             return null;
