@@ -3,18 +3,22 @@
 namespace App\Services;
 
 use App\Models\ExerciseSubmission;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DeepseekCorrectionService
 {
     /**
-     * Evaluate a submission with DeepSeek.
+     * Evaluate a submission with Gemini (Google AI Studio).
      */
     public function evaluate(ExerciseSubmission $submission): ?array
     {
-        $apiKey = config('services.deepseek.key');
-        $baseUrl = rtrim((string) config('services.deepseek.url'), '/');
-        $model = (string) config('services.deepseek.model', 'deepseek-chat');
+        $apiKey = config('services.gemini.key');
+        $baseUrl = rtrim((string) config('services.gemini.url'), '/');
+        $model = (string) config('services.gemini.model', 'gemini-flash-latest');
+        $timeout = (int) config('services.gemini.timeout', 25);
 
         if (empty($apiKey) || empty($baseUrl)) {
             return null;
@@ -39,29 +43,73 @@ class DeepseekCorrectionService
             $submission->submitted_code,
         ];
 
-        $response = Http::timeout(25)
-            ->withToken($apiKey)
-            ->post($baseUrl.'/chat/completions', [
-                'model' => $model,
-                'temperature' => 0.2,
-                'response_format' => ['type' => 'json_object'],
-                'messages' => [
-                    ['role' => 'system', 'content' => 'Tu es un assistant de correction automatique de code.'],
-                    ['role' => 'user', 'content' => implode("\n", $prompt)],
-                ],
+        $url = sprintf('%s/models/%s:generateContent', $baseUrl, $model);
+
+        try {
+            $response = Http::timeout($timeout)
+                ->withHeaders([
+                    'X-goog-api-key' => $apiKey,
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($url, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                [
+                                    'text' => implode("\n", $prompt),
+                                ],
+                            ],
+                        ],
+                    ],
+                    'generationConfig' => [
+                        'temperature' => 0.2,
+                        'responseMimeType' => 'application/json',
+                    ],
+                ]);
+        } catch (ConnectionException|RequestException $exception) {
+            Log::warning('Gemini API unavailable while correcting submission.', [
+                'submission_id' => $submission->id,
+                'exercise_id' => $submission->exercise_id,
+                'error' => $exception->getMessage(),
             ]);
 
-        if (!$response->successful()) {
             return null;
         }
 
-        $content = data_get($response->json(), 'choices.0.message.content');
+        if (!$response->successful()) {
+            $status = $response->status();
+            $errorMessage = data_get($response->json(), 'error.message', $response->body());
+
+            Log::warning('Gemini API returned a non-success response.', [
+                'submission_id' => $submission->id,
+                'exercise_id' => $submission->exercise_id,
+                'status' => $status,
+                'error' => is_string($errorMessage) ? $errorMessage : null,
+            ]);
+
+            if ($status === 402 || str_contains(strtolower((string) $errorMessage), 'insufficient')) {
+                return [
+                    'score' => 0,
+                    'feedback' => 'Pré-correction IA indisponible (quota/solde API insuffisant). Une correction humaine est requise.',
+                    'requires_human_review' => true,
+                    'model' => $model,
+                ];
+            }
+
+            return null;
+        }
+
+        $content = data_get($response->json(), 'candidates.0.content.parts.0.text');
 
         if (!is_string($content) || trim($content) === '') {
             return null;
         }
 
         $parsed = json_decode($content, true);
+
+        if (!is_array($parsed) && preg_match('/\{.*\}/s', $content, $matches) === 1) {
+            $parsed = json_decode($matches[0], true);
+        }
 
         if (!is_array($parsed)) {
             return null;
@@ -75,7 +123,7 @@ class DeepseekCorrectionService
             'score' => $score,
             'feedback' => $feedback,
             'requires_human_review' => $requiresHumanReview,
-            'model' => data_get($response->json(), 'model', $model),
+            'model' => data_get($response->json(), 'modelVersion', $model),
         ];
     }
 }

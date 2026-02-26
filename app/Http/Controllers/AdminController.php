@@ -34,7 +34,7 @@ class AdminController extends Controller
             'active_exercises' => Exercise::where('is_active', true)->count(),
             'total_videos' => Video::count(),
             'active_videos' => Video::where('is_active', true)->count(),
-            'pending_submissions' => ExerciseSubmission::where('status', 'soumis')->count(),
+            'pending_submissions' => ExerciseSubmission::pending()->count(),
             'total_categories' => Category::count(),
         ];
 
