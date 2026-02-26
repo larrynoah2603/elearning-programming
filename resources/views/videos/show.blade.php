@@ -19,18 +19,24 @@
             <div class="lg:col-span-2">
                 <!-- Video Player -->
                 <div class="bg-black rounded-xl overflow-hidden mb-6">
-                    <video id="video-player" 
-                        class="w-full aspect-video" 
-                        controls 
-                        poster="{{ $video->thumbnail_url }}"
-                        data-video-id="{{ $video->id }}"
-                        @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
-                        <source src="{{ $video->video_url }}" type="{{ $video->video_mime_type }}">
-                        Votre navigateur ne supporte pas la lecture de vidéos.
-                    </video>
-                    <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
-                        Si la lecture échoue, <a href="{{ $video->video_url }}" class="underline text-primary-300">ouvrez la vidéo directement</a>.
-                    </div>
+                    @if($video->is_video_available)
+                        <video id="video-player" 
+                            class="w-full aspect-video" 
+                            controls 
+                            poster="{{ $video->thumbnail_url }}"
+                            data-video-id="{{ $video->id }}"
+                            @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
+                            <source src="{{ $video->video_url }}" type="{{ $video->video_mime_type }}">
+                            Votre navigateur ne supporte pas la lecture de vidéos.
+                        </video>
+                        <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
+                            Si la lecture échoue, <a href="{{ $video->video_url }}" class="underline text-primary-300">ouvrez la vidéo directement</a>.
+                        </div>
+                    @else
+                        <div class="aspect-video flex items-center justify-center bg-gray-900 text-gray-100 p-6 text-center">
+                            Cette vidéo est indisponible pour le moment. Merci de contacter l'administrateur.
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Video Info -->

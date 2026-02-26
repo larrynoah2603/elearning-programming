@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Video extends Model
 {
@@ -50,6 +51,7 @@ class Video extends Model
         'duration_display',
         'views_count',
         'video_mime_type',
+        'is_video_available',
     ];
 
     /**
@@ -258,6 +260,50 @@ class Video extends Model
     }
 
 
+
+
+    /**
+     * Check if video source is available.
+     */
+    public function getIsVideoAvailableAttribute(): bool
+    {
+        if (!$this->video_file) {
+            return false;
+        }
+
+        if (filter_var($this->video_file, FILTER_VALIDATE_URL)) {
+            return true;
+        }
+
+        $normalized = str_replace('\\', '/', trim($this->video_file));
+        $candidates = [
+            ltrim($normalized, '/'),
+            ltrim(Str::replaceFirst('storage/', '', $normalized), '/'),
+            ltrim(Str::replaceFirst('public/', '', $normalized), '/'),
+        ];
+
+        foreach (array_unique($candidates) as $path) {
+            if (Storage::disk('public')->exists($path) || Storage::disk('local')->exists($path)) {
+                return true;
+            }
+        }
+
+        $absoluteCandidates = [
+            $normalized,
+            public_path(ltrim($normalized, '/')),
+            public_path('storage/'.ltrim(Str::replaceFirst('storage/', '', $normalized), '/')),
+            storage_path('app/public/'.ltrim(Str::replaceFirst('storage/', '', $normalized), '/')),
+            storage_path('app/'.ltrim(Str::replaceFirst('public/', '', $normalized), '/')),
+        ];
+
+        foreach ($absoluteCandidates as $path) {
+            if (is_file($path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Get video MIME type for HTML5 source.

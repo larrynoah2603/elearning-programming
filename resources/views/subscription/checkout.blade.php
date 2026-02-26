@@ -98,7 +98,7 @@
                     </div>
                     <h3 class="font-bold text-gray-900 mb-2">Mobile Money</h3>
                     <!-- CORRECTION : Opérateurs Madagascar -->
-                    <p class="text-sm text-gray-600">Orange, Airtel, Mvola, Telma</p>
+                    <p class="text-sm text-gray-600">Orange, Airtel, Telma</p>
                     <div class="flex justify-center space-x-2 mt-3">
                         <i class="fas fa-sim-card text-2xl text-orange-500"></i>
                         <i class="fas fa-sim-card text-2xl text-red-500"></i>
