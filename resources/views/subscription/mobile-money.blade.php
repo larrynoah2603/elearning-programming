@@ -110,6 +110,7 @@
                                pattern="[0-9\+]{10,13}">
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Format: 0321234567 ou +261321234567</p>
+                    <p id="operator-prefix-help" class="text-xs text-blue-600 mt-1"></p>
                 </div>
 
                 <!-- Operator -->
@@ -125,7 +126,7 @@
                                         <i class="fas fa-sim-card text-orange-500 text-xl"></i>
                                     @elseif($key === 'airtel')
                                         <i class="fas fa-sim-card text-red-500 text-xl"></i>
-                                    @elseif($key === 'mvola')
+                                    @elseif($key === 'telma')
                                         <i class="fas fa-sim-card text-blue-500 text-xl"></i>
                                     @else
                                         <i class="fas fa-sim-card text-green-500 text-xl"></i>
@@ -171,33 +172,86 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('mobile-money-form');
-        
+        const phoneInput = form.querySelector('input[name="phone_number"]');
+        const operatorInputList = form.querySelectorAll('input[name="operator"]');
+        const helpPrefix = document.getElementById('operator-prefix-help');
+
+        const operatorPrefixes = {
+            orange: ['32', '37'],
+            airtel: ['33'],
+            telma: ['34', '38'],
+        };
+
+        const operatorLabels = {
+            orange: '+26132, +26137, 032, 037',
+            airtel: '+26133, 33',
+            telma: '+26134, +26138, 034, 038',
+        };
+
+        function normalizePhone(rawValue) {
+            let digits = rawValue.replace(/\D/g, '');
+
+            if (digits.startsWith('0')) {
+                digits = '261' + digits.substring(1);
+            }
+
+            if (!digits.startsWith('261')) {
+                digits = '261' + digits.replace(/^0+/, '');
+            }
+
+            return '+' + digits;
+        }
+
+        function selectedOperator() {
+            return form.querySelector('input[name="operator"]:checked')?.value || null;
+        }
+
+        function showPrefixHelp() {
+            const operator = selectedOperator();
+            if (!operator || !helpPrefix) {
+                return;
+            }
+            helpPrefix.textContent = `Préfixes autorisés: ${operatorLabels[operator]}`;
+        }
+
+        operatorInputList.forEach((input) => {
+            input.addEventListener('change', showPrefixHelp);
+        });
+
+        showPrefixHelp();
+
         form.addEventListener('submit', function(e) {
-            const phoneInput = form.querySelector('input[name="phone_number"]');
-            let phoneValue = phoneInput.value.replace(/\D/g, '');
-            
-            // Si commence par 0, ajouter +261
-            if (phoneValue.startsWith('0')) {
-                phoneValue = '+261' + phoneValue.substring(1);
-            }
-            // Si pas de préfixe, ajouter +261
-            else if (!phoneValue.startsWith('261') && !phoneValue.startsWith('+261')) {
-                phoneValue = '+261' + phoneValue;
-            }
-            
-            if (phoneValue.length < 12 || phoneValue.length > 13) {
+            const operator = selectedOperator();
+
+            if (!operator) {
                 e.preventDefault();
-                alert('Veuillez entrer un numéro de téléphone valide (ex: 0321234567 ou +261321234567)');
+                alert('Veuillez sélectionner un opérateur.');
+                return;
+            }
+
+            const normalizedPhone = normalizePhone(phoneInput.value);
+            const digits = normalizedPhone.replace(/\D/g, '');
+
+            if (digits.length !== 12 || !digits.startsWith('261')) {
+                e.preventDefault();
+                alert('Veuillez entrer un numéro valide (ex: 0321234567 ou +261321234567).');
                 phoneInput.focus();
                 return;
             }
-            
-            // Format phone number
-            phoneInput.value = phoneValue;
-            
-            // Show loading
+
+            const prefix = digits.substring(3, 5);
+            const allowedPrefixes = operatorPrefixes[operator] || [];
+
+            if (!allowedPrefixes.includes(prefix)) {
+                e.preventDefault();
+                alert(`Le numéro ne correspond pas à l'opérateur ${operator.toUpperCase()}. Préfixes: ${operatorLabels[operator]}`);
+                phoneInput.focus();
+                return;
+            }
+
+            phoneInput.value = normalizedPhone;
+
             const button = form.querySelector('button[type="submit"]');
-            const originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Traitement...';
             button.disabled = true;
         });

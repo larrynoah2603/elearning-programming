@@ -16,22 +16,17 @@ class SubscriptionController extends Controller
         'orange' => [
             'name' => 'Orange Money',
             'commission' => 1.5,
-            'number_prefix' => '+26132, +26133, +26134',
+            'number_prefix' => ['+26132', '+26137', '032', '037'],
         ],
         'airtel' => [
             'name' => 'Airtel Money',
             'commission' => 1.5,
-            'number_prefix' => '+26138, +26139',
+            'number_prefix' => ['+26133', '33'],
         ],
-        'mvola' => [
-            'name' => 'Mvola',
-            'commission' => 1.0,
-            'number_prefix' => '+26134',
-        ],
-        'telmoney' => [
-            'name' => 'Telma Mobile Money',
+        'telma' => [
+            'name' => 'Telma Money',
             'commission' => 1.2,
-            'number_prefix' => '+26133',
+            'number_prefix' => ['+26134', '+26138', '038', '034'],
         ],
     ];
 
@@ -310,7 +305,7 @@ class SubscriptionController extends Controller
         try {
             $validated = $request->validate([
                 'plan' => 'required|in:monthly,quarterly,yearly',
-                'operator' => 'required|in:orange,airtel,mvola,telmoney',
+                'operator' => 'required|in:orange,airtel,telma',
                 'phone_number' => 'required|string|regex:/^[0-9+\-\s]{10,15}$/',
                 'terms' => 'required|accepted',
             ], [
@@ -324,8 +319,16 @@ class SubscriptionController extends Controller
             $planDetails = $this->getPlanDetails($validated['plan']);
             $operator = $this->mobileMoneyOperators[$validated['operator']];
 
-            // Nettoyer le numéro de téléphone
-            $phone = preg_replace('/[^0-9+]/', '', $validated['phone_number']);
+            // Nettoyer et normaliser le numéro de téléphone
+            $phone = $this->normalizeMalagasyPhone($validated['phone_number']);
+
+            if (!$this->isPhoneAllowedForOperator($phone, $validated['operator'])) {
+                return back()
+                    ->withErrors([
+                        'phone_number' => 'Le numéro ne correspond pas à l\'opérateur sélectionné.',
+                    ])
+                    ->withInput();
+            }
 
             // Générer une référence de transaction
             $transactionId = 'MM' . strtoupper(Str::random(8)) . date('Ymd');
@@ -1072,6 +1075,46 @@ class SubscriptionController extends Controller
     {
         // Simulation
         return strlen($confirmationCode) === 6 && is_numeric($confirmationCode);
+    }
+
+    /**
+     * Normalize Malagasy phone number to +261XXXXXXXXX format.
+     */
+    private function normalizeMalagasyPhone(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone);
+
+        if (str_starts_with($digits, '0')) {
+            $digits = '261' . substr($digits, 1);
+        }
+
+        if (!str_starts_with($digits, '261')) {
+            $digits = '261' . ltrim($digits, '0');
+        }
+
+        return '+' . $digits;
+    }
+
+    /**
+     * Validate phone prefix by operator.
+     */
+    private function isPhoneAllowedForOperator(string $normalizedPhone, string $operator): bool
+    {
+        $digits = preg_replace('/\D+/', '', $normalizedPhone);
+
+        if (strlen($digits) !== 12 || !str_starts_with($digits, '261')) {
+            return false;
+        }
+
+        $localPrefix = substr($digits, 3, 2);
+
+        $allowedPrefixes = [
+            'orange' => ['32', '37'],
+            'airtel' => ['33'],
+            'telma' => ['34', '38'],
+        ];
+
+        return in_array($localPrefix, $allowedPrefixes[$operator] ?? [], true);
     }
 
     /**
