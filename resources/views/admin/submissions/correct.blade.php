@@ -15,6 +15,33 @@
             <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto"><code>{{ $submission->submitted_code }}</code></pre>
         </div>
 
+        @if($submission->ai_score !== null)
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">Pré-correction IA</h2>
+                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Score IA</p>
+                        <p class="text-xl font-bold text-gray-900">{{ $submission->ai_score }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Modèle</p>
+                        <p class="text-sm font-medium text-gray-900">{{ $submission->ai_model ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Intervention humaine</p>
+                        <p class="text-sm font-medium {{ $submission->ai_requires_human_review ? 'text-orange-600' : 'text-emerald-600' }}">
+                            {{ $submission->ai_requires_human_review ? 'Recommandée' : 'Non requise' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500 mb-1">Feedback IA</p>
+                    <p class="text-sm text-gray-800 whitespace-pre-line">{{ $submission->ai_feedback }}</p>
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-xl shadow-sm p-6">
             <form method="POST" action="{{ route('admin.submissions.submit', $submission) }}" class="space-y-4">
                 @csrf

@@ -19,6 +19,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exercice</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IA</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
                         </tr>
                     </thead>
@@ -29,12 +30,19 @@
                                 <td class="px-4 py-3">{{ $submission->exercise->title }}</td>
                                 <td class="px-4 py-3"><span class="badge badge-{{ $submission->status_badge_color }}">{{ $submission->status_display }}</span></td>
                                 <td class="px-4 py-3">{{ $submission->score_percentage }}</td>
+                                <td class="px-4 py-3">
+                                    @if($submission->ai_score !== null)
+                                        <span class="text-sm text-gray-700">{{ $submission->ai_score }}%</span>
+                                    @else
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('admin.submissions.correct', $submission) }}" class="btn btn-primary btn-sm">Voir / corriger</a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">Aucune soumission.</td></tr>
+                            <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Aucune soumission.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
