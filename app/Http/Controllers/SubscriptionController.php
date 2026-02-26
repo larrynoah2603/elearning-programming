@@ -16,22 +16,17 @@ class SubscriptionController extends Controller
         'orange' => [
             'name' => 'Orange Money',
             'commission' => 1.5,
-            'number_prefix' => '+26132, +26133, +26134',
+            'number_prefix' => ['+26132', '+26137', '032', '037'],
         ],
         'airtel' => [
             'name' => 'Airtel Money',
             'commission' => 1.5,
-            'number_prefix' => '+26138, +26139',
+            'number_prefix' => ['+26133', '33'],
         ],
-        'mvola' => [
-            'name' => 'Mvola',
-            'commission' => 1.0,
-            'number_prefix' => '+26134',
-        ],
-        'telmoney' => [
-            'name' => 'Telma Mobile Money',
+        'telma' => [
+            'name' => 'Telma Money',
             'commission' => 1.2,
-            'number_prefix' => '+26133',
+            'number_prefix' => ['+26134', '+26138', '038', '034'],
         ],
     ];
 
@@ -310,7 +305,7 @@ class SubscriptionController extends Controller
         try {
             $validated = $request->validate([
                 'plan' => 'required|in:monthly,quarterly,yearly',
-                'operator' => 'required|in:orange,airtel,mvola,telmoney',
+                'operator' => 'required|in:orange,airtel,telma',
                 'phone_number' => 'required|string|regex:/^[0-9+\-\s]{10,15}$/',
                 'terms' => 'required|accepted',
             ], [
@@ -326,6 +321,14 @@ class SubscriptionController extends Controller
 
             // Nettoyer le numéro de téléphone
             $phone = preg_replace('/[^0-9+]/', '', $validated['phone_number']);
+
+            if (!$this->isPhoneNumberAllowedForOperator($phone, $validated['operator'])) {
+                return back()
+                    ->withErrors([
+                        'phone_number' => 'Le numéro saisi ne correspond pas à l\'opérateur sélectionné.',
+                    ])
+                    ->withInput();
+            }
 
             // Générer une référence de transaction
             $transactionId = 'MM' . strtoupper(Str::random(8)) . date('Ymd');
@@ -381,6 +384,40 @@ class SubscriptionController extends Controller
             
             return back()->with('error', 'Une erreur est survenue lors du traitement. Veuillez réessayer.');
         }
+    }
+
+    /**
+     * Vérifie que le numéro correspond aux préfixes autorisés de l'opérateur.
+     */
+    private function isPhoneNumberAllowedForOperator(string $phone, string $operatorKey): bool
+    {
+        if (!isset($this->mobileMoneyOperators[$operatorKey])) {
+            return false;
+        }
+
+        $normalizedPhone = preg_replace('/\D/', '', $phone);
+
+        foreach ($this->mobileMoneyOperators[$operatorKey]['number_prefix'] as $prefix) {
+            $normalizedPrefix = preg_replace('/\D/', '', $prefix);
+
+            if ($normalizedPrefix === '') {
+                continue;
+            }
+
+            if (str_starts_with($normalizedPhone, $normalizedPrefix)) {
+                return true;
+            }
+
+            if (str_starts_with($normalizedPrefix, '261')) {
+                $localPrefix = '0' . substr($normalizedPrefix, 3);
+
+                if (str_starts_with($normalizedPhone, $localPrefix)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

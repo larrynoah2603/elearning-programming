@@ -107,9 +107,9 @@
                                class="form-input pl-10 w-full"
                                placeholder="Ex: 0321234567 ou +261321234567"
                                required
-                               pattern="[0-9\+]{10,13}">
+                               pattern="[0-9\+]{9,13}">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Format: 0321234567 ou +261321234567</p>
+                    <p id="operator-phone-help" class="text-xs text-gray-500 mt-1">Format: 0321234567 ou +261321234567</p>
                 </div>
 
                 <!-- Operator -->
@@ -125,12 +125,13 @@
                                         <i class="fas fa-sim-card text-orange-500 text-xl"></i>
                                     @elseif($key === 'airtel')
                                         <i class="fas fa-sim-card text-red-500 text-xl"></i>
-                                    @elseif($key === 'mvola')
+                                    @elseif($key === 'telma')
                                         <i class="fas fa-sim-card text-blue-500 text-xl"></i>
                                     @else
                                         <i class="fas fa-sim-card text-green-500 text-xl"></i>
                                     @endif
                                     <span class="block mt-1 font-medium">{{ $operator['name'] }}</span>
+                                    <span class="block text-xs text-gray-500">Préfixes: {{ implode(', ', $operator['number_prefix']) }}</span>
                                 </div>
                             </label>
                         @endforeach
@@ -171,6 +172,21 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('mobile-money-form');
+        const help = document.getElementById('operator-phone-help');
+        const operators = {
+            orange: ['+26132', '+26137', '032', '037'],
+            airtel: ['+26133', '33'],
+            telma: ['+26134', '+26138', '038', '034'],
+        };
+
+        form.querySelectorAll('input[name="operator"]').forEach((radio) => {
+            radio.addEventListener('change', function () {
+                const prefixes = operators[this.value] ?? [];
+                if (prefixes.length > 0) {
+                    help.textContent = `Préfixes autorisés pour ${this.value.toUpperCase()}: ${prefixes.join(', ')}`;
+                }
+            });
+        });
         
         form.addEventListener('submit', function(e) {
             const phoneInput = form.querySelector('input[name="phone_number"]');
@@ -179,6 +195,30 @@
             // Si commence par 0, ajouter +261
             if (phoneValue.startsWith('0')) {
                 phoneValue = '+261' + phoneValue.substring(1);
+            }
+
+            const selectedOperator = form.querySelector('input[name="operator"]:checked')?.value;
+            const prefixes = operators[selectedOperator] ?? [];
+            const normalized = phoneValue.replace(/^\+/, '');
+            const isAllowed = prefixes.some((prefix) => {
+                const cleanedPrefix = prefix.replace(/\D/g, '');
+                if (normalized.startsWith(cleanedPrefix)) {
+                    return true;
+                }
+
+                if (cleanedPrefix.startsWith('261')) {
+                    const localPrefix = '0' + cleanedPrefix.substring(3);
+                    return normalized.startsWith(localPrefix);
+                }
+
+                return false;
+            });
+
+            if (selectedOperator && !isAllowed) {
+                e.preventDefault();
+                alert('Le numéro ne correspond pas à l\'opérateur choisi. Vérifiez le préfixe.');
+                phoneInput.focus();
+                return;
             }
             // Si pas de préfixe, ajouter +261
             else if (!phoneValue.startsWith('261') && !phoneValue.startsWith('+261')) {
