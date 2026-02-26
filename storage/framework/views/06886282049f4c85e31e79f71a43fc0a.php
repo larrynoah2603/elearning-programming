@@ -18,6 +18,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiant</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exercice</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pré-correction IA</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Soumis le</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
                         </tr>
@@ -30,6 +31,16 @@
                                 <td class="px-4 py-3">
                                     <span class="badge badge-<?php echo e($submission->status_badge_color); ?>"><?php echo e($submission->status_display); ?></span>
                                 </td>
+                                <td class="px-4 py-3">
+                                    <?php if($submission->ai_score !== null): ?>
+                                        <span class="text-sm text-gray-700"><?php echo e($submission->ai_score); ?>%</span>
+                                        <?php if($submission->ai_requires_human_review): ?>
+                                            <span class="badge badge-warning ml-2">Validation humaine</span>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="text-sm text-gray-400">Non disponible</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="px-4 py-3"><?php echo e(optional($submission->submitted_at)->format('d/m/Y H:i') ?? '-'); ?></td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="<?php echo e(route('admin.submissions.correct', $submission)); ?>" class="btn btn-primary btn-sm">Corriger</a>
@@ -37,7 +48,7 @@
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">Aucune soumission en attente.</td>
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-500">Aucune soumission en attente.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

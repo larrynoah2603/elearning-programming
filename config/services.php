@@ -2,8 +2,8 @@
 
 return [
     'deepseek' => [
-        'key' => env('DEEPSEEK_API_KEY'),
-        'url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'),
+        'key' => env('DEEPSEEK_API_KEY', 'sk-caa23ab1c7c940cda498478d6c39bd77'),
+        'url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1'), // valeur par défaut ajoutée
         'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
     ],
 
@@ -12,9 +12,6 @@ return [
         'client_id' => env('ORANGE_SMS_CLIENT_ID'),
         'client_secret' => env('ORANGE_SMS_CLIENT_SECRET'),
         'sender' => env('ORANGE_SMS_SENDER', 'CODELEARN'),
-    ],
-    'deepseek' => [
-        'key' => env('DEEPSEEK_API_KEY'),
-        'url' => env('DEEPSEEK_BASE_URL'),
-    ],
+    ], 
+
 ];
