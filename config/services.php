@@ -7,4 +7,8 @@ return [
         'client_secret' => env('ORANGE_SMS_CLIENT_SECRET'),
         'sender' => env('ORANGE_SMS_SENDER', 'CODELEARN'),
     ],
+    'deepseek' => [
+        'key' => env('DEEPSEEK_API_KEY'),
+        'url' => env('DEEPSEEK_BASE_URL'),
+    ],
 ];
