@@ -1,10 +1,11 @@
 <?php
 
 return [
-    'deepseek' => [
-        'key' => env('DEEPSEEK_API_KEY'),
-        'url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'),
-        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+        'timeout' => env('GEMINI_TIMEOUT', 25),
     ],
 
     'orange_sms' => [
