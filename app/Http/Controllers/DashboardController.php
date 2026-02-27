@@ -211,8 +211,8 @@ class DashboardController extends Controller
 
 
         $favoriteLanguage = ExerciseSubmission::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'reussi')
+            ->where('exercise_submissions.user_id', $user->id)
+            ->where('exercise_submissions.status', 'reussi')
             ->join('exercises', 'exercise_submissions.exercise_id', '=', 'exercises.id')
             ->selectRaw('exercises.programming_language, COUNT(*) as total')
             ->groupBy('exercises.programming_language')
@@ -235,8 +235,8 @@ class DashboardController extends Controller
         }
 
         $learnedLessonIds = ExerciseSubmission::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'reussi')
+            ->where('exercise_submissions.user_id', $user->id)
+            ->where('exercise_submissions.status', 'reussi')
             ->join('exercises', 'exercise_submissions.exercise_id', '=', 'exercises.id')
             ->whereNotNull('exercises.lesson_id')
             ->pluck('exercises.lesson_id')
