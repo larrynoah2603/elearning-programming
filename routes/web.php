@@ -26,8 +26,8 @@ Route::get('/plans', [HomeController::class, 'plans'])->name('plans');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 
 // Subscription Routes
-Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
-Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])->name('subscription.expired');
+Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans-legacy');
+Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])->name('subscription.expired-legacy');
 
 // Public Content Routes (Free content only for non-subscribed users)
 Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
@@ -65,14 +65,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Subscription Management (Subscribed users only)
     Route::middleware([\App\Http\Middleware\SubscribedMiddleware::class])->group(function () {
-        Route::get('/subscription/manage', [SubscriptionController::class, 'manage'])->name('subscription.manage');
-        Route::get('/subscription/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
+        Route::get('/subscription/manage', [SubscriptionController::class, 'manage'])->name('subscription.manage-legacy');
+        Route::get('/subscription/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.cancel-legacy');
         Route::post('/subscription/cancel', [SubscriptionController::class, 'confirmCancel']);
-        Route::post('/subscription/extend', [SubscriptionController::class, 'extend'])->name('subscription.extend');
+        Route::post('/subscription/extend', [SubscriptionController::class, 'extend'])->name('subscription.extend-legacy');
     });
-    
+
     // Subscription Checkout
-    Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+    Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout-legacy');
 });
 
 // Admin Routes

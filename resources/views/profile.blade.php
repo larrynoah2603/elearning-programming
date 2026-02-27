@@ -21,6 +21,12 @@
                         </div>
                         <h2 class="text-xl font-bold text-gray-900">{{ $user->name }}</h2>
                         <p class="text-gray-500">{{ $user->email }}</p>
+                        @if($user->school_name || $user->class_name)
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-users mr-1"></i>
+                                {{ $user->class_name ?? 'Classe non renseignée' }} @if($user->school_name) · {{ $user->school_name }} @endif
+                            </p>
+                        @endif
                         <span class="badge badge-{{ $user->role_badge_color }} mt-2">
                             {{ $user->subscription_status }}
                         </span>
@@ -95,6 +101,19 @@
                                 <label for="email" class="block text-sm font-medium text-gray-700">Adresse email</label>
                                 <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" 
                                     class="form-input mt-1 w-full" required>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="school_name" class="block text-sm font-medium text-gray-700">École (optionnel)</label>
+                                    <input type="text" id="school_name" name="school_name" value="{{ old('school_name', $user->school_name) }}"
+                                        class="form-input mt-1 w-full" placeholder="Ex: Lycée Moderne">
+                                </div>
+                                <div>
+                                    <label for="class_name" class="block text-sm font-medium text-gray-700">Classe (optionnel)</label>
+                                    <input type="text" id="class_name" name="class_name" value="{{ old('class_name', $user->class_name) }}"
+                                        class="form-input mt-1 w-full" placeholder="Ex: Terminale C">
+                                </div>
                             </div>
                         </div>
                         
