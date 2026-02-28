@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\ExerciseSubmission;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,7 +16,7 @@ class DeepseekCorrectionService
     {
         $apiKey = config('services.gemini.key');
         $baseUrl = rtrim((string) config('services.gemini.url'), '/');
-        $model = (string) config('services.gemini.model', 'gemini-flash-latest');
+        $model = (string) config('services.gemini.model', 'gemini-1.5-flash');
         $timeout = (int) config('services.gemini.timeout', 25);
 
         if (empty($apiKey) || empty($baseUrl)) {
@@ -66,7 +65,7 @@ class DeepseekCorrectionService
                         'responseMimeType' => 'application/json',
                     ],
                 ]);
-        } catch (ConnectionException|RequestException $exception) {
+        } catch (ConnectionException|\Throwable $exception) {
             Log::warning('Gemini API unavailable while correcting submission.', [
                 'submission_id' => $submission->id,
                 'exercise_id' => $submission->exercise_id,

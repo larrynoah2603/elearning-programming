@@ -164,6 +164,34 @@ MAIL_FROM_NAME="CodeLearn"
 php artisan config:clear
 ```
 
+
+## Configuration de la correction automatique IA (Gemini)
+
+Ajoutez les variables suivantes dans `.env` :
+
+```env
+GEMINI_API_KEY=votre_cle_google_ai_studio
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+GEMINI_MODEL=gemini-1.5-flash
+GEMINI_TIMEOUT=25
+QUEUE_CONNECTION=database
+```
+
+Puis exécutez :
+
+```bash
+php artisan migrate
+php artisan queue:work
+```
+
+### Dépannage rapide de la correction IA
+
+- Vérifier la migration `add_ai_fields_to_exercise_submissions_table` (sinon erreurs SQL sur `ai_requires_human_review`).
+- Vérifier la clé API Gemini (erreurs 401/403/429).
+- Vérifier que le worker de queue tourne (sinon les soumissions restent en statut `soumis`).
+- Vérifier les logs Laravel : `storage/logs/laravel.log`.
+- Aucun plugin/extension Laravel spécifique n'est requis pour Gemini : une clé API valide suffit (Laravel HTTP client + OpenSSL/cURL PHP standards).
+
 ## Comptes de démonstration
 
 | Rôle | Email | Mot de passe |

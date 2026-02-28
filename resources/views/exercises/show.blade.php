@@ -218,6 +218,10 @@
     const reportFeedbackText = document.getElementById('submission-feedback-text');
     const reportFeedbackContent = document.getElementById('submission-feedback-content');
     const reportAiModel = document.getElementById('submission-ai-model');
+    const submissionStatusUrl = '{{ route('exercises.submission-status', ['exercise' => $exercise->id]) }}';
+    let submissionPollingInterval = null;
+    let submissionPollingAttempts = 0;
+    const maxSubmissionPollingAttempts = 40;
 
     function renderSubmissionReport(report) {
         if (!reportBox || !report) {
@@ -266,6 +270,57 @@
                 reportAiModel.classList.add('hidden');
             }
         }
+    }
+
+
+    function stopSubmissionPolling() {
+        if (submissionPollingInterval) {
+            clearInterval(submissionPollingInterval);
+            submissionPollingInterval = null;
+        }
+    }
+
+    async function fetchSubmissionStatus() {
+        try {
+            const response = await fetch(submissionStatusUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            });
+
+            const data = await parseResponse(response);
+
+            if (!response.ok || !data.success || !data.has_submission) {
+                return;
+            }
+
+            renderSubmissionReport(data.report);
+
+            if (data.is_final) {
+                stopSubmissionPolling();
+                showFeedback('Correction IA terminée : score et feedback mis à jour automatiquement.', 'success');
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }
+
+    function startSubmissionPolling() {
+        stopSubmissionPolling();
+        submissionPollingAttempts = 0;
+
+        fetchSubmissionStatus();
+
+        submissionPollingInterval = setInterval(async () => {
+            submissionPollingAttempts += 1;
+            await fetchSubmissionStatus();
+
+            if (submissionPollingAttempts >= maxSubmissionPollingAttempts) {
+                stopSubmissionPolling();
+            }
+        }, 3000);
     }
 
     function showFeedback(message, type = 'success') {
@@ -346,6 +401,7 @@
                 if (data.success) {
                     showFeedback(data.message, 'success');
                     renderSubmissionReport(data.report);
+                    startSubmissionPolling();
                 } else {
                     showFeedback(data.message || 'Une erreur est survenue.', 'error');
                 }
@@ -359,6 +415,11 @@
                 isSubmitting = false;
             }
         });
+
+        const existingStatus = reportStatus?.textContent || '';
+        if (existingStatus.includes('Soumis')) {
+            startSubmissionPolling();
+        }
     }
 
     async function saveProgress() {
