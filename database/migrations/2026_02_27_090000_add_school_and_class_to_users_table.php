@@ -12,23 +12,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasColumn('users', 'school_name')) {
+        if (!Schema::hasColumn('users', 'school_name')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->string('school_name')->nullable()->after('subscription_expires_at');
+                $table->string('school_name', 120)->nullable()->after('name');
             });
         }
 
-        if (! Schema::hasColumn('users', 'class_name')) {
+        if (!Schema::hasColumn('users', 'class_name')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->string('class_name')->nullable()->after('school_name');
+                $table->string('class_name', 120)->nullable()->after('school_name');
             });
         }
 
-        if (! $this->hasSchoolClassIndex()) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->index(['school_name', 'class_name']);
-            });
-        }
+        Schema::table('users', function (Blueprint $table) {
+            // Avoid key-length issues on some MySQL/MariaDB utf8mb4 setups.
+            if (!$this->indexExists('users', 'users_school_name_index')) {
+                $table->index('school_name', 'users_school_name_index');
+            }
+
+            if (!$this->indexExists('users', 'users_class_name_index')) {
+                $table->index('class_name', 'users_class_name_index');
+            }
+        });
     }
 
     /**
@@ -36,33 +41,38 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if ($this->hasSchoolClassIndex()) {
+        Schema::table('users', function (Blueprint $table) {
+            if ($this->indexExists('users', 'users_school_name_index')) {
+                $table->dropIndex('users_school_name_index');
+            }
+
+            if ($this->indexExists('users', 'users_class_name_index')) {
+                $table->dropIndex('users_class_name_index');
+            }
+        });
+
+        if (Schema::hasColumn('users', 'school_name')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->dropIndex('users_school_name_class_name_index');
+                $table->dropColumn('school_name');
             });
         }
 
-        Schema::table('users', function (Blueprint $table) {
-            $columnsToDrop = [];
-
-            if (Schema::hasColumn('users', 'class_name')) {
-                $columnsToDrop[] = 'class_name';
-            }
-
-            if (Schema::hasColumn('users', 'school_name')) {
-                $columnsToDrop[] = 'school_name';
-            }
-
-            if ($columnsToDrop !== []) {
-                $table->dropColumn($columnsToDrop);
-            }
-        });
+        if (Schema::hasColumn('users', 'class_name')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('class_name');
+            });
+        }
     }
 
-    private function hasSchoolClassIndex(): bool
+    private function indexExists(string $table, string $index): bool
     {
-        $indexes = DB::select("SHOW INDEX FROM `users` WHERE Key_name = 'users_school_name_class_name_index'");
+        $database = DB::getDatabaseName();
 
-        return count($indexes) > 0;
+        $result = DB::selectOne(
+            'SELECT COUNT(1) AS aggregate FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?',
+            [$database, $table, $index]
+        );
+
+        return (int) ($result->aggregate ?? 0) > 0;
     }
 };
