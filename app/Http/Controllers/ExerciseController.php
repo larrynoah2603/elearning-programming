@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveExerciseProgressRequest;
+use App\Http\Requests\SubmitExerciseRequest;
+use App\Jobs\EvaluateSubmissionWithAiJob;
 use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
-use App\Services\DeepseekCorrectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -85,16 +87,14 @@ class ExerciseController extends Controller
     /**
      * Submit exercise solution.
      */
-    public function submit(Request $request, Exercise $exercise)
+    public function submit(SubmitExerciseRequest $request, Exercise $exercise)
     {
         // Check access
         if (!$exercise->isAccessibleBy(auth()->user())) {
             return response()->json(['error' => 'Subscription required'], 403);
         }
 
-        $validated = $request->validate([
-            'code' => 'required|string|max:50000',
-        ]);
+        $validated = $request->validated();
 
         $user = auth()->user();
 
@@ -106,35 +106,25 @@ class ExerciseController extends Controller
 
         $submission->submit($validated['code']);
 
-        $submission->load('exercise');
-        $aiCorrection = app(DeepseekCorrectionService::class)->evaluate($submission);
+        $submission->update([
+            'score' => null,
+            'feedback' => null,
+            'corrected_at' => null,
+            'corrected_by' => null,
+            'ai_score' => null,
+            'ai_feedback' => null,
+            'ai_requires_human_review' => false,
+            'ai_corrected_at' => null,
+            'ai_model' => null,
+        ]);
 
-        if ($aiCorrection !== null) {
-            $status = $aiCorrection['requires_human_review']
-                ? 'corrige'
-                : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
-
-            $submission->update([
-                'score' => $aiCorrection['score'],
-                'feedback' => $aiCorrection['feedback'],
-                'status' => $status,
-                'corrected_at' => now(),
-                'corrected_by' => null,
-                'ai_score' => $aiCorrection['score'],
-                'ai_feedback' => $aiCorrection['feedback'],
-                'ai_requires_human_review' => $aiCorrection['requires_human_review'],
-                'ai_corrected_at' => now(),
-                'ai_model' => $aiCorrection['model'],
-            ]);
-        }
+        EvaluateSubmissionWithAiJob::dispatch($submission->id);
 
         $latestSubmission = $submission->fresh();
 
         return response()->json([
             'success' => true,
-            'message' => $aiCorrection !== null
-                ? 'Votre solution a été soumise et pré-corrigée automatiquement par IA.'
-                : 'Votre solution a été soumise avec succès. Elle sera corrigée prochainement.',
+            'message' => 'Votre solution a été soumise. La pré-correction IA est en cours de traitement.',
             'submission' => $latestSubmission,
             'report' => [
                 'status' => $latestSubmission->status_display,
@@ -149,16 +139,14 @@ class ExerciseController extends Controller
     /**
      * Save exercise progress (without submitting).
      */
-    public function saveProgress(Request $request, Exercise $exercise)
+    public function saveProgress(SaveExerciseProgressRequest $request, Exercise $exercise)
     {
         // Check access
         if (!$exercise->isAccessibleBy(auth()->user())) {
             return response()->json(['error' => 'Subscription required'], 403);
         }
 
-        $validated = $request->validate([
-            'code' => 'required|string|max:50000',
-        ]);
+        $validated = $request->validated();
 
         $user = auth()->user();
 
