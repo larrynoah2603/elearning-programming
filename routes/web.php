@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
     // Exercise Submissions
     Route::post('/exercises/{exercise}/submit', [ExerciseController::class, 'submit'])->name('exercises.submit');
     Route::post('/exercises/{exercise}/progress', [ExerciseController::class, 'saveProgress'])->name('exercises.progress');
+    Route::get('/exercises/{exercise}/submission-status', [ExerciseController::class, 'submissionStatus'])->name('exercises.submission-status');
     
     // Video Progress
     Route::post('/videos/{video}/progress', [VideoController::class, 'updateProgress'])->name('videos.progress');

@@ -136,6 +136,43 @@ class ExerciseController extends Controller
         ]);
     }
 
+
+    /**
+     * Get latest submission report for the authenticated user.
+     */
+    public function submissionStatus(Exercise $exercise)
+    {
+        if (!$exercise->isAccessibleBy(auth()->user())) {
+            return response()->json(['error' => 'Subscription required'], 403);
+        }
+
+        $submission = ExerciseSubmission::query()
+            ->where('user_id', auth()->id())
+            ->where('exercise_id', $exercise->id)
+            ->first();
+
+        if (!$submission) {
+            return response()->json([
+                'success' => true,
+                'has_submission' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'has_submission' => true,
+            'submission' => $submission,
+            'report' => [
+                'status' => $submission->status_display,
+                'score' => $submission->score,
+                'feedback' => $submission->feedback,
+                'requires_human_review' => (bool) $submission->ai_requires_human_review,
+                'ai_model' => $submission->ai_model,
+            ],
+            'is_final' => in_array($submission->status, ['corrige', 'reussi', 'echoue'], true),
+        ]);
+    }
+
     /**
      * Save exercise progress (without submitting).
      */
