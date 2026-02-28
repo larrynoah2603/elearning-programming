@@ -9,6 +9,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ExerciseController extends Controller
@@ -158,6 +159,11 @@ class ExerciseController extends Controller
             ]);
         }
 
+        if ($submission->status === 'soumis' && $submission->ai_corrected_at === null) {
+            $this->tryInlineAiCorrection($submission);
+            $submission->refresh();
+        }
+
         return response()->json([
             'success' => true,
             'has_submission' => true,
@@ -205,6 +211,46 @@ class ExerciseController extends Controller
             'success' => true,
             'message' => 'Progression sauvegardée.',
         ]);
+    }
+
+    /**
+     * Attempt AI correction inline as a fallback when queue worker is unavailable.
+     */
+    private function tryInlineAiCorrection(ExerciseSubmission $submission): void
+    {
+        $lock = Cache::lock('submission-ai-correction-'.$submission->id, 20);
+
+        if (!$lock->get()) {
+            return;
+        }
+
+        try {
+            $submission->loadMissing('exercise');
+            $aiCorrection = app(DeepseekCorrectionService::class)->evaluate($submission);
+
+            if ($aiCorrection === null) {
+                return;
+            }
+
+            $status = $aiCorrection['requires_human_review']
+                ? 'corrige'
+                : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
+
+            $submission->update([
+                'score' => $aiCorrection['score'],
+                'feedback' => $aiCorrection['feedback'],
+                'status' => $status,
+                'corrected_at' => now(),
+                'corrected_by' => null,
+                'ai_score' => $aiCorrection['score'],
+                'ai_feedback' => $aiCorrection['feedback'],
+                'ai_requires_human_review' => $aiCorrection['requires_human_review'],
+                'ai_corrected_at' => now(),
+                'ai_model' => $aiCorrection['model'],
+            ]);
+        } finally {
+            optional($lock)->release();
+        }
     }
 
     /**
