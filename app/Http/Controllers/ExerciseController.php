@@ -8,6 +8,7 @@ use App\Jobs\EvaluateSubmissionWithAiJob;
 use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
+use App\Services\DeepseekCorrectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
