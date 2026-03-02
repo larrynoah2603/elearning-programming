@@ -8,7 +8,9 @@ use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
 use App\Models\User;
 use App\Models\Video;
+use App\Services\DeepseekCorrectionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AdminController extends Controller
 {
@@ -182,6 +184,14 @@ class AdminController extends Controller
             ->latest()
             ->paginate(20);
 
+        foreach ($submissions as $submission) {
+            if ($submission->status === 'soumis' && $submission->ai_corrected_at === null) {
+                $this->tryInlineAiCorrection($submission);
+            }
+        }
+
+        $submissions->load(['user', 'exercise']);
+
         return view('admin.submissions.pending', compact('submissions'));
     }
 
@@ -191,6 +201,11 @@ class AdminController extends Controller
     public function correctSubmission(ExerciseSubmission $submission)
     {
         $submission->load(['user', 'exercise']);
+
+        if ($submission->status === 'soumis' && $submission->ai_corrected_at === null) {
+            $this->tryInlineAiCorrection($submission);
+            $submission->refresh()->load(['user', 'exercise']);
+        }
 
         return view('admin.submissions.correct', compact('submission'));
     }
@@ -217,6 +232,47 @@ class AdminController extends Controller
 
         return redirect()->route('admin.submissions.pending')
             ->with('success', 'Correction soumise avec succès.');
+    }
+
+
+    /**
+     * Attempt AI correction inline for admin views when queue worker is unavailable.
+     */
+    private function tryInlineAiCorrection(ExerciseSubmission $submission): void
+    {
+        $lock = Cache::lock('admin-submission-ai-correction-'.$submission->id, 20);
+
+        if (!$lock->get()) {
+            return;
+        }
+
+        try {
+            $submission->loadMissing('exercise');
+            $aiCorrection = app(DeepseekCorrectionService::class)->evaluate($submission);
+
+            if ($aiCorrection === null) {
+                return;
+            }
+
+            $status = $aiCorrection['requires_human_review']
+                ? 'corrige'
+                : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
+
+            $submission->update([
+                'score' => $aiCorrection['score'],
+                'feedback' => $aiCorrection['feedback'],
+                'status' => $status,
+                'corrected_at' => now(),
+                'corrected_by' => null,
+                'ai_score' => $aiCorrection['score'],
+                'ai_feedback' => $aiCorrection['feedback'],
+                'ai_requires_human_review' => $aiCorrection['requires_human_review'],
+                'ai_corrected_at' => now(),
+                'ai_model' => $aiCorrection['model'],
+            ]);
+        } finally {
+            optional($lock)->release();
+        }
     }
 
     /**
