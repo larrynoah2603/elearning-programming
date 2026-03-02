@@ -16,7 +16,7 @@ class DeepseekCorrectionService
     {
         $apiKey = config('services.gemini.key');
         $baseUrl = rtrim((string) config('services.gemini.url'), '/');
-        $model = (string) config('services.gemini.model', 'gemini-1.5-flash');
+        $model = (string) config('services.gemini.model', 'gemini-2.0-flash');
         $timeout = (int) config('services.gemini.timeout', 25);
 
         if (empty($apiKey) || empty($baseUrl)) {
@@ -42,29 +42,54 @@ class DeepseekCorrectionService
             $submission->submitted_code,
         ];
 
-        $url = sprintf('%s/models/%s:generateContent', $baseUrl, $model);
+        $candidateModels = array_values(array_unique(array_filter([
+            $model,
+            'gemini-2.0-flash',
+            'gemini-1.5-flash',
+        ])));
+
+        $response = null;
+        $selectedModel = $model;
 
         try {
-            $response = Http::timeout($timeout)
-                ->withHeaders([
-                    'X-goog-api-key' => $apiKey,
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($url, [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                [
-                                    'text' => implode("\n", $prompt),
+            foreach ($candidateModels as $candidateModel) {
+                $url = sprintf('%s/models/%s:generateContent', $baseUrl, $candidateModel);
+
+                $response = Http::timeout($timeout)
+                    ->withHeaders([
+                        'X-goog-api-key' => $apiKey,
+                        'Content-Type' => 'application/json',
+                    ])
+                    ->post($url, [
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    [
+                                        'text' => implode("\n", $prompt),
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.2,
-                        'responseMimeType' => 'application/json',
-                    ],
-                ]);
+                        'generationConfig' => [
+                            'temperature' => 0.2,
+                            'responseMimeType' => 'application/json',
+                        ],
+                    ]);
+
+                if ($response->successful()) {
+                    $selectedModel = $candidateModel;
+                    break;
+                }
+
+                $status = $response->status();
+                $errorMessage = data_get($response->json(), 'error.message', $response->body());
+
+                if ($status === 404 && is_string($errorMessage) && str_contains(strtolower($errorMessage), 'not found')) {
+                    continue;
+                }
+
+                break;
+            }
         } catch (ConnectionException|\Throwable $exception) {
             Log::warning('Gemini API unavailable while correcting submission.', [
                 'submission_id' => $submission->id,
@@ -72,6 +97,10 @@ class DeepseekCorrectionService
                 'error' => $exception->getMessage(),
             ]);
 
+            return null;
+        }
+
+        if ($response === null) {
             return null;
         }
 
@@ -104,9 +133,15 @@ class DeepseekCorrectionService
             return null;
         }
 
-        $parsed = json_decode($content, true);
+        $normalizedContent = trim($content);
 
-        if (!is_array($parsed) && preg_match('/\{.*\}/s', $content, $matches) === 1) {
+        if (preg_match('/^```(?:json)?\s*(.*?)\s*```$/is', $normalizedContent, $matches) === 1) {
+            $normalizedContent = $matches[1];
+        }
+
+        $parsed = json_decode($normalizedContent, true);
+
+        if (!is_array($parsed) && preg_match('/\{.*\}/s', $normalizedContent, $matches) === 1) {
             $parsed = json_decode($matches[0], true);
         }
 
@@ -122,7 +157,7 @@ class DeepseekCorrectionService
             'score' => $score,
             'feedback' => $feedback,
             'requires_human_review' => $requiresHumanReview,
-            'model' => data_get($response->json(), 'modelVersion', $model),
+            'model' => data_get($response->json(), 'modelVersion', $selectedModel),
         ];
     }
 }
