@@ -6,6 +6,31 @@
       0 => 'BeyondCode\\ErdGenerator\\ErdGeneratorServiceProvider',
     ),
   ),
+  'laravel/boost' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Laravel\\Boost\\BoostServiceProvider',
+    ),
+  ),
+  'laravel/mcp' => 
+  array (
+    'aliases' => 
+    array (
+      'Mcp' => 'Laravel\\Mcp\\Server\\Facades\\Mcp',
+    ),
+    'providers' => 
+    array (
+      0 => 'Laravel\\Mcp\\Server\\McpServiceProvider',
+    ),
+  ),
+  'laravel/roster' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Laravel\\Roster\\RosterServiceProvider',
+    ),
+  ),
   'laravel/sail' => 
   array (
     'providers' => 
