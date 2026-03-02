@@ -20,7 +20,12 @@ class DeepseekCorrectionService
         $timeout = (int) config('services.gemini.timeout', 25);
 
         if (empty($apiKey) || empty($baseUrl)) {
-            return null;
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (configuration Gemini manquante). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => $model,
+            ];
         }
 
         $exercise = $submission->exercise;
@@ -97,7 +102,21 @@ class DeepseekCorrectionService
                 'error' => $exception->getMessage(),
             ]);
 
-            return null;
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (erreur de connexion au service Gemini). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => $selectedModel,
+            ];
+        }
+
+        if ($response === null) {
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (aucune réponse Gemini). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => $selectedModel,
+            ];
         }
 
         if ($response === null) {
@@ -120,17 +139,27 @@ class DeepseekCorrectionService
                     'score' => 0,
                     'feedback' => 'Pré-correction IA indisponible (quota/solde API insuffisant). Une correction humaine est requise.',
                     'requires_human_review' => true,
-                    'model' => $model,
+                    'model' => $selectedModel,
                 ];
             }
 
-            return null;
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (Gemini: '.($status ?: 'erreur inconnue').'). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => $selectedModel,
+            ];
         }
 
         $content = data_get($response->json(), 'candidates.0.content.parts.0.text');
 
         if (!is_string($content) || trim($content) === '') {
-            return null;
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (réponse vide du modèle). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => data_get($response->json(), 'modelVersion', $selectedModel),
+            ];
         }
 
         $normalizedContent = trim($content);
@@ -146,7 +175,12 @@ class DeepseekCorrectionService
         }
 
         if (!is_array($parsed)) {
-            return null;
+            return [
+                'score' => 0,
+                'feedback' => 'Pré-correction IA indisponible (format de réponse non exploitable). Une correction humaine est requise.',
+                'requires_human_review' => true,
+                'model' => data_get($response->json(), 'modelVersion', $selectedModel),
+            ];
         }
 
         $score = max(0, min(100, (int) data_get($parsed, 'score', 0)));
