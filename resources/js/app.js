@@ -44,15 +44,105 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Auto-hide alerts after 5 seconds
+    // Auto-hide alerts with configurable display time
+    const hideAlert = (alert) => {
+        if (!alert || alert.dataset.closing === 'true') {
+            return;
+        }
+
+        alert.dataset.closing = 'true';
+        alert.classList.add('alert-exit');
+
+        setTimeout(() => {
+            alert.remove();
+        }, 250);
+    };
+
     const alerts = document.querySelectorAll('.alert-auto-hide');
     alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        }, 5000);
+        const duration = Number.parseInt(alert.dataset.alertDuration, 10) || 5000;
+        const progress = alert.querySelector('.alert-progress');
+        const secondsLabel = alert.querySelector('[data-alert-seconds]');
+
+        let remainingMs = duration;
+        let timerStartedAt = Date.now();
+        let timeoutId = null;
+        let countdownId = null;
+
+        const updateSeconds = () => {
+            if (!secondsLabel) {
+                return;
+            }
+            secondsLabel.textContent = Math.max(1, Math.ceil(remainingMs / 1000));
+        };
+
+        const startCountdown = () => {
+            clearInterval(countdownId);
+            countdownId = setInterval(() => {
+                const elapsed = Date.now() - timerStartedAt;
+                remainingMs = Math.max(0, remainingMs - elapsed);
+                timerStartedAt = Date.now();
+                updateSeconds();
+
+                if (remainingMs <= 0) {
+                    clearInterval(countdownId);
+                }
+            }, 250);
+        };
+
+        const startTimer = () => {
+            clearTimeout(timeoutId);
+            timerStartedAt = Date.now();
+            timeoutId = setTimeout(() => {
+                clearInterval(countdownId);
+                hideAlert(alert);
+            }, remainingMs);
+            startCountdown();
+        };
+
+        const pauseTimer = () => {
+            clearTimeout(timeoutId);
+            const elapsed = Date.now() - timerStartedAt;
+            remainingMs = Math.max(0, remainingMs - elapsed);
+            clearInterval(countdownId);
+            updateSeconds();
+        };
+
+        if (progress) {
+            progress.style.animationDuration = `${duration}ms`;
+        }
+
+        updateSeconds();
+        startTimer();
+
+        alert.addEventListener('mouseenter', () => {
+            pauseTimer();
+            if (progress) {
+                progress.style.animationPlayState = 'paused';
+            }
+        });
+
+        alert.addEventListener('mouseleave', () => {
+            if (remainingMs <= 0) {
+                hideAlert(alert);
+                return;
+            }
+
+            if (progress) {
+                progress.style.animationPlayState = 'running';
+            }
+
+            startTimer();
+        });
+
+        const closeButton = alert.querySelector('[data-alert-close]');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                clearTimeout(timeoutId);
+                clearInterval(countdownId);
+                hideAlert(alert);
+            });
+        }
     });
 
     // Code syntax highlighting initialization (if Prism is loaded)
