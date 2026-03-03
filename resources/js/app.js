@@ -45,14 +45,46 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Auto-hide alerts after 5 seconds
+    const hideAlert = (alert) => {
+        if (!alert || alert.dataset.closing === 'true') {
+            return;
+        }
+
+        alert.dataset.closing = 'true';
+        alert.classList.add('alert-exit');
+
+        setTimeout(() => {
+            alert.remove();
+        }, 250);
+    };
+
     const alerts = document.querySelectorAll('.alert-auto-hide');
     alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        }, 5000);
+        let timeoutId = setTimeout(() => hideAlert(alert), 5000);
+
+        alert.addEventListener('mouseenter', () => {
+            clearTimeout(timeoutId);
+            const progress = alert.querySelector('.alert-progress');
+            if (progress) {
+                progress.style.animationPlayState = 'paused';
+            }
+        });
+
+        alert.addEventListener('mouseleave', () => {
+            const progress = alert.querySelector('.alert-progress');
+            if (progress) {
+                progress.style.animationPlayState = 'running';
+            }
+            timeoutId = setTimeout(() => hideAlert(alert), 2000);
+        });
+
+        const closeButton = alert.querySelector('[data-alert-close]');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                clearTimeout(timeoutId);
+                hideAlert(alert);
+            });
+        }
     });
 
     // Code syntax highlighting initialization (if Prism is loaded)
