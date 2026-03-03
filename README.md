@@ -172,7 +172,8 @@ Ajoutez les variables suivantes dans `.env` :
 ```env
 GEMINI_API_KEY=votre_cle_google_ai_studio
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
+# Optionnel: "models/gemini-2.5-flash" est aussi accepté
 GEMINI_TIMEOUT=25
 QUEUE_CONNECTION=database
 ```
