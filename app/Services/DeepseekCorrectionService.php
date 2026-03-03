@@ -74,6 +74,7 @@ class DeepseekCorrectionService
 
         try {
             foreach ($candidateModels as $candidateModel) {
+                $selectedModel = $candidateModel;
                 $url = sprintf('%s/models/%s:generateContent', $baseUrl, $candidateModel);
 
                 $response = Http::timeout($timeout)
@@ -106,6 +107,10 @@ class DeepseekCorrectionService
                 $errorMessage = data_get($response->json(), 'error.message', $response->body());
 
                 if ($status === 404 && is_string($errorMessage) && str_contains(strtolower($errorMessage), 'not found')) {
+                    continue;
+                }
+
+                if ($status === 429 || $status >= 500) {
                     continue;
                 }
 
@@ -150,6 +155,15 @@ class DeepseekCorrectionService
                 return [
                     'score' => 0,
                     'feedback' => 'Pré-correction IA indisponible (quota/solde API insuffisant). Une correction humaine est requise.',
+                    'requires_human_review' => true,
+                    'model' => $selectedModel,
+                ];
+            }
+
+            if ($status === 429) {
+                return [
+                    'score' => 0,
+                    'feedback' => 'Pré-correction IA indisponible (limite de requêtes Gemini atteinte). Réessayez plus tard ou augmentez le quota API. Une correction humaine est requise.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
                 ];

@@ -188,7 +188,8 @@ php artisan queue:work
 ### Dépannage rapide de la correction IA
 
 - Vérifier la migration `add_ai_fields_to_exercise_submissions_table` (sinon erreurs SQL sur `ai_requires_human_review`).
-- Vérifier la clé API Gemini (erreurs 401/403/429).
+- Vérifier la clé API Gemini (erreurs 401/403).
+- En cas d'erreur 429 : la limite de requêtes/quota Gemini est atteinte, attendre puis réessayer ou augmenter le quota.
 - Vérifier que le worker de queue tourne (sinon les soumissions restent en statut `soumis`).
 - Vérifier les logs Laravel : `storage/logs/laravel.log`.
 - Aucun plugin/extension Laravel spécifique n'est requis pour Gemini : une clé API valide suffit (Laravel HTTP client + OpenSSL/cURL PHP standards).
