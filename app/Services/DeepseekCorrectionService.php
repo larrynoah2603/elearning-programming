@@ -10,13 +10,28 @@ use Illuminate\Support\Facades\Log;
 class DeepseekCorrectionService
 {
     /**
+     * Normalize a Gemini model identifier so it can be injected in
+     * /models/{model}:generateContent endpoints.
+     */
+    private function normalizeModelName(string $model): string
+    {
+        $normalized = trim($model);
+
+        if (str_starts_with($normalized, 'models/')) {
+            return substr($normalized, strlen('models/'));
+        }
+
+        return $normalized;
+    }
+
+    /**
      * Evaluate a submission with Gemini (Google AI Studio).
      */
     public function evaluate(ExerciseSubmission $submission): ?array
     {
         $apiKey = config('services.gemini.key');
         $baseUrl = rtrim((string) config('services.gemini.url'), '/');
-        $model = (string) config('services.gemini.model', 'gemini-2.0-flash');
+        $model = $this->normalizeModelName((string) config('services.gemini.model', 'gemini-2.0-flash'));
         $timeout = (int) config('services.gemini.timeout', 25);
 
         if (empty($apiKey) || empty($baseUrl)) {
@@ -49,8 +64,9 @@ class DeepseekCorrectionService
 
         $candidateModels = array_values(array_unique(array_filter([
             $model,
+            'gemini-2.5-flash',
             'gemini-2.0-flash',
-            'gemini-1.5-flash',
+            'gemini-flash-latest',
         ])));
 
         $response = null;
@@ -58,6 +74,7 @@ class DeepseekCorrectionService
 
         try {
             foreach ($candidateModels as $candidateModel) {
+                $selectedModel = $candidateModel;
                 $url = sprintf('%s/models/%s:generateContent', $baseUrl, $candidateModel);
 
                 $response = Http::timeout($timeout)
@@ -93,6 +110,10 @@ class DeepseekCorrectionService
                     continue;
                 }
 
+                if ($status === 429 || $status >= 500) {
+                    continue;
+                }
+
                 break;
             }
         } catch (ConnectionException|\Throwable $exception) {
@@ -119,10 +140,6 @@ class DeepseekCorrectionService
             ];
         }
 
-        if ($response === null) {
-            return null;
-        }
-
         if (!$response->successful()) {
             $status = $response->status();
             $errorMessage = data_get($response->json(), 'error.message', $response->body());
@@ -138,6 +155,15 @@ class DeepseekCorrectionService
                 return [
                     'score' => 0,
                     'feedback' => 'Pré-correction IA indisponible (quota/solde API insuffisant). Une correction humaine est requise.',
+                    'requires_human_review' => true,
+                    'model' => $selectedModel,
+                ];
+            }
+
+            if ($status === 429) {
+                return [
+                    'score' => 0,
+                    'feedback' => 'Pré-correction IA indisponible (limite de requêtes Gemini atteinte). Réessayez plus tard ou augmentez le quota API. Une correction humaine est requise.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
                 ];
