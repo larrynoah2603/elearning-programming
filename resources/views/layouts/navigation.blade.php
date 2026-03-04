@@ -41,7 +41,7 @@
                     <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'nav-link-active' : '' }}">
                         Catégories
                     </a>
-                    @if(auth()->check() && auth()->user()->isTeacher())
+                    @if(auth()->check() && (auth()->user()->isTeacher() || auth()->user()->isAdmin()))
                         <a href="{{ route('teacher.dashboard') }}" class="nav-link {{ request()->routeIs('teacher.*') ? 'nav-link-active' : '' }}">
                             Enseignant
                         </a>
@@ -62,7 +62,7 @@
                             <i class="fas fa-cog mr-1"></i> Admin
                         </a>
                     @endif
-                    @if(auth()->user()->isTeacher())
+                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
                         <a href="{{ route('teacher.dashboard') }}" class="nav-link mr-4 {{ request()->routeIs('teacher.*') ? 'nav-link-active' : '' }}">
                             <i class="fas fa-chalkboard-teacher mr-1"></i> Enseignant
                         </a>
@@ -173,7 +173,7 @@
                 <a href="{{ route('categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Catégories
                 </a>
-                @if(auth()->check() && auth()->user()->isTeacher())
+                @if(auth()->check() && (auth()->user()->isTeacher() || auth()->user()->isAdmin()))
                     <a href="{{ route('teacher.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('teacher.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                         Enseignant
                     </a>
@@ -219,7 +219,7 @@
                             Administration
                         </a>
                     @endif
-                    @if(auth()->user()->isTeacher())
+                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
                         <a href="{{ route('teacher.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
                             Espace enseignant
                         </a>

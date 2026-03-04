@@ -154,6 +154,7 @@ class User extends Authenticatable
         return match($this->normalizedRole()) {
             'admin', 'administrateur' => 'danger',
             'subscribed' => 'success',
+            'teacher', 'enseignant', 'professeur' => 'warning',
             'free' => 'info',
             default => 'secondary',
         };
