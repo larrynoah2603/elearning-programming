@@ -19,6 +19,12 @@ Une plateforme e-learning complète pour l'apprentissage de la programmation au 
 - Support prioritaire
 - Sessions de mentorat (abonnement annuel)
 
+### Espace Enseignant (Nouveau)
+- Création de groupes/classes (prof ↔ élèves)
+- Assignation de devoirs (exercices/leçons) avec échéance
+- Tableau de suivi : taux de complétion, élèves en retard, exercices bloquants
+- Export CSV des résultats de classe
+
 ### Espace Administrateur
 - Gestion des utilisateurs (rôles, abonnements)
 - Auto-tests unitaires configurables par exercice (JSON)
@@ -27,6 +33,35 @@ Une plateforme e-learning complète pour l'apprentissage de la programmation au 
 - Gestion des vidéos (CRUD + upload)
 - Correction des soumissions
 - Statistiques détaillées
+
+
+## Activer l'Espace Enseignant (après `git pull`)
+
+Après un `git pull`, le code est présent mais l'interface n'apparaît que si :
+
+1. les migrations ont été exécutées ;
+2. le cache Laravel est vidé ;
+3. votre utilisateur a le rôle `teacher`.
+
+Commandes :
+
+```bash
+composer install
+php artisan migrate
+php artisan optimize:clear
+php artisan serve
+```
+
+Puis attribuez le rôle enseignant (exemple SQL) :
+
+```sql
+UPDATE users SET role = 'teacher' WHERE email = 'votre-email@example.com';
+```
+
+Accès enseignant :
+- URL directe : `/enseignant/dashboard`
+- Un lien "Enseignant" apparaît aussi dans la navigation pour les comptes `teacher` et `admin`.
+
 
 ## Prérequis
 
