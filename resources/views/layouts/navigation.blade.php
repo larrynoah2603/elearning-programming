@@ -65,6 +65,11 @@
                             <i class="fas fa-cog mr-1"></i> Admin
                         </a>
                     @endif
+                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
+                        <a href="{{ route('teacher.dashboard') }}" class="nav-link mr-4 {{ request()->routeIs('teacher.*') ? 'nav-link-active' : '' }}">
+                            <i class="fas fa-chalkboard-teacher mr-1"></i> Enseignant
+                        </a>
+                    @endif
 
                     <!-- Subscription Badge -->
                     @if(auth()->user()->isSubscribed())
@@ -218,6 +223,11 @@
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
                             Administration
+                        </a>
+                    @endif
+                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
+                        <a href="{{ route('teacher.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
+                            Espace enseignant
                         </a>
                     @endif
                     <form method="POST" action="{{ route('logout') }}">
