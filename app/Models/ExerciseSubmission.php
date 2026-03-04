@@ -22,6 +22,10 @@ class ExerciseSubmission extends Model
         'ai_requires_human_review',
         'ai_corrected_at',
         'ai_model',
+        'unit_test_results',
+        'unit_tests_passed',
+        'unit_tests_total',
+        'unit_test_score',
         'attempts',
         'submitted_at',
         'corrected_at',
@@ -36,6 +40,10 @@ class ExerciseSubmission extends Model
         'ai_score' => 'integer',
         'ai_requires_human_review' => 'boolean',
         'ai_corrected_at' => 'datetime',
+        'unit_test_results' => 'array',
+        'unit_tests_passed' => 'integer',
+        'unit_tests_total' => 'integer',
+        'unit_test_score' => 'integer',
     ];
 
     /**
