@@ -6,6 +6,8 @@ Une plateforme e-learning complète pour l'apprentissage de la programmation au 
 
 ### Espace Gratuit
 - Exercices de programmation simples
+- Défis hebdomadaires (classement limité à la semaine)
+- Forum Q/R sur les leçons et exercices
 - Leçons PDF téléchargeables (sélection)
 - Suivi de progression
 - Certificats de réussite
@@ -25,6 +27,7 @@ Une plateforme e-learning complète pour l'apprentissage de la programmation au 
 
 ### Espace Administrateur
 - Gestion des utilisateurs (rôles, abonnements)
+- Auto-tests unitaires configurables par exercice (JSON)
 - Gestion des leçons (CRUD + upload PDF)
 - Gestion des exercices (CRUD)
 - Gestion des vidéos (CRUD + upload)

@@ -9,6 +9,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
 use App\Services\DeepseekCorrectionService;
+use App\Services\ExerciseUnitTestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -108,6 +109,8 @@ class ExerciseController extends Controller
 
         $submission->submit($validated['code']);
 
+        $unitTestReport = app(ExerciseUnitTestService::class)->evaluate($exercise, $validated['code']);
+
         $submission->update([
             'score' => null,
             'feedback' => null,
@@ -118,6 +121,10 @@ class ExerciseController extends Controller
             'ai_requires_human_review' => false,
             'ai_corrected_at' => null,
             'ai_model' => null,
+            'unit_test_results' => $unitTestReport['results'],
+            'unit_tests_passed' => $unitTestReport['passed'],
+            'unit_tests_total' => $unitTestReport['total'],
+            'unit_test_score' => $unitTestReport['score'],
         ]);
 
         EvaluateSubmissionWithAiJob::dispatch($submission->id);
@@ -134,6 +141,12 @@ class ExerciseController extends Controller
                 'feedback' => $latestSubmission->feedback,
                 'requires_human_review' => (bool) $latestSubmission->ai_requires_human_review,
                 'ai_model' => $latestSubmission->ai_model,
+                'unit_tests' => [
+                    'passed' => (int) $latestSubmission->unit_tests_passed,
+                    'total' => (int) $latestSubmission->unit_tests_total,
+                    'score' => $latestSubmission->unit_test_score,
+                    'results' => $latestSubmission->unit_test_results ?? [],
+                ],
             ],
         ]);
     }
@@ -175,6 +188,12 @@ class ExerciseController extends Controller
                 'feedback' => $submission->feedback,
                 'requires_human_review' => (bool) $submission->ai_requires_human_review,
                 'ai_model' => $submission->ai_model,
+                'unit_tests' => [
+                    'passed' => (int) $submission->unit_tests_passed,
+                    'total' => (int) $submission->unit_tests_total,
+                    'score' => $submission->unit_test_score,
+                    'results' => $submission->unit_test_results ?? [],
+                ],
             ],
             'is_final' => in_array($submission->status, ['corrige', 'reussi', 'echoue'], true),
         ]);
@@ -233,13 +252,27 @@ class ExerciseController extends Controller
                 return;
             }
 
+            $unitTestScore = $submission->unit_test_score;
+            $finalScore = $aiCorrection['score'];
+
+            if ($unitTestScore !== null) {
+                $finalScore = (int) round(($aiCorrection['score'] * 0.7) + ($unitTestScore * 0.3));
+            }
+
             $status = $aiCorrection['requires_human_review']
                 ? 'corrige'
-                : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
+                : ($finalScore >= 50 ? 'reussi' : 'echoue');
+
+            $feedback = $aiCorrection['feedback'];
+            if ($submission->unit_tests_total > 0) {
+                $feedback .= "
+
+Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total} réussis.";
+            }
 
             $submission->update([
-                'score' => $aiCorrection['score'],
-                'feedback' => $aiCorrection['feedback'],
+                'score' => $finalScore,
+                'feedback' => $feedback,
                 'status' => $status,
                 'corrected_at' => now(),
                 'corrected_by' => null,
@@ -280,12 +313,15 @@ class ExerciseController extends Controller
             'starter_code' => 'nullable|string',
             'solution_code' => 'nullable|string',
             'hints' => 'nullable|string',
+            'unit_tests' => 'nullable|string',
             'points' => 'nullable|integer|min:1|max:100',
             'estimated_time' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
             'order' => 'nullable|integer',
             'is_active' => 'boolean',
         ]);
+
+        $validated['unit_tests'] = $this->parseUnitTests($request->input('unit_tests'));
 
         // Set default values
         $validated['user_id'] = auth()->id();
@@ -359,12 +395,15 @@ class ExerciseController extends Controller
             'starter_code' => 'nullable|string',
             'solution_code' => 'nullable|string',
             'hints' => 'nullable|string',
+            'unit_tests' => 'nullable|string',
             'points' => 'nullable|integer|min:1|max:100',
             'estimated_time' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
             'order' => 'nullable|integer',
             'is_active' => 'boolean',
         ]);
+
+        $validated['unit_tests'] = $this->parseUnitTests($request->input('unit_tests'));
 
         // Update slug if title changed
         if ($exercise->title !== $validated['title']) {

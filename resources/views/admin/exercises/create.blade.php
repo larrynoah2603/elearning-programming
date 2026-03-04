@@ -75,6 +75,14 @@
                         </select>
                     </div>
 
+
+                    <!-- Unit Tests JSON -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tests unitaires (JSON)</label>
+                        <textarea name="unit_tests" rows="5" class="form-textarea mt-1 w-full" placeholder='[{"name":"Vérifie boucle","type":"contains","value":"for"}]'>{{ old('unit_tests') }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Types supportés: <code>contains</code>, <code>not_contains</code>, <code>regex</code>.</p>
+                    </div>
+
                     <!-- Order -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Ordre</label>

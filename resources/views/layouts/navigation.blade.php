@@ -41,11 +41,14 @@
                     <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'nav-link-active' : '' }}">
                         Catégories
                     </a>
-                    @if(auth()->check() && (auth()->user()->isTeacher() || auth()->user()->isAdmin()))
-                        <a href="{{ route('teacher.dashboard') }}" class="nav-link {{ request()->routeIs('teacher.*') ? 'nav-link-active' : '' }}">
-                            Enseignant
-                        </a>
-                    @endif
+                    <a href="{{ route('challenges.index') }}" class="nav-link {{ request()->routeIs('challenges.*') ? 'nav-link-active' : '' }}">
+                        Défis hebdo
+                    </a>
+                    @auth
+                    <a href="{{ route('forum.index') }}" class="nav-link {{ request()->routeIs('forum.*') ? 'nav-link-active' : '' }}">
+                        Forum
+                    </a>
+                    @endauth
                     @endif
                 </div>
             </div>
@@ -173,11 +176,14 @@
                 <a href="{{ route('categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Catégories
                 </a>
-                @if(auth()->check() && (auth()->user()->isTeacher() || auth()->user()->isAdmin()))
-                    <a href="{{ route('teacher.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('teacher.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        Enseignant
-                    </a>
-                @endif
+                <a href="{{ route('challenges.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('challenges.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Défis hebdo
+                </a>
+                @auth
+                <a href="{{ route('forum.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('forum.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Forum
+                </a>
+                @endauth
             @endif
         </div>
 

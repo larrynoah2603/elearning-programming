@@ -4,6 +4,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\WeeklyChallengeController;
+use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubscriptionController;
@@ -25,6 +27,7 @@ Route::get('/support', [HomeController::class, 'contact'])->name('support');
 Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact.submit');
 Route::get('/plans', [HomeController::class, 'plans'])->name('plans');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
+Route::get('/defis-hebdomadaires', [WeeklyChallengeController::class, 'index'])->name('challenges.index');
 
 // Subscription Routes
 Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans-legacy');
@@ -78,14 +81,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
-// Teacher Routes
-Route::middleware(['auth', 'teacher'])->prefix('enseignant')->name('teacher.')->group(function () {
-    Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-    Route::post('/groupes', [TeacherController::class, 'storeGroup'])->name('groups.store');
-    Route::post('/groupes/{group}/eleves', [TeacherController::class, 'attachStudent'])->name('groups.students.attach');
-    Route::post('/groupes/{group}/devoirs', [TeacherController::class, 'storeAssignment'])->name('groups.assignments.store');
-    Route::get('/export/csv', [TeacherController::class, 'exportCsv'])->name('export.csv');
+// Community Forum (authenticated)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
+    Route::post('/forum/threads', [ForumController::class, 'storeThread'])->name('forum.threads.store');
+    Route::post('/forum/threads/{thread}/replies', [ForumController::class, 'storeReply'])->name('forum.replies.store');
+    Route::patch('/forum/threads/{thread}/resolve', [ForumController::class, 'resolve'])->name('forum.threads.resolve');
 });
 
 // Admin Routes
