@@ -38,13 +38,27 @@ class EvaluateSubmissionWithAiJob implements ShouldQueue
             return;
         }
 
+        $unitTestScore = $submission->unit_test_score;
+        $finalScore = $aiCorrection['score'];
+
+        if ($unitTestScore !== null) {
+            $finalScore = (int) round(($aiCorrection['score'] * 0.7) + ($unitTestScore * 0.3));
+        }
+
         $status = $aiCorrection['requires_human_review']
             ? 'corrige'
-            : ($aiCorrection['score'] >= 50 ? 'reussi' : 'echoue');
+            : ($finalScore >= 50 ? 'reussi' : 'echoue');
+
+        $feedback = $aiCorrection['feedback'];
+        if ($submission->unit_tests_total > 0) {
+            $feedback .= "
+
+Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total} réussis.";
+        }
 
         $submission->update([
-            'score' => $aiCorrection['score'],
-            'feedback' => $aiCorrection['feedback'],
+            'score' => $finalScore,
+            'feedback' => $feedback,
             'status' => $status,
             'corrected_at' => now(),
             'corrected_by' => null,

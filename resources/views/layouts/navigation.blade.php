@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="fixed top-0 inset-x-0 z-50 bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="fixed top-0 inset-x-0 z-50 nav-shell">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -7,7 +7,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 via-secondary-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30">
                             <i class="fas fa-code text-white text-lg"></i>
                         </div>
                         <span class="font-bold text-xl text-gray-800 hidden sm:block">CodeLearn</span>
@@ -17,30 +17,38 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     @if(auth()->check() && auth()->user()->isAdmin() && request()->routeIs('admin.*'))
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">Tableau admin</a>
-                        <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'nav-link-active' : '' }}">Utilisateurs</a>
-                        <a href="{{ route('admin.lessons.index') }}" class="nav-link {{ request()->routeIs('admin.lessons.*') ? 'nav-link-active' : '' }}">Leçons</a>
-                        <a href="{{ route('admin.exercises.index') }}" class="nav-link {{ request()->routeIs('admin.exercises.*') ? 'nav-link-active' : '' }}">Exercices</a>
-                        <a href="{{ route('admin.videos.index') }}" class="nav-link {{ request()->routeIs('admin.videos.*') ? 'nav-link-active' : '' }}">Vidéos</a>
-                        <a href="{{ route('admin.categories.index') }}" class="nav-link {{ request()->routeIs('admin.categories.*') ? 'nav-link-active' : '' }}">Catégories</a>
-                        <a href="{{ route('admin.submissions.pending') }}" class="nav-link {{ request()->routeIs('admin.submissions.*') ? 'nav-link-active' : '' }}">Soumissions</a>
-                        <a href="{{ route('admin.statistics') }}" class="nav-link {{ request()->routeIs('admin.statistics') ? 'nav-link-active' : '' }}">Statistiques</a>
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">Tableau admin</a>
+                        <a href="{{ route('admin.users.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.users.*') ? 'nav-link-active' : '' }}">Utilisateurs</a>
+                        <a href="{{ route('admin.lessons.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.lessons.*') ? 'nav-link-active' : '' }}">Leçons</a>
+                        <a href="{{ route('admin.exercises.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.exercises.*') ? 'nav-link-active' : '' }}">Exercices</a>
+                        <a href="{{ route('admin.videos.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.videos.*') ? 'nav-link-active' : '' }}">Vidéos</a>
+                        <a href="{{ route('admin.categories.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.categories.*') ? 'nav-link-active' : '' }}">Catégories</a>
+                        <a href="{{ route('admin.submissions.pending') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.submissions.*') ? 'nav-link-active' : '' }}">Soumissions</a>
+                        <a href="{{ route('admin.statistics') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.statistics') ? 'nav-link-active' : '' }}">Statistiques</a>
                     @else
-                    <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('home') }}" class="nav-link nav-link-fancy {{ request()->routeIs('home') ? 'nav-link-active' : '' }}">
                         Accueil
                     </a>
-                    <a href="{{ route('lessons.index') }}" class="nav-link {{ request()->routeIs('lessons.*') ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('lessons.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('lessons.*') ? 'nav-link-active' : '' }}">
                         Leçons
                     </a>
-                    <a href="{{ route('exercises.index') }}" class="nav-link {{ request()->routeIs('exercises.*') ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('exercises.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('exercises.*') ? 'nav-link-active' : '' }}">
                         Exercices
                     </a>
-                    <a href="{{ route('videos.index') }}" class="nav-link {{ request()->routeIs('videos.*') ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('videos.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('videos.*') ? 'nav-link-active' : '' }}">
                         Vidéos
                     </a>
-                    <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('categories.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('categories.*') ? 'nav-link-active' : '' }}">
                         Catégories
                     </a>
+                    <a href="{{ route('challenges.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('challenges.*') ? 'nav-link-active' : '' }}">
+                        Défis hebdo
+                    </a>
+                    @auth
+                    <a href="{{ route('forum.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('forum.*') ? 'nav-link-active' : '' }}">
+                        Forum
+                    </a>
+                    @endauth
                     @endif
                 </div>
             </div>
@@ -53,7 +61,7 @@
                 @auth
                     <!-- Admin Link -->
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link mr-4 {{ request()->routeIs('admin.*') ? 'nav-link-active' : '' }}">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link nav-link-fancy mr-4 {{ request()->routeIs('admin.*') ? 'nav-link-active' : '' }}">
                             <i class="fas fa-cog mr-1"></i> Admin
                         </a>
                     @endif
@@ -163,6 +171,14 @@
                 <a href="{{ route('categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Catégories
                 </a>
+                <a href="{{ route('challenges.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('challenges.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Défis hebdo
+                </a>
+                @auth
+                <a href="{{ route('forum.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('forum.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Forum
+                </a>
+                @endauth
             @endif
         </div>
 
