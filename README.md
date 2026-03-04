@@ -17,6 +17,12 @@ Une plateforme e-learning complète pour l'apprentissage de la programmation au 
 - Support prioritaire
 - Sessions de mentorat (abonnement annuel)
 
+### Espace Enseignant (Nouveau)
+- Création de groupes/classes (prof ↔ élèves)
+- Assignation de devoirs (exercices/leçons) avec échéance
+- Tableau de suivi : taux de complétion, élèves en retard, exercices bloquants
+- Export CSV des résultats de classe
+
 ### Espace Administrateur
 - Gestion des utilisateurs (rôles, abonnements)
 - Gestion des leçons (CRUD + upload PDF)
