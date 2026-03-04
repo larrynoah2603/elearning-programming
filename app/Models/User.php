@@ -68,6 +68,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is teacher.
+     */
+    public function isTeacher(): bool
+    {
+        return in_array($this->normalizedRole(), ['teacher', 'enseignant', 'professeur'], true);
+    }
+
+    /**
      * Check if user email is in configured admin list.
      */
     private function isConfiguredAdminEmail(): bool
@@ -189,6 +197,23 @@ class User extends Authenticatable
     public function videoProgress()
     {
         return $this->hasMany(VideoProgress::class);
+    }
+
+    /**
+     * Groups created by teacher.
+     */
+    public function teachingGroups()
+    {
+        return $this->hasMany(ClassGroup::class, 'teacher_id');
+    }
+
+    /**
+     * Groups where student is enrolled.
+     */
+    public function studentGroups()
+    {
+        return $this->belongsToMany(ClassGroup::class, 'class_group_student', 'student_id', 'class_group_id')
+            ->withTimestamps();
     }
 
     /**
