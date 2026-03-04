@@ -124,6 +124,9 @@
                             <p id="submission-ai-model" class="text-xs text-gray-500 mt-2 @if(!$submission?->ai_model) hidden @endif">
                                 Modèle IA : <span>{{ $submission?->ai_model }}</span>
                             </p>
+                            <p id="submission-unit-tests" class="text-xs text-gray-600 mt-2 @if(($submission?->unit_tests_total ?? 0) === 0) hidden @endif">
+                                Tests unitaires : <span id="submission-unit-tests-content">{{ (int) ($submission?->unit_tests_passed ?? 0) }}/{{ (int) ($submission?->unit_tests_total ?? 0) }}</span>
+                            </p>
                         </div>
                     </div>
                 @else
@@ -218,6 +221,8 @@
     const reportFeedbackText = document.getElementById('submission-feedback-text');
     const reportFeedbackContent = document.getElementById('submission-feedback-content');
     const reportAiModel = document.getElementById('submission-ai-model');
+    const reportUnitTests = document.getElementById('submission-unit-tests');
+    const reportUnitTestsContent = document.getElementById('submission-unit-tests-content');
     const submissionStatusUrl = '{{ route('exercises.submission-status', ['exercise' => $exercise->id]) }}';
     let submissionPollingInterval = null;
     let submissionPollingAttempts = 0;
