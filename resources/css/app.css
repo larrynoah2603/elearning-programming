@@ -297,6 +297,28 @@ code {
     .dark .bg-gray-200 {
         @apply bg-slate-700;
     }
+
+    .dark input,
+    .dark textarea,
+    .dark select {
+        @apply bg-slate-800 border-slate-600 text-gray-100 placeholder:text-gray-400;
+    }
+
+    .dark input:focus,
+    .dark textarea:focus,
+    .dark select:focus {
+        @apply border-primary-400 ring-primary-400;
+    }
+
+    .dark .surface-glow {
+        @apply bg-slate-800/90 border-slate-700;
+        box-shadow: 0 16px 35px -26px rgba(15, 23, 42, 0.9);
+    }
+
+    .dark .nav-shell {
+        @apply bg-slate-900/95 border-slate-700;
+    }
+
 }
 
 
