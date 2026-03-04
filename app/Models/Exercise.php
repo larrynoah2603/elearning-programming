@@ -23,6 +23,7 @@ class Exercise extends Model
         'starter_code',
         'solution_code',
         'hints',
+        'unit_tests',
         'points',
         'estimated_time',
         'user_id',
@@ -36,6 +37,7 @@ class Exercise extends Model
         'points' => 'integer',
         'estimated_time' => 'integer',
         'order' => 'integer',
+        'unit_tests' => 'array',
     ];
 
     /**
