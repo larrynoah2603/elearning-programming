@@ -9,6 +9,7 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
