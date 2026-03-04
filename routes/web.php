@@ -7,6 +7,7 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +75,17 @@ Route::middleware(['auth'])->group(function () {
 
     // Subscription Checkout
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout-legacy');
+});
+
+
+
+// Teacher Routes
+Route::middleware(['auth', 'teacher'])->prefix('enseignant')->name('teacher.')->group(function () {
+    Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
+    Route::post('/groupes', [TeacherController::class, 'storeGroup'])->name('groups.store');
+    Route::post('/groupes/{group}/eleves', [TeacherController::class, 'attachStudent'])->name('groups.students.attach');
+    Route::post('/groupes/{group}/devoirs', [TeacherController::class, 'storeAssignment'])->name('groups.assignments.store');
+    Route::get('/export/csv', [TeacherController::class, 'exportCsv'])->name('export.csv');
 });
 
 // Admin Routes
