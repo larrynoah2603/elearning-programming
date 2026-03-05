@@ -8,6 +8,7 @@ use App\Http\Controllers\WeeklyChallengeController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\FormationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\VideoController;
@@ -46,6 +47,10 @@ Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 Route::get('/video-stream/{video}', [VideoController::class, 'stream'])->name('videos.stream');
 Route::get('/videos/{slug}', [VideoController::class, 'show'])->name('videos.show');
 
+
+Route::get('/formations', [FormationController::class, 'index'])->name('formations.index');
+Route::get('/formations/{slug}', [FormationController::class, 'show'])->name('formations.show');
+
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 
@@ -78,6 +83,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Subscription Checkout
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout-legacy');
+
+
+    Route::get('/formations/{formation}/checkout', [FormationController::class, 'checkout'])->name('formations.checkout');
+    Route::post('/formations/{formation}/purchase', [FormationController::class, 'purchase'])->name('formations.purchase');
 });
 
 

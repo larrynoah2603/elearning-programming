@@ -218,6 +218,35 @@ class User extends Authenticatable
     }
 
     /**
+     * Paid formations purchased by the user.
+     */
+    public function paidFormations()
+    {
+        return $this->belongsToMany(Formation::class, 'formation_enrollments')
+            ->withPivot(['amount_paid', 'status', 'payment_method', 'paid_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Formation enrollment records.
+     */
+    public function formationEnrollments()
+    {
+        return $this->hasMany(FormationEnrollment::class);
+    }
+
+    /**
+     * Check if the user has already purchased a formation.
+     */
+    public function hasPurchasedFormation(int $formationId): bool
+    {
+        return $this->formationEnrollments()
+            ->where('formation_id', $formationId)
+            ->where('status', 'paid')
+            ->exists();
+    }
+
+    /**
      * Get completed exercises count
      */
     public function getCompletedExercisesCountAttribute(): int
