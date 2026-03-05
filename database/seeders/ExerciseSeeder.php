@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Exercise;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ExerciseSeeder extends Seeder
 {
@@ -12,111 +13,74 @@ class ExerciseSeeder extends Seeder
      */
     public function run(): void
     {
-        $exercises = [
-            // Python - Simple
-            [
-                'title' => 'Hello World',
-                'description' => 'Écrivez votre premier programme Python qui affiche "Hello World".',
-                'slug' => 'hello-world-python',
-                'difficulty' => 'simple',
-                'access_level' => 'free',
-                'programming_language' => 'python',
-                'instructions' => "Écrivez un programme Python qui affiche le texte 'Hello World' à l'écran.",
-                'starter_code' => '# Écrivez votre code ici\n',
-                'solution_code' => 'print("Hello World")',
-                'hints' => 'Utilisez la fonction print() pour afficher du texte.',
-                'points' => 5,
-                'estimated_time' => 5,
-                'user_id' => 1,
-                'order' => 1,
+        $catalog = [
+            'python' => [
+                ['title' => 'Variables et affichage', 'difficulty' => 'simple', 'description' => 'Manipuler des variables puis afficher un résultat.', 'instructions' => 'Créez deux variables prénom et âge puis affichez une phrase complète.', 'starter_code' => "prenom = ''\nage = 0\n# Votre code ici", 'solution_code' => "prenom = 'Amina'\nage = 14\nprint(f'Je m\'appelle {prenom} et j\'ai {age} ans.')", 'hints' => 'Utilisez f-string pour concaténer facilement texte et variables.', 'points' => 5, 'estimated_time' => 10],
+                ['title' => 'Boucle sur une liste', 'difficulty' => 'simple', 'description' => 'Parcourir une liste et calculer une somme.', 'instructions' => 'Parcourez une liste de nombres et affichez la somme totale.', 'starter_code' => "nombres = [4, 8, 3, 10]\n# Votre code ici", 'solution_code' => "nombres = [4, 8, 3, 10]\ntotal = 0\nfor nombre in nombres:\n    total += nombre\nprint(total)", 'hints' => 'Initialisez total à 0 puis utilisez une boucle for.', 'points' => 8, 'estimated_time' => 12],
+                ['title' => 'Analyse de notes', 'difficulty' => 'complexe', 'description' => 'Calculer moyenne, minimum et maximum à partir de notes.', 'instructions' => 'Écrivez une fonction qui prend une liste de notes et retourne moyenne, min et max.', 'starter_code' => "def analyser_notes(notes):\n    # Votre code ici\n    pass", 'solution_code' => "def analyser_notes(notes):\n    moyenne = sum(notes) / len(notes)\n    return moyenne, min(notes), max(notes)", 'hints' => 'Utilisez sum, len, min et max pour simplifier.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Gestion des tâches CLI', 'difficulty' => 'complexe', 'description' => 'Créer un mini gestionnaire de tâches en console.', 'instructions' => 'Implémentez ajouter, lister et supprimer des tâches dans une boucle de menu.', 'starter_code' => "taches = []\n\nwhile True:\n    # Menu ici\n    pass", 'solution_code' => "taches = []\n\nwhile True:\n    action = input('add/list/del/quit: ')\n    if action == 'add':\n        taches.append(input('Nouvelle tâche: '))\n    elif action == 'list':\n        for i, t in enumerate(taches, 1):\n            print(i, t)\n    elif action == 'del':\n        index = int(input('Index: ')) - 1\n        if 0 <= index < len(taches):\n            taches.pop(index)\n    elif action == 'quit':\n        break", 'hints' => 'Pensez à vérifier les index avant suppression.', 'points' => 25, 'estimated_time' => 35],
             ],
-            [
-                'title' => 'Calculatrice simple',
-                'description' => 'Créez une calculatrice qui effectue les opérations de base.',
-                'slug' => 'calculatrice-simple-python',
-                'difficulty' => 'simple',
-                'access_level' => 'free',
-                'programming_language' => 'python',
-                'instructions' => "Créez un programme qui demande deux nombres à l'utilisateur et affiche leur somme, différence, produit et quotient.",
-                'starter_code' => '# Demandez les deux nombres\na = float(input("Premier nombre: "))\nb = float(input("Deuxième nombre: "))\n\n# Effectuez les calculs\n',
-                'solution_code' => 'a = float(input("Premier nombre: "))\nb = float(input("Deuxième nombre: "))\n\nprint(f"Somme: {a + b}")\nprint(f"Différence: {a - b}")\nprint(f"Produit: {a * b}")\nprint(f"Quotient: {a / b}" if b != 0 else "Division par zéro impossible")',
-                'hints' => "Utilisez float() pour convertir l'entrée utilisateur en nombre. Attention à la division par zéro !",
-                'points' => 10,
-                'estimated_time' => 15,
-                'user_id' => 1,
-                'order' => 2,
+            'javascript' => [
+                ['title' => 'Somme de deux nombres', 'difficulty' => 'simple', 'description' => 'Créer une fonction JavaScript de somme.', 'instructions' => 'Écrivez une fonction addition(a, b) qui retourne la somme.', 'starter_code' => "function addition(a, b) {\n  // Votre code\n}", 'solution_code' => "function addition(a, b) {\n  return a + b;\n}", 'hints' => 'Utilisez return pour renvoyer le résultat.', 'points' => 5, 'estimated_time' => 8],
+                ['title' => 'Filtrer un tableau', 'difficulty' => 'simple', 'description' => 'Utiliser filter pour extraire des valeurs.', 'instructions' => 'Filtrez les nombres pairs d\'un tableau.', 'starter_code' => "const nombres = [1, 2, 3, 4, 5, 6];\n// Votre code", 'solution_code' => "const nombres = [1, 2, 3, 4, 5, 6];\nconst pairs = nombres.filter(n => n % 2 === 0);\nconsole.log(pairs);", 'hints' => 'La méthode filter retourne un nouveau tableau.', 'points' => 8, 'estimated_time' => 10],
+                ['title' => 'Compteur interactif DOM', 'difficulty' => 'complexe', 'description' => 'Créer un compteur avec boutons + et -.', 'instructions' => 'Mettez à jour une valeur affichée dans le DOM au clic.', 'starter_code' => "let valeur = 0;\n// Sélectionnez les boutons et branchez les événements", 'solution_code' => "let valeur = 0;\nconst affichage = document.getElementById('valeur');\ndocument.getElementById('plus').addEventListener('click', () => {\n  valeur++;\n  affichage.textContent = valeur;\n});\ndocument.getElementById('moins').addEventListener('click', () => {\n  valeur--;\n  affichage.textContent = valeur;\n});", 'hints' => 'Utilisez addEventListener sur chaque bouton.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Validation de formulaire', 'difficulty' => 'complexe', 'description' => 'Valider email et mot de passe côté client.', 'instructions' => 'Empêchez l\'envoi du formulaire si les champs sont invalides.', 'starter_code' => "const form = document.querySelector('form');\nform.addEventListener('submit', (e) => {\n  // Votre code\n});", 'solution_code' => "const form = document.querySelector('form');\nform.addEventListener('submit', (e) => {\n  const email = document.getElementById('email').value;\n  const pwd = document.getElementById('password').value;\n  if (!email.includes('@') || pwd.length < 8) {\n    e.preventDefault();\n    alert('Email ou mot de passe invalide');\n  }\n});", 'hints' => 'Utilisez e.preventDefault() pour bloquer la soumission.', 'points' => 25, 'estimated_time' => 30],
             ],
-            [
-                'title' => 'Devine le nombre',
-                'description' => 'Créez un jeu où l\'utilisateur doit deviner un nombre aléatoire.',
-                'slug' => 'devine-nombre-python',
-                'difficulty' => 'simple',
-                'access_level' => 'free',
-                'programming_language' => 'python',
-                'instructions' => "Créez un jeu où l'ordinateur choisit un nombre aléatoire entre 1 et 100, et l'utilisateur doit le deviner.",
-                'starter_code' => 'import random\n\nnombre_secret = random.randint(1, 100)\ntentatives = 0\n\nprint("J\'ai choisi un nombre entre 1 et 100. À vous de le deviner !")\n\nwhile True:\n    # Votre code ici\n    pass',
-                'solution_code' => 'import random\n\nnombre_secret = random.randint(1, 100)\ntentatives = 0\n\nprint("J\'ai choisi un nombre entre 1 et 100. À vous de le deviner !")\n\nwhile True:\n    essai = int(input("Votre proposition: "))\n    tentatives += 1\n    \n    if essai < nombre_secret:\n        print("Trop petit !")\n    elif essai > nombre_secret:\n        print("Trop grand !")\n    else:\n        print(f"Bravo ! Vous avez trouvé en {tentatives} tentatives.")\n        break',
-                'hints' => "Utilisez la boucle while pour répéter jusqu'à ce que l'utilisateur trouve. Donnez des indices 'trop petit' ou 'trop grand'.",
-                'points' => 15,
-                'estimated_time' => 20,
-                'user_id' => 1,
-                'order' => 3,
+            'java' => [
+                ['title' => 'Afficher un message', 'difficulty' => 'simple', 'description' => 'Créer une classe Java simple avec main.', 'instructions' => 'Affichez Bonjour Java dans la console.', 'starter_code' => "public class Main {\n    public static void main(String[] args) {\n        // Votre code\n    }\n}", 'solution_code' => "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Bonjour Java\");\n    }\n}", 'hints' => 'Utilisez System.out.println.', 'points' => 5, 'estimated_time' => 8],
+                ['title' => 'Pair ou impair', 'difficulty' => 'simple', 'description' => 'Tester la parité d\'un entier.', 'instructions' => 'Écrivez une méthode qui retourne true si le nombre est pair.', 'starter_code' => "public static boolean estPair(int n) {\n    // Votre code\n}", 'solution_code' => "public static boolean estPair(int n) {\n    return n % 2 == 0;\n}", 'hints' => 'Le modulo % donne le reste de la division.', 'points' => 8, 'estimated_time' => 10],
+                ['title' => 'Moyenne d\'un tableau', 'difficulty' => 'complexe', 'description' => 'Calculer une moyenne sur un tableau d\'entiers.', 'instructions' => 'Calculez la moyenne en double d\'un tableau.', 'starter_code' => "public static double moyenne(int[] notes) {\n    // Votre code\n    return 0;\n}", 'solution_code' => "public static double moyenne(int[] notes) {\n    int somme = 0;\n    for (int n : notes) {\n        somme += n;\n    }\n    return (double) somme / notes.length;\n}", 'hints' => 'Pensez au cast en double avant la division.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Mini banque orientée objet', 'difficulty' => 'complexe', 'description' => 'Implémenter dépôt et retrait dans une classe Compte.', 'instructions' => 'Créez une classe Compte avec solde, deposer et retirer.', 'starter_code' => "class Compte {\n    private double solde;\n    // Votre code\n}", 'solution_code' => "class Compte {\n    private double solde;\n\n    public Compte(double soldeInitial) {\n        this.solde = soldeInitial;\n    }\n\n    public void deposer(double montant) {\n        solde += montant;\n    }\n\n    public boolean retirer(double montant) {\n        if (montant > solde) return false;\n        solde -= montant;\n        return true;\n    }\n}", 'hints' => 'Utilisez private pour encapsuler le solde.', 'points' => 25, 'estimated_time' => 35],
             ],
-            // Python - Complexe
-            [
-                'title' => 'Gestionnaire de contacts',
-                'description' => 'Créez un programme complet pour gérer une liste de contacts.',
-                'slug' => 'gestionnaire-contacts-python',
-                'difficulty' => 'complexe',
-                'access_level' => 'subscribed',
-                'programming_language' => 'python',
-                'instructions' => "Créez un gestionnaire de contacts avec les fonctionnalités suivants : ajouter un contact, supprimer un contact, rechercher un contact, afficher tous les contacts.",
-                'starter_code' => 'contacts = {}\n\ndef ajouter_contact(nom, telephone, email):\n    # Votre code ici\n    pass\n\ndef supprimer_contact(nom):\n    # Votre code ici\n    pass\n\ndef rechercher_contact(nom):\n    # Votre code ici\n    pass\n\ndef afficher_contacts():\n    # Votre code ici\n    pass\n\n# Menu principal\nwhile True:\n    print("\\n1. Ajouter un contact")\n    print("2. Supprimer un contact")\n    print("3. Rechercher un contact")\n    print("4. Afficher tous les contacts")\n    print("5. Quitter")\n    \n    choix = input("Votre choix: ")\n    # Votre code ici',
-                'solution_code' => 'contacts = {}\n\ndef ajouter_contact(nom, telephone, email):\n    contacts[nom] = {"telephone": telephone, "email": email}\n    print(f"Contact {nom} ajouté avec succès.")\n\ndef supprimer_contact(nom):\n    if nom in contacts:\n        del contacts[nom]\n        print(f"Contact {nom} supprimé.")\n    else:\n        print("Contact non trouvé.")\n\ndef rechercher_contact(nom):\n    if nom in contacts:\n        contact = contacts[nom]\n        print(f"Nom: {nom}")\n        print(f"Téléphone: {contact[\'telephone\']}")\n        print(f"Email: {contact[\'email\']}")\n    else:\n        print("Contact non trouvé.")\n\ndef afficher_contacts():\n    if not contacts:\n        print("Aucun contact enregistré.")\n    else:\n        for nom, infos in contacts.items():\n            print(f"\\n{nom}: {infos[\'telephone\']}, {infos[\'email\']}")\n\nwhile True:\n    print("\\n1. Ajouter un contact")\n    print("2. Supprimer un contact")\n    print("3. Rechercher un contact")\n    print("4. Afficher tous les contacts")\n    print("5. Quitter")\n    \n    choix = input("Votre choix: ")\n    \n    if choix == "1":\n        nom = input("Nom: ")\n        tel = input("Téléphone: ")\n        email = input("Email: ")\n        ajouter_contact(nom, tel, email)\n    elif choix == "2":\n        nom = input("Nom à supprimer: ")\n        supprimer_contact(nom)\n    elif choix == "3":\n        nom = input("Nom à rechercher: ")\n        rechercher_contact(nom)\n    elif choix == "4":\n        afficher_contacts()\n    elif choix == "5":\n        break',
-                'hints' => "Utilisez un dictionnaire pour stocker les contacts. Chaque contact peut être un dictionnaire avec les informations.",
-                'points' => 25,
-                'estimated_time' => 45,
-                'user_id' => 1,
-                'order' => 4,
+            'cpp' => [
+                ['title' => 'Premier programme C++', 'difficulty' => 'simple', 'description' => 'Afficher un texte avec cout.', 'instructions' => 'Affichez Bonjour C++ dans la console.', 'starter_code' => "#include <iostream>\nint main() {\n    // Votre code\n}", 'solution_code' => "#include <iostream>\nint main() {\n    std::cout << \"Bonjour C++\" << std::endl;\n    return 0;\n}", 'hints' => 'N\'oubliez pas std::endl.', 'points' => 5, 'estimated_time' => 8],
+                ['title' => 'Maximum de deux nombres', 'difficulty' => 'simple', 'description' => 'Comparer deux valeurs entières.', 'instructions' => 'Écrivez une fonction max2(int a, int b).', 'starter_code' => "int max2(int a, int b) {\n    // Votre code\n}", 'solution_code' => "int max2(int a, int b) {\n    return (a > b) ? a : b;\n}", 'hints' => 'Utilisez l\'opérateur ternaire.', 'points' => 8, 'estimated_time' => 10],
+                ['title' => 'Palindrome', 'difficulty' => 'complexe', 'description' => 'Vérifier si une chaîne est un palindrome.', 'instructions' => 'Retournez true si le mot se lit dans les deux sens.', 'starter_code' => "#include <string>\nbool estPalindrome(const std::string& mot) {\n    // Votre code\n}", 'solution_code' => "#include <string>\nbool estPalindrome(const std::string& mot) {\n    int i = 0, j = (int)mot.size() - 1;\n    while (i < j) {\n        if (mot[i] != mot[j]) return false;\n        i++;\n        j--;\n    }\n    return true;\n}", 'hints' => 'Utilisez deux index i et j.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Gestionnaire d\'étudiants', 'difficulty' => 'complexe', 'description' => 'Utiliser struct et vector pour stocker des étudiants.', 'instructions' => 'Ajoutez des étudiants et affichez leur moyenne.', 'starter_code' => "#include <vector>\n#include <string>\nstruct Etudiant {\n    std::string nom;\n    double note;\n};\n// Votre code", 'solution_code' => "#include <vector>\n#include <string>\n#include <iostream>\nstruct Etudiant {\n    std::string nom;\n    double note;\n};\n\nint main() {\n    std::vector<Etudiant> etudiants = {{\"Ali\", 14.5}, {\"Sara\", 17.0}};\n    double somme = 0;\n    for (const auto& e : etudiants) somme += e.note;\n    std::cout << somme / etudiants.size() << std::endl;\n}", 'hints' => 'Une boucle range-based simplifie le parcours.', 'points' => 25, 'estimated_time' => 35],
             ],
-            // JavaScript - Simple
-            [
-                'title' => 'Manipulation du DOM',
-                'description' => 'Apprenez à modifier le contenu d\'une page web avec JavaScript.',
-                'slug' => 'manipulation-dom-javascript',
-                'difficulty' => 'simple',
-                'access_level' => 'free',
-                'programming_language' => 'javascript',
-                'instructions' => "Créez un script qui change le texte d'un élément lorsqu'on clique sur un bouton.",
-                'starter_code' => '// Sélectionnez l\'élément et le bouton\nconst element = document.getElementById("monElement");\nconst bouton = document.getElementById("monBouton");\n\n// Ajoutez l\'écouteur d\'événement\n',
-                'solution_code' => 'const element = document.getElementById("monElement");\nconst bouton = document.getElementById("monBouton");\n\nbouton.addEventListener("click", function() {\n    element.textContent = "Texte modifié !";\n    element.style.color = "red";\n});',
-                'hints' => "Utilisez addEventListener pour écouter les clics et textContent pour modifier le texte.",
-                'points' => 10,
-                'estimated_time' => 15,
-                'user_id' => 1,
-                'order' => 5,
+            'php' => [
+                ['title' => 'Variables PHP', 'difficulty' => 'simple', 'description' => 'Déclarer et afficher des variables en PHP.', 'instructions' => 'Créez $nom et $ville puis affichez une phrase.', 'starter_code' => '<?php' . "\n" . '// Votre code', 'solution_code' => '<?php' . "\n" . '$nom = \'Kadi\';' . "\n" . '$ville = \'Dakar\';' . "\n" . 'echo "Je suis $nom et je vis à $ville";', 'hints' => 'Utilisez echo pour afficher.', 'points' => 5, 'estimated_time' => 8],
+                ['title' => 'Table de multiplication', 'difficulty' => 'simple', 'description' => 'Afficher une table avec une boucle for.', 'instructions' => 'Affichez la table de 7 de 1 à 10.', 'starter_code' => '<?php' . "\n" . '// Votre code', 'solution_code' => '<?php' . "\n" . 'for ($i = 1; $i <= 10; $i++) {' . "\n" . '    echo "7 x $i = " . (7 * $i) . PHP_EOL;' . "\n" . '}', 'hints' => 'La constante PHP_EOL saute une ligne.', 'points' => 8, 'estimated_time' => 10],
+                ['title' => 'Filtrer des utilisateurs', 'difficulty' => 'complexe', 'description' => 'Extraire les adultes d\'un tableau associatif.', 'instructions' => 'Retournez les utilisateurs dont age >= 18.', 'starter_code' => '<?php' . "\n" . '$utilisateurs = [];' . "\n" . '// Votre code', 'solution_code' => '<?php' . "\n" . '$utilisateurs = [' . "\n" . '    [\'nom\' => \'Awa\', \'age\' => 17],' . "\n" . '    [\'nom\' => \'Moussa\', \'age\' => 21],' . "\n" . '];' . "\n" . '$adultes = array_filter($utilisateurs, fn($u) => $u[\'age\'] >= 18);', 'hints' => 'Utilisez array_filter et une fonction fléchée.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Panier e-commerce', 'difficulty' => 'complexe', 'description' => 'Calculer total, taxe et remise d\'un panier.', 'instructions' => 'Écrivez une fonction qui retourne total HT, TVA et TTC.', 'starter_code' => '<?php' . "\n" . 'function calculerPanier(array $articles): array {' . "\n" . '    // Votre code' . "\n" . '}', 'solution_code' => '<?php' . "\n" . 'function calculerPanier(array $articles): array {' . "\n" . '    $totalHt = array_sum(array_column($articles, \'prix\'));' . "\n" . '    $tva = $totalHt * 0.18;' . "\n" . '    return [\'ht\' => $totalHt, \'tva\' => $tva, \'ttc\' => $totalHt + $tva];' . "\n" . '}', 'hints' => 'array_column + array_sum simplifient le calcul.', 'points' => 25, 'estimated_time' => 35],
             ],
-            // HTML/CSS - Simple
-            [
-                'title' => 'Créer une carte de profil',
-                'description' => 'Créez une carte de profil stylisée avec HTML et CSS.',
-                'slug' => 'carte-profil-html-css',
-                'difficulty' => 'simple',
-                'access_level' => 'free',
-                'programming_language' => 'html_css',
-                'instructions' => "Créez une carte de profil avec une image, un nom, une description et des liens sociaux.",
-                'starter_code' => '<!-- HTML -->\n<div class="carte-profil">\n    <!-- Votre code ici -->\n</div>\n\n<style>\n.carte-profil {\n    /* Votre CSS ici */\n}\n</style>',
-                'solution_code' => '<div class="carte-profil">\n    <img src="avatar.jpg" alt="Avatar" class="profil-image">\n    <h2>Jean Dupont</h2>\n    <p>Développeur web passionné</p>\n    <div class="reseaux-sociaux">\n        <a href="#"><i class="fab fa-twitter"></i></a>\n        <a href="#"><i class="fab fa-linkedin"></i></a>\n        <a href="#"><i class="fab fa-github"></i></a>\n    </div>\n</div>\n\n<style>\n.carte-profil {\n    width: 300px;\n    padding: 20px;\n    border-radius: 10px;\n    box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n    text-align: center;\n    background: white;\n}\n.profil-image {\n    width: 100px;\n    height: 100px;\n    border-radius: 50%;\n    object-fit: cover;\n}\n.reseaux-sociaux a {\n    margin: 0 10px;\n    color: #333;\n    font-size: 20px;\n}\n</style>',
-                'hints' => "Utilisez border-radius: 50% pour créer une image ronde et box-shadow pour l'ombre.",
-                'points' => 10,
-                'estimated_time' => 20,
-                'user_id' => 1,
-                'order' => 6,
+            'html_css' => [
+                ['title' => 'Carte produit responsive', 'difficulty' => 'simple', 'description' => 'Créer une carte produit propre en HTML/CSS.', 'instructions' => 'Ajoutez image, titre, prix et bouton.', 'starter_code' => "<div class='card'>\n  <!-- Votre code -->\n</div>", 'solution_code' => "<div class='card'>\n  <img src='produit.jpg' alt='Produit'>\n  <h3>Casque audio</h3>\n  <p>39 000 FCFA</p>\n  <button>Acheter</button>\n</div>", 'hints' => 'Utilisez display:flex ou grid pour aligner.', 'points' => 8, 'estimated_time' => 12],
+                ['title' => 'Menu de navigation', 'difficulty' => 'simple', 'description' => 'Construire une barre de navigation horizontale.', 'instructions' => 'Créez un nav avec 4 liens et un style hover.', 'starter_code' => "<nav>\n  <!-- Votre code -->\n</nav>", 'solution_code' => "<nav class='menu'>\n  <a href='#'>Accueil</a>\n  <a href='#'>Cours</a>\n  <a href='#'>Exercices</a>\n  <a href='#'>Contact</a>\n</nav>", 'hints' => 'Pensez à gap et :hover en CSS.', 'points' => 10, 'estimated_time' => 15],
+                ['title' => 'Landing page section hero', 'difficulty' => 'complexe', 'description' => 'Créer une section hero moderne avec CTA.', 'instructions' => 'Ajoutez un titre, sous-titre, bouton et visuel alignés.', 'starter_code' => "<section class='hero'>\n  <!-- Votre code -->\n</section>", 'solution_code' => "<section class='hero'>\n  <div>\n    <h1>Apprendre à coder</h1>\n    <p>Progressez chaque jour avec des exercices pratiques.</p>\n    <a href='#' class='btn'>Commencer</a>\n  </div>\n  <img src='hero.png' alt='Illustration'>\n</section>", 'hints' => 'Utilisez flex avec justify-content: space-between.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Dashboard en CSS Grid', 'difficulty' => 'complexe', 'description' => 'Réaliser une mise en page dashboard responsive.', 'instructions' => 'Créez sidebar, header et cartes de contenu avec CSS Grid.', 'starter_code' => "<div class='dashboard'>\n  <!-- Votre code -->\n</div>", 'solution_code' => "<div class='dashboard'>\n  <aside>Menu</aside>\n  <header>Statistiques</header>\n  <main>\n    <article>Carte 1</article>\n    <article>Carte 2</article>\n  </main>\n</div>", 'hints' => 'Définissez grid-template-areas pour structurer.', 'points' => 25, 'estimated_time' => 35],
+            ],
+            'sql' => [
+                ['title' => 'Sélection simple', 'difficulty' => 'simple', 'description' => 'Lire les données d\'une table.', 'instructions' => 'Sélectionnez tous les étudiants de la table students.', 'starter_code' => "-- Votre requête ici", 'solution_code' => 'SELECT * FROM students;', 'hints' => 'Utilisez SELECT * FROM nom_table.', 'points' => 5, 'estimated_time' => 8],
+                ['title' => 'Filtrer avec WHERE', 'difficulty' => 'simple', 'description' => 'Filtrer des enregistrements selon une condition.', 'instructions' => 'Affichez les cours dont le prix est supérieur à 10000.', 'starter_code' => "-- Votre requête ici", 'solution_code' => 'SELECT * FROM courses WHERE price > 10000;', 'hints' => 'WHERE permet d\'ajouter des conditions.', 'points' => 8, 'estimated_time' => 10],
+                ['title' => 'Jointure étudiants-cours', 'difficulty' => 'complexe', 'description' => 'Combiner deux tables avec JOIN.', 'instructions' => 'Affichez nom étudiant et titre cours à partir des inscriptions.', 'starter_code' => "-- Votre requête ici", 'solution_code' => "SELECT s.name, c.title\nFROM enrollments e\nJOIN students s ON s.id = e.student_id\nJOIN courses c ON c.id = e.course_id;", 'hints' => 'Reliez les clés étrangères avec JOIN ... ON.', 'points' => 20, 'estimated_time' => 25],
+                ['title' => 'Top 5 cours les plus vendus', 'difficulty' => 'complexe', 'description' => 'Utiliser GROUP BY, SUM et ORDER BY.', 'instructions' => 'Classez les cours par nombre total de ventes et limitez à 5.', 'starter_code' => "-- Votre requête ici", 'solution_code' => "SELECT c.title, SUM(o.quantity) AS total_ventes\nFROM order_items o\nJOIN courses c ON c.id = o.course_id\nGROUP BY c.id, c.title\nORDER BY total_ventes DESC\nLIMIT 5;", 'hints' => 'GROUP BY puis ORDER BY DESC pour classer.', 'points' => 25, 'estimated_time' => 35],
             ],
         ];
 
-        foreach ($exercises as $exercise) {
-            Exercise::create($exercise);
+        $order = 1;
+
+        foreach ($catalog as $language => $exercises) {
+            foreach ($exercises as $exercise) {
+                Exercise::create([
+                    'title' => $exercise['title'],
+                    'description' => $exercise['description'],
+                    'slug' => Str::slug($exercise['title'] . '-' . $language . '-' . $order),
+                    'difficulty' => $exercise['difficulty'],
+                    'access_level' => $exercise['difficulty'] === 'simple' ? 'free' : 'subscribed',
+                    'programming_language' => $language,
+                    'instructions' => $exercise['instructions'],
+                    'starter_code' => $exercise['starter_code'],
+                    'solution_code' => $exercise['solution_code'],
+                    'hints' => $exercise['hints'],
+                    'points' => $exercise['points'],
+                    'estimated_time' => $exercise['estimated_time'],
+                    'user_id' => 1,
+                    'order' => $order,
+                ]);
+
+                $order++;
+            }
         }
     }
 }
