@@ -23,6 +23,7 @@
                         <a href="{{ route('admin.exercises.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.exercises.*') ? 'nav-link-active' : '' }}">Exercices</a>
                         <a href="{{ route('admin.videos.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.videos.*') ? 'nav-link-active' : '' }}">Vidéos</a>
                         <a href="{{ route('admin.categories.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.categories.*') ? 'nav-link-active' : '' }}">Catégories</a>
+                        <a href="{{ route('admin.formations.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.formations.*') ? 'nav-link-active' : '' }}">Formations</a>
                         <a href="{{ route('admin.submissions.pending') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.submissions.*') ? 'nav-link-active' : '' }}">Soumissions</a>
                         <a href="{{ route('admin.statistics') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.statistics') ? 'nav-link-active' : '' }}">Statistiques</a>
                     @else
@@ -44,7 +45,13 @@
                     <a href="{{ route('challenges.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('challenges.*') ? 'nav-link-active' : '' }}">
                         Défis hebdo
                     </a>
+                    <a href="{{ route('formations.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('formations.*') ? 'nav-link-active' : '' }}">
+                        Formations
+                    </a>
                     @auth
+                    <a href="{{ route('formations.my') }}" class="nav-link nav-link-fancy {{ request()->routeIs('formations.my') ? 'nav-link-active' : '' }}">
+                        Mes formations
+                    </a>
                     <a href="{{ route('forum.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('forum.*') ? 'nav-link-active' : '' }}">
                         Forum
                     </a>
@@ -158,6 +165,7 @@
                 <a href="{{ route('admin.exercises.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.exercises.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Exercices</a>
                 <a href="{{ route('admin.videos.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.videos.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Vidéos</a>
                 <a href="{{ route('admin.categories.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Catégories</a>
+                <a href="{{ route('admin.formations.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.formations.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Formations</a>
                 <a href="{{ route('admin.submissions.pending') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.submissions.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Soumissions</a>
                 <a href="{{ route('admin.statistics') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.statistics') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">Statistiques</a>
             @else
@@ -179,7 +187,13 @@
                 <a href="{{ route('challenges.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('challenges.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Défis hebdo
                 </a>
+                <a href="{{ route('formations.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('formations.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Formations
+                </a>
                 @auth
+                <a href="{{ route('formations.my') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('formations.my') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Mes formations
+                </a>
                 <a href="{{ route('forum.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('forum.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Forum
                 </a>
