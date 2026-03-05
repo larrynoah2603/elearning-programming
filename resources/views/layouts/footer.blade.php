@@ -45,6 +45,12 @@
                         <a href="{{ route('videos.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Vidéos</a>
                     </li>
                     <li>
+                        <a href="{{ route('challenges.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Défi hebdo</a>
+                    </li>
+                    <li>
+                        <a href="{{ auth()->check() ? route('forum.index') : route('login') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Forum</a>
+                    </li>
+                    <li>
                         <a href="{{ route('subscription.plans') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Tarifs</a>
                     </li>
                 </ul>
