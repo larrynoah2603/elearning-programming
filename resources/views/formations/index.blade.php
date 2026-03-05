@@ -4,9 +4,20 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<<<<<<< HEAD
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Formations modulaires</h1>
         <p class="mt-2 text-gray-600">Un espace de formations payantes indépendant des contenus Free et Premium.</p>
+=======
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Formations modulaires</h1>
+            <p class="mt-2 text-gray-600">Un espace de formations payantes indépendant des contenus Free et Premium.</p>
+        </div>
+        @auth
+            <a href="{{ route('formations.my') }}" class="btn btn-secondary">Mes formations achetées</a>
+        @endauth
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -18,14 +29,27 @@
                 </div>
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $formation->title }}</h2>
                 <p class="text-gray-600 text-sm mb-4">{{ Str::limit($formation->description, 140) }}</p>
+<<<<<<< HEAD
                 <p class="text-sm text-gray-500 mb-6">{{ $formation->modules_count }} module(s)</p>
+=======
+                <p class="text-sm text-gray-500 mb-2">{{ $formation->modules_count }} module(s)</p>
+                @auth
+                    @if(in_array($formation->id, $purchasedFormationIds, true))
+                        <p class="text-xs text-success-700 mb-4">✅ Vous faites déjà partie de cette formation</p>
+                    @endif
+                @endauth
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
                 <a href="{{ route('formations.show', $formation->slug) }}" class="mt-auto btn btn-primary text-center">
                     Voir la formation
                 </a>
             </div>
         @empty
             <div class="col-span-full bg-white rounded-xl p-8 text-center text-gray-500">
+<<<<<<< HEAD
                 Aucune formation disponible pour le moment.
+=======
+                Aucune formation disponible pour le moment. Contactez un administrateur pour en ajouter.
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
             </div>
         @endforelse
     </div>

@@ -85,6 +85,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout-legacy');
 
 
+<<<<<<< HEAD
+=======
+    Route::get('/mes-formations', [FormationController::class, 'myFormations'])->name('formations.my');
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
     Route::get('/formations/{formation}/checkout', [FormationController::class, 'checkout'])->name('formations.checkout');
     Route::post('/formations/{formation}/purchase', [FormationController::class, 'purchase'])->name('formations.purchase');
 });
@@ -149,7 +153,16 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     // CONSERVÉ: Seule route pour toggle-active avec PATCH (convention REST)
     Route::patch('/videos/{video}/toggle-active', [VideoController::class, 'toggleActive'])->name('videos.toggle-active');
         
-    // Category Management
+
+    // Paid Formation Management
+    Route::get('/formations', [FormationController::class, 'adminIndex'])->name('formations.index');
+    Route::get('/formations/create', [FormationController::class, 'create'])->name('formations.create');
+    Route::post('/formations', [FormationController::class, 'store'])->name('formations.store');
+    Route::get('/formations/{formation}/edit', [FormationController::class, 'edit'])->name('formations.edit');
+    Route::put('/formations/{formation}', [FormationController::class, 'update'])->name('formations.update');
+    Route::delete('/formations/{formation}', [FormationController::class, 'destroy'])->name('formations.destroy');
+
+        // Category Management
     Route::get('/categories', [CategoryController::class, 'adminIndex'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');

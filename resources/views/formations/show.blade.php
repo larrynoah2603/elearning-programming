@@ -23,6 +23,17 @@
             </div>
         </div>
 
+<<<<<<< HEAD
+=======
+        @if($hasAccess && $enrollment)
+            <div class="rounded-lg bg-success-50 border border-success-200 p-4 text-success-800 mb-8">
+                <p class="font-semibold">✅ Vous faites partie de cette formation.</p>
+                <p class="text-sm mt-1">Achetée le {{ optional($enrollment->paid_at)->format('d/m/Y H:i') }} via {{ $enrollment->payment_method }}.</p>
+                <p class="text-xs mt-1">Référence de paiement: {{ $enrollment->payment_reference ?? 'N/A' }}</p>
+            </div>
+        @endif
+
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Modules de la formation</h2>
         <div class="space-y-3">
             @forelse($formation->modules as $index => $module)
@@ -43,9 +54,13 @@
         <div class="mt-8">
             @auth
                 @if($hasAccess)
+<<<<<<< HEAD
                     <div class="rounded-lg bg-success-50 border border-success-200 p-4 text-success-800">
                         ✅ Vous avez déjà accès à cette formation.
                     </div>
+=======
+                    <a href="{{ route('formations.my') }}" class="btn btn-secondary">Voir mes formations</a>
+>>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
                 @else
                     <a href="{{ route('formations.checkout', $formation) }}" class="btn btn-primary">
                         Acheter cette formation
