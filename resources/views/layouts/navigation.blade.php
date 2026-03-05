@@ -44,6 +44,9 @@
                     <a href="{{ route('challenges.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('challenges.*') ? 'nav-link-active' : '' }}">
                         Défis hebdo
                     </a>
+                    <a href="{{ route('formations.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('formations.*') ? 'nav-link-active' : '' }}">
+                        Formations
+                    </a>
                     @auth
                     <a href="{{ route('forum.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('forum.*') ? 'nav-link-active' : '' }}">
                         Forum
@@ -178,6 +181,9 @@
                 </a>
                 <a href="{{ route('challenges.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('challenges.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                     Défis hebdo
+                </a>
+                <a href="{{ route('formations.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('formations.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                    Formations
                 </a>
                 @auth
                 <a href="{{ route('forum.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('forum.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
