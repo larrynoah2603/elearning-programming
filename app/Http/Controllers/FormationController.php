@@ -38,24 +38,19 @@ class FormationController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $enrollment = null;
-        $hasAccess = false;
-
-        if (auth()->check()) {
-            $enrollment = auth()->user()
-                ->formationEnrollments()
-                ->where('formation_id', $formation->id)
-                ->where('status', 'paid')
-                ->latest('paid_at')
-                ->first();
-
-            $hasAccess = $enrollment !== null;
-        }
+        $enrollment = $this->resolvePaidEnrollment($formation->id);
+        $hasAccess = $enrollment !== null;
 
         return view('formations.show', compact('formation', 'hasAccess', 'enrollment'));
     }
 
     public function myFormations()
+    {
+        return $this->mesFormations();
+    }
+
+
+    public function mesFormations()
     {
         $enrollments = auth()->user()
             ->formationEnrollments()
@@ -177,6 +172,21 @@ class FormationController extends Controller
 
         return redirect()->route('admin.formations.index')
             ->with('success', 'Formation supprimée avec succès.');
+    }
+
+
+    private function resolvePaidEnrollment(int $formationId): ?FormationEnrollment
+    {
+        if (! auth()->check()) {
+            return null;
+        }
+
+        return auth()->user()
+            ->formationEnrollments()
+            ->where('formation_id', $formationId)
+            ->where('status', 'paid')
+            ->latest('paid_at')
+            ->first();
     }
 
     private function validateFormation(Request $request): array
