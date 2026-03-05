@@ -11,20 +11,12 @@ class FormationController extends Controller
 {
     public function index()
     {
-<<<<<<< HEAD
-        $this->ensureDefaultCatalog();
-
-=======
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
         $formations = Formation::query()
             ->withCount('modules')
             ->active()
             ->orderBy('created_at', 'desc')
             ->get();
 
-<<<<<<< HEAD
-        return view('formations.index', compact('formations'));
-=======
         $purchasedFormationIds = [];
 
         if (auth()->check()) {
@@ -36,27 +28,16 @@ class FormationController extends Controller
         }
 
         return view('formations.index', compact('formations', 'purchasedFormationIds'));
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
     }
 
     public function show(string $slug)
     {
-<<<<<<< HEAD
-        $this->ensureDefaultCatalog();
-
-=======
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
         $formation = Formation::query()
             ->with('modules')
             ->active()
             ->where('slug', $slug)
             ->firstOrFail();
 
-<<<<<<< HEAD
-        $hasAccess = auth()->check() && auth()->user()->hasPurchasedFormation($formation->id);
-
-        return view('formations.show', compact('formation', 'hasAccess'));
-=======
         $enrollment = null;
         $hasAccess = false;
 
@@ -84,7 +65,6 @@ class FormationController extends Controller
             ->get();
 
         return view('formations.my-formations', compact('enrollments'));
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
     }
 
     public function checkout(Formation $formation)
@@ -101,32 +81,6 @@ class FormationController extends Controller
         return view('formations.checkout', compact('formation'));
     }
 
-<<<<<<< HEAD
-
-    private function ensureDefaultCatalog(): void
-    {
-        if (Formation::query()->exists()) {
-            return;
-        }
-
-        $formation = Formation::query()->create([
-            'title' => 'Formation Laravel Fullstack',
-            'slug' => 'formation-laravel-fullstack',
-            'description' => 'Un parcours modulaire payant pour construire une application complète avec Laravel, API, sécurité et déploiement.',
-            'level' => 'intermediaire',
-            'price' => 149.00,
-            'is_active' => true,
-        ]);
-
-        $formation->modules()->createMany([
-            ['title' => 'Architecture & bonnes pratiques', 'description' => 'Structurer un projet pro, conventions, services et tests.', 'duration_minutes' => 90, 'order' => 1],
-            ['title' => 'Auth, rôles & permissions', 'description' => 'Gestion des rôles, ACL et sécurisation des endpoints.', 'duration_minutes' => 80, 'order' => 2],
-            ['title' => 'API + Frontend intégré', 'description' => 'Construire un module API + interface utilisateur connectée.', 'duration_minutes' => 110, 'order' => 3],
-        ]);
-    }
-
-=======
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
     public function purchase(Request $request, Formation $formation)
     {
         abort_unless($formation->is_active, 404);
@@ -155,8 +109,6 @@ class FormationController extends Controller
             ->route('formations.show', $formation->slug)
             ->with('success', 'Paiement validé. Vous pouvez maintenant suivre cette formation modulaire.');
     }
-<<<<<<< HEAD
-=======
 
     public function adminIndex()
     {
@@ -253,5 +205,4 @@ class FormationController extends Controller
             ]);
         }
     }
->>>>>>> 25ce8ad4c4aed7ebf98e1402eb44ed22fb41545b
 }
