@@ -3,6 +3,9 @@
 @section('title', $formation->title)
 
 @section('content')
+@php($hasAccess = $hasAccess ?? false)
+@php($enrollment = $enrollment ?? null)
+
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
         <div class="flex flex-wrap items-center gap-3 mb-4">
