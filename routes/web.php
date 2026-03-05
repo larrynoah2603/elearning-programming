@@ -85,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout-legacy');
 
 
-    Route::get('/mes-formations', [FormationController::class, 'myFormations'])->name('formations.my');
+    Route::get('/mes-formations', [FormationController::class, 'mesFormations'])->name('formations.my');
     Route::get('/formations/{formation}/checkout', [FormationController::class, 'checkout'])->name('formations.checkout');
     Route::post('/formations/{formation}/purchase', [FormationController::class, 'purchase'])->name('formations.purchase');
 });
