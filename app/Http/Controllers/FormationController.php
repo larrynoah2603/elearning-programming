@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Formation;
 use App\Models\FormationEnrollment;
+use App\Services\FormationProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -33,7 +34,7 @@ class FormationController extends Controller
     public function show(string $slug)
     {
         $formation = Formation::query()
-            ->with('modules')
+            ->with(['modules', 'quizzes.questions'])
             ->active()
             ->where('slug', $slug)
             ->firstOrFail();
@@ -101,8 +102,91 @@ class FormationController extends Controller
         );
 
         return redirect()
-            ->route('formations.show', $formation->slug)
+            ->route('formations.access', $formation)
             ->with('success', 'Paiement validé. Vous pouvez maintenant suivre cette formation modulaire.');
+    }
+
+    public function validation(Formation $formation)
+    {
+        $enrollment = auth()->user()
+            ->formationEnrollments()
+            ->where('formation_id', $formation->id)
+            ->where('status', 'paid')
+            ->first();
+
+        if (!$enrollment) {
+            return redirect()->route('formations.show', $formation->slug)
+                ->with('error', 'Vous n\'avez pas accès à cette page.');
+        }
+
+        return view('formations.validation', compact('formation', 'enrollment'));
+    }
+
+    /**
+     * Page d'accès direct à une formation achetée (indépendante du statut Premium)
+     */
+    public function access(Formation $formation)
+    {
+        $enrollment = auth()->user()
+            ->formationEnrollments()
+            ->where('formation_id', $formation->id)
+            ->where('status', 'paid')
+            ->first();
+
+        if (!$enrollment) {
+            return redirect()->route('formations.show', $formation->slug)
+                ->with('error', 'Vous devez acheter cette formation pour y accéder.');
+        }
+
+        return view('formations.access', compact('formation', 'enrollment'));
+    }
+
+    public function showModule(Formation $formation, $moduleId)
+    {
+        // Vérifier que l'utilisateur a accès à la formation
+        $enrollment = $this->resolvePaidEnrollment($formation->id);
+        if (!$enrollment) {
+            return redirect()->route('formations.show', $formation->slug)
+                ->with('error', 'Vous devez acheter cette formation pour y accéder.');
+        }
+
+        // Récupérer le module
+        $module = $formation->modules()
+            ->with(['lessons', 'videos', 'exercises'])
+            ->findOrFail($moduleId);
+
+        $user = auth()->user();
+        $progress = $module->getUserProgress($user->id);
+
+        return view('formations.module', compact('formation', 'module', 'progress'));
+    }
+
+    public function updateModuleProgress(Request $request, Formation $formation, $moduleId)
+    {
+        // Vérifier que l'utilisateur a accès à la formation
+        $enrollment = $this->resolvePaidEnrollment($formation->id);
+        if (!$enrollment) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'percentage' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        $module = $formation->modules()->findOrFail($moduleId);
+        $user = auth()->user();
+
+        $progressService = app(FormationProgressService::class);
+        $progress = $progressService->updateModuleProgress(
+            $user,
+            $module,
+            $request->input('percentage')
+        );
+
+        return response()->json([
+            'success' => true,
+            'progress' => $progress,
+        ]);
     }
 
     public function adminIndex()
@@ -172,6 +256,70 @@ class FormationController extends Controller
 
         return redirect()->route('admin.formations.index')
             ->with('success', 'Formation supprimée avec succès.');
+    }
+
+    public function completion(Formation $formation)
+    {
+        // Vérifier que l'utilisateur a accès à cette formation
+        $enrollment = $this->resolvePaidEnrollment($formation->id);
+
+        if (!$enrollment) {
+            return redirect()->route('formations.show', $formation->slug)
+                ->with('error', 'Vous devez acheter cette formation pour accéder à cette page.');
+        }
+
+        // Charger les données nécessaires pour la page de félicitations
+        $user = auth()->user();
+        $formation->load(['modules', 'quizzes.questions']);
+
+        // Statistiques de l'utilisateur
+        $quizSubmissions = $user->quizSubmissions()
+            ->whereHas('quiz', function($query) use ($formation) {
+                $query->where('formation_id', $formation->id);
+            })
+            ->with('quiz')
+            ->get();
+
+        $averageQuizScore = $quizSubmissions->avg('score') ?? 0;
+        $totalQuizzes = $formation->quizzes->count();
+        $passedQuizzes = $quizSubmissions->where('status', 'passed')->count();
+
+        // Exercices complétés (si applicable)
+        $exerciseCompletions = 0; // TODO: Implémenter la logique d'exercices
+
+        // Vérifier si le projet final est soumis et approuvé
+        $finalProject = $formation->finalProjects()->first();
+        $projectSubmission = null;
+        $projectApproved = false;
+
+        if ($finalProject) {
+            $projectSubmission = $user->projectSubmissions()
+                ->where('final_project_id', $finalProject->id)
+                ->latest()
+                ->first();
+
+            $projectApproved = $projectSubmission && $projectSubmission->status === 'approved';
+        }
+
+        // Calculer la progression globale
+        $overallProgress = 0; // TODO: Utiliser FormationProgressService
+
+        // Générer l'URL de partage
+        $shareUrl = route('formations.show', $formation->slug);
+        $shareText = "J'ai terminé la formation \"{$formation->title}\" sur CodeLearn Academy ! 🎓";
+
+        return view('formations.completion', compact(
+            'formation',
+            'averageQuizScore',
+            'totalQuizzes',
+            'passedQuizzes',
+            'exerciseCompletions',
+            'projectSubmission',
+            'projectApproved',
+            'overallProgress',
+            'shareUrl',
+            'shareText'
+        ));
     }
 
 

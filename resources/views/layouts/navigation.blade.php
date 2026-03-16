@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="fixed top-0 inset-x-0 z-50 nav-shell">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="{{ auth()->check() && auth()->user()->isAdmin() ? 'max-w-full' : 'max-w-7xl' }} mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <!-- Logo and Left Navigation -->
             <div class="flex">
@@ -15,7 +15,7 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex {{ auth()->check() && auth()->user()->isAdmin() ? 'sm:overflow-x-auto sm:flex-wrap' : '' }}">
                     @if(auth()->check() && auth()->user()->isAdmin() && request()->routeIs('admin.*'))
                         <a href="{{ route('admin.dashboard') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">Tableau admin</a>
                         <a href="{{ route('admin.users.index') }}" class="nav-link nav-link-fancy {{ request()->routeIs('admin.users.*') ? 'nav-link-active' : '' }}">Utilisateurs</a>
@@ -64,11 +64,6 @@
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="nav-link nav-link-fancy mr-4 {{ request()->routeIs('admin.*') ? 'nav-link-active' : '' }}">
                             <i class="fas fa-cog mr-1"></i> Admin
-                        </a>
-                    @endif
-                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
-                        <a href="{{ route('teacher.dashboard') }}" class="nav-link mr-4 {{ request()->routeIs('teacher.*') ? 'nav-link-active' : '' }}">
-                            <i class="fas fa-chalkboard-teacher mr-1"></i> Enseignant
                         </a>
                     @endif
 
@@ -225,11 +220,6 @@
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
                             Administration
-                        </a>
-                    @endif
-                    @if(auth()->user()->isTeacher() || auth()->user()->isAdmin())
-                        <a href="{{ route('teacher.dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50">
-                            Espace enseignant
                         </a>
                     @endif
                     <form method="POST" action="{{ route('logout') }}">

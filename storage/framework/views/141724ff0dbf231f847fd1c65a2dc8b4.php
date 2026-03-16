@@ -8,10 +8,23 @@
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">
-                <i class="fas fa-cog mr-2"></i> Tableau de bord Admin
+                <i class="fas fa-tachometer-alt mr-2"></i> Tableau de bord Admin
             </h1>
-            <p class="text-gray-600 mt-2">Gérez votre plateforme e-learning.</p>
+            <p class="text-gray-600 mt-2">Bienvenue! Voici un aperçu de votre plateforme e-learning.</p>
         </div>
+
+        <!-- Important Notice -->
+        <?php if($stats['pending_submissions'] > 0): ?>
+        <div class="mb-8 bg-warning-50 border-l-4 border-warning-500 rounded-lg p-4">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-warning-600 mr-4 text-2xl"></i>
+                <div>
+                    <h3 class="font-semibold text-warning-900">Soumissions en attente</h3>
+                    <p class="text-warning-700"><?php echo e($stats['pending_submissions']); ?> soumission(s) en attente de correction. <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="underline font-semibold">Voir détails</a></p>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -58,34 +71,115 @@
                 </div>
             </div>
 
-            <!-- Videos -->
+            <!-- Categories -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-warning-100 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-video text-xl text-warning-600"></i>
+                    <div class="w-12 h-12 bg-danger-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-folder text-xl text-danger-600"></i>
                     </div>
-                    <span class="text-2xl font-bold text-gray-900"><?php echo e($stats['total_videos']); ?></span>
+                    <span class="text-2xl font-bold text-gray-900"><?php echo e($stats['total_categories']); ?></span>
                 </div>
-                <p class="text-gray-600 text-sm">Vidéos</p>
-                <div class="mt-2 flex items-center text-xs text-gray-500">
-                    <span class="text-success-600 mr-2"><i class="fas fa-check mr-1"></i> <?php echo e($stats['active_videos']); ?> actives</span>
+                <p class="text-gray-600 text-sm">Catégories</p>
+                <div class="mt-2 flex items-center">
+                    <a href="<?php echo e(route('admin.categories.index')); ?>" class="text-primary-600 hover:text-primary-700 text-xs font-semibold">
+                        Gérer <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pending Submissions Alert -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 <?php echo e($stats['pending_submissions'] > 0 ? 'border-warning-500' : 'border-success-500'); ?>">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 <?php echo e($stats['pending_submissions'] > 0 ? 'bg-warning-100' : 'bg-success-100'); ?> rounded-xl flex items-center justify-center">
+                        <i class="fas <?php echo e($stats['pending_submissions'] > 0 ? 'fa-hourglass-end' : 'fa-check-circle'); ?> text-xl <?php echo e($stats['pending_submissions'] > 0 ? 'text-warning-600' : 'text-success-600'); ?>"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-900"><?php echo e($stats['pending_submissions']); ?></span>
+                </div>
+                <p class="text-gray-600 text-sm"><?php echo e($stats['pending_submissions'] > 0 ? 'Soumissions en attente' : 'Aucune soumission en attente'); ?></p>
+                <div class="mt-2 flex items-center">
+                    <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="text-primary-600 hover:text-primary-700 text-xs font-semibold">
+                        Détails <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
+        <!-- Subscription Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4">
+                <p class="text-gray-600 text-sm mb-2">Utilisateurs Premium</p>
+                <p class="text-2xl font-bold text-primary-900"><?php echo e($stats['subscribed_users']); ?></p>
+                <p class="text-primary-700 text-xs mt-1">Actifs maintenant</p>
+            </div>
+            <div class="bg-gradient-to-br from-success-50 to-success-100 rounded-xl p-4">
+                <p class="text-gray-600 text-sm mb-2">Utilisateurs Gratuits</p>
+                <p class="text-2xl font-bold text-success-900"><?php echo e($stats['free_users']); ?></p>
+                <p class="text-success-700 text-xs mt-1">Sur la plateforme</p>
+            </div>
+            <div class="bg-gradient-to-br from-danger-50 to-danger-100 rounded-xl p-4">
+                <p class="text-gray-600 text-sm mb-2">Abonnements Expirés</p>
+                <p class="text-2xl font-bold text-danger-900"><?php echo e($stats['expired_subscriptions']); ?></p>
+                <p class="text-danger-700 text-xs mt-1">À renouveler</p>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
-        <div class="grid md:grid-cols-4 gap-4 mb-8">
-            <a href="<?php echo e(route('admin.users.index')); ?>" class="btn bg-gray-100 text-gray-700 hover:bg-gray-200 py-4">
-                <i class="fas fa-users mr-2"></i> Gérer les utilisateurs
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <a href="<?php echo e(route('admin.users.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-primary-300 group">
+                <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary-200 transition-colors">
+                    <i class="fas fa-users text-primary-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les utilisateurs</p>
+                <p class="text-gray-500 text-xs mt-1">Ajouter, éditer ou supprimer</p>
             </a>
-            <a href="<?php echo e(route('admin.lessons.create')); ?>" class="btn bg-primary-100 text-primary-700 hover:bg-primary-200 py-4">
-                <i class="fas fa-plus mr-2"></i> Ajouter une leçon
+            <a href="<?php echo e(route('admin.lessons.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-secondary-300 group">
+                <div class="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-secondary-200 transition-colors">
+                    <i class="fas fa-book text-secondary-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les leçons</p>
+                <p class="text-gray-500 text-xs mt-1">Créer ou modifier</p>
             </a>
-            <a href="<?php echo e(route('admin.exercises.create')); ?>" class="btn bg-success-100 text-success-700 hover:bg-success-200 py-4">
-                <i class="fas fa-plus mr-2"></i> Ajouter un exercice
+            <a href="<?php echo e(route('admin.exercises.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-success-300 group">
+                <div class="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-success-200 transition-colors">
+                    <i class="fas fa-laptop-code text-success-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les exercices</p>
+                <p class="text-gray-500 text-xs mt-1">Coding challenges</p>
             </a>
-            <a href="<?php echo e(route('admin.videos.create')); ?>" class="btn bg-warning-100 text-warning-700 hover:bg-warning-200 py-4">
-                <i class="fas fa-plus mr-2"></i> Ajouter une vidéo
+            <a href="<?php echo e(route('admin.videos.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-warning-300 group">
+                <div class="w-10 h-10 bg-warning-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-warning-200 transition-colors">
+                    <i class="fas fa-video text-warning-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les vidéos</p>
+                <p class="text-gray-500 text-xs mt-1">Contenu vidéo</p>
+            </a>
+            <a href="<?php echo e(route('admin.formations.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-info-300 group">
+                <div class="w-10 h-10 bg-info-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-info-200 transition-colors">
+                    <i class="fas fa-graduation-cap text-info-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les formations</p>
+                <p class="text-gray-500 text-xs mt-1">Formations payantes</p>
+            </a>
+            <a href="<?php echo e(route('admin.categories.index')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-danger-300 group">
+                <div class="w-10 h-10 bg-danger-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-danger-200 transition-colors">
+                    <i class="fas fa-folder text-danger-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Gérer les catégories</p>
+                <p class="text-gray-500 text-xs mt-1">Organisation du contenu</p>
+            </a>
+            <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-warning-300 group">
+                <div class="w-10 h-10 <?php echo e($stats['pending_submissions'] > 0 ? 'bg-warning-100' : 'bg-success-100'); ?> rounded-lg flex items-center justify-center mb-3 <?php echo e($stats['pending_submissions'] > 0 ? 'group-hover:bg-warning-200' : 'group-hover:bg-success-200'); ?> transition-colors">
+                    <i class="fas <?php echo e($stats['pending_submissions'] > 0 ? 'fa-hourglass-end' : 'fa-check-circle'); ?> <?php echo e($stats['pending_submissions'] > 0 ? 'text-warning-600' : 'text-success-600'); ?>"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Soumissions</p>
+                <p class="text-gray-500 text-xs mt-1"><?php echo e($stats['pending_submissions']); ?> en attente</p>
+            </a>
+            <a href="<?php echo e(route('admin.statistics')); ?>" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 hover:border-primary-300 group">
+                <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary-200 transition-colors">
+                    <i class="fas fa-chart-bar text-primary-600"></i>
+                </div>
+                <p class="font-semibold text-gray-900 text-sm">Statistiques</p>
+                <p class="text-gray-500 text-xs mt-1">Rapports détaillés</p>
             </a>
         </div>
 

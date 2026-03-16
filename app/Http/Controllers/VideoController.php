@@ -324,7 +324,7 @@ class VideoController extends Controller
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'required|file|mimes:mp4,webm,ogg|max:512000', // Max 500MB
+            'video_file' => 'required|file|mimes:mp4,webm,ogg,avi,mov,wmv,flv,mkv|max:512000', // Max 500MB - formats étendus si conversion possible
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
@@ -333,7 +333,13 @@ class VideoController extends Controller
 
         // Handle video upload + normalize to web-compatible MP4 when possible
         $videoPath = $request->file('video_file')->store('videos', 'public');
+        $originalPath = $videoPath;
         $videoPath = $this->normalizeVideoForWeb($videoPath);
+        
+        // Vérifier si la conversion a eu lieu
+        $ffmpegAvailable = trim(shell_exec('which ffmpeg') ?: '') !== '';
+        $wasConverted = $videoPath !== $originalPath;
+        
         $validated['video_file'] = $videoPath;
 
         // Handle thumbnail upload
@@ -356,8 +362,15 @@ class VideoController extends Controller
 
         $video = Video::create($validated);
 
+        $message = 'Vidéo créée avec succès.';
+        if (!$ffmpegAvailable) {
+            $message .= ' Attention : FFmpeg n\'est pas installé. La vidéo pourrait ne pas être lisible dans tous les navigateurs. Installez FFmpeg pour une compatibilité optimale.';
+        } elseif (!$wasConverted) {
+            $message .= ' Note : La vidéo n\'a pas été convertie (déjà au bon format ou erreur de conversion).';
+        }
+
         return redirect()->route('admin.videos.index')
-            ->with('success', 'Vidéo créée avec succès.');
+            ->with('success', $message);
     }
 
     /**
@@ -500,6 +513,32 @@ class VideoController extends Controller
     }
 
     /**
+     * Reconversion des vidéos existantes (admin seulement)
+     */
+    public function reconvertVideos()
+    {
+        $this->authorize('admin');
+
+        $videos = Video::all();
+        $converted = 0;
+        $errors = [];
+
+        foreach ($videos as $video) {
+            if (!$video->video_file) continue;
+
+            $originalPath = $video->video_file;
+            $newPath = $this->normalizeVideoForWeb($originalPath);
+
+            if ($newPath !== $originalPath) {
+                $video->update(['video_file' => $newPath]);
+                $converted++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$converted vidéos reconverties avec succès.");
+    }
+
+    /**
      * Generate unique slug for video.
      */
     private function generateUniqueSlug(string $title, ?int $excludeId = null): string
@@ -538,6 +577,7 @@ class VideoController extends Controller
 
         $ffmpegPath = trim(shell_exec('which ffmpeg') ?: '');
         if ($ffmpegPath === '') {
+            \Log::warning('FFmpeg not found. Video conversion skipped for: ' . $publicPath);
             return $publicPath;
         }
 

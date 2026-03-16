@@ -123,7 +123,7 @@
 
             <!-- Pagination -->
             <div class="mt-8">
-                {{ $videos->links() }}
+                {{ $videos->links('vendor.pagination.custom') }}
             </div>
         @else
             <!-- Preview for non-subscribed users -->

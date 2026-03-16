@@ -45,6 +45,12 @@
                         <a href="<?php echo e(route('videos.index')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Vidéos</a>
                     </li>
                     <li>
+                        <a href="<?php echo e(route('challenges.index')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Défi hebdo</a>
+                    </li>
+                    <li>
+                        <a href="<?php echo e(auth()->check() ? route('forum.index') : route('login')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Forum</a>
+                    </li>
+                    <li>
                         <a href="<?php echo e(route('subscription.plans')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Tarifs</a>
                     </li>
                 </ul>
@@ -55,10 +61,10 @@
                 <h3 class="text-lg font-semibold mb-4">Ressources</h3>
                 <ul class="space-y-2">
                     <li>
-                        <a href="<?php echo e(route('about')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Documentation</a>
+                        <a href="<?php echo e(route('formations.index')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Formations</a>
                     </li>
                     <li>
-                        <a href="<?php echo e(route('categories.index')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a>
+                        <a href="<?php echo e(route('categories.index')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">Catégories</a>
                     </li>
                     <li>
                         <a href="<?php echo e(route('contact')); ?>" class="text-gray-400 hover:text-white transition-colors text-sm">FAQ</a>
@@ -99,9 +105,9 @@
                     &copy; <?php echo e(date('Y')); ?> CodeLearn. Tous droits réservés.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Mentions légales</a>
+                    <a href="<?php echo e(route('privacy')); ?>" class="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
+                    <a href="<?php echo e(route('terms')); ?>" class="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
+                    <a href="<?php echo e(route('legal')); ?>" class="text-gray-400 hover:text-white text-sm transition-colors">Mentions légales</a>
                 </div>
             </div>
         </div>

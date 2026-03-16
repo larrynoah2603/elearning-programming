@@ -142,7 +142,7 @@
 
         <!-- Pagination -->
         <div class="mt-8">
-            {{ $exercises->links() }}
+            {{ $exercises->links('vendor.pagination.custom') }}
         </div>
     </div>
 </div>

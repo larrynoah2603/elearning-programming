@@ -9,8 +9,8 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\FormationController;
+use App\Http\Controllers\QuizController;
 use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +28,9 @@ Route::get('/support', [HomeController::class, 'contact'])->name('support');
 Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact.submit');
 Route::get('/plans', [HomeController::class, 'plans'])->name('plans');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
+Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
+Route::get('/legal', [HomeController::class, 'legal'])->name('legal');
 Route::get('/defis-hebdomadaires', [WeeklyChallengeController::class, 'index'])->name('challenges.index');
 
 // Subscription Routes
@@ -88,6 +91,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mes-formations', [FormationController::class, 'mesFormations'])->name('formations.my');
     Route::get('/formations/{formation}/checkout', [FormationController::class, 'checkout'])->name('formations.checkout');
     Route::post('/formations/{formation}/purchase', [FormationController::class, 'purchase'])->name('formations.purchase');
+    Route::get('/formations/{formation}/validation', [FormationController::class, 'validation'])->name('formations.validation');
+    Route::get('/formations/{formation}/access', [FormationController::class, 'access'])->name('formations.access');
+    Route::get('/formations/{formation}/modules/{module}', [FormationController::class, 'showModule'])->name('formations.module.show');
+    Route::post('/formations/{formation}/modules/{module}/progress', [FormationController::class, 'updateModuleProgress'])->name('formations.module.progress');
+
+    // Quiz Routes
+    Route::get('/quiz/{quiz}', [QuizController::class, 'show'])->name('quiz.show');
+    Route::post('/quiz/{quiz}/submit', [QuizController::class, 'submit'])->name('quiz.submit');
+
+    // Formation Completion
+    Route::get('/formations/{formation}/completion', [FormationController::class, 'completion'])->name('formations.completion');
 });
 
 
@@ -143,6 +157,7 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     Route::get('/videos/{video}/edit', [VideoController::class, 'edit'])->name('videos.edit');
     Route::put('/videos/{video}', [VideoController::class, 'update'])->name('videos.update');
     Route::delete('/videos/{video}', [VideoController::class, 'destroy'])->name('videos.destroy');
+    Route::post('/videos/reconvert', [VideoController::class, 'reconvertVideos'])->name('videos.reconvert');
     
     // SUPPRESSION: Route dupliquée (post et patch pour la même action)
     // Route::post('/videos/{video}/toggle', [VideoController::class, 'toggleActive'])->name('videos.toggle');

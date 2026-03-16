@@ -34,6 +34,8 @@ class DashboardController extends Controller
             'watched_videos' => $user->watched_videos_count,
             'current_streak' => $streak['current'],
             'study_minutes_week' => $studyMetrics['minutes_this_week'],
+            // formations purchased (pour carte du dashboard)
+            'purchased_formations' => $user->formationEnrollments()->where('status', 'paid')->count(),
         ];
 
         $recentSubmissions = ExerciseSubmission::with('exercise')

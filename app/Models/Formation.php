@@ -47,10 +47,32 @@ class Formation extends Model
         return $this->hasMany(FormationEnrollment::class);
     }
 
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class)->orderBy('order');
+    }
+
+    public function finalProjects(): HasMany
+    {
+        return $this->hasMany(FinalProject::class);
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'formation_enrollments')
             ->withPivot(['amount_paid', 'status', 'payment_method', 'paid_at']);
+    }
+
+    public function userProgress(): HasMany
+    {
+        return $this->hasMany(FormationUserProgress::class);
+    }
+
+    public function getUserProgress($userId)
+    {
+        return $this->userProgress()
+            ->where('user_id', $userId)
+            ->get();
     }
 
     public function scopeActive($query)

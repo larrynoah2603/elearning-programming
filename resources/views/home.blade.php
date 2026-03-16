@@ -26,9 +26,12 @@
                     <a href="{{ route('subscription.plans') }}" class="group btn border-2 border-white/50 text-white hover:border-white hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 px-8 py-4 text-lg rounded-xl font-semibold flex items-center justify-center">
                         <i class="fas fa-crown mr-2 text-yellow-400 group-hover:animate-pulse"></i> Voir les offres Premium
                     </a>
+                    <a href="{{ route('formations.index') }}" class="group btn border-2 border-white/50 text-white hover:border-white hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 px-8 py-4 text-lg rounded-xl font-semibold flex items-center justify-center">
+                        <i class="fas fa-graduation-cap mr-2 text-white group-hover:animate-bounce"></i> Formations payantes
+                    </a>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/20">
+                <div class="grid grid-cols-4 gap-8 mt-12 pt-8 border-t border-white/20">
                     <div class="hover:scale-105 transition-transform duration-300 cursor-default">
                         <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70">{{ $stats['lessons'] ?? '50+' }}</div>
                         <div class="text-primary-200 text-sm font-medium tracking-wide uppercase mt-1">Leçons</div>
@@ -40,6 +43,10 @@
                     <div class="hover:scale-105 transition-transform duration-300 cursor-default">
                         <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70">{{ $stats['videos'] ?? '100+' }}</div>
                         <div class="text-primary-200 text-sm font-medium tracking-wide uppercase mt-1">Vidéos</div>
+                    </div>
+                    <div class="hover:scale-105 transition-transform duration-300 cursor-default">
+                        <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70">{{ $stats['formations'] ?? '0' }}</div>
+                        <div class="text-primary-200 text-sm font-medium tracking-wide uppercase mt-1">Formations</div>
                     </div>
                 </div>
             </div>
@@ -196,6 +203,15 @@
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-danger-600 transition-colors">Certificats</h3>
                 <p class="text-gray-600 leading-relaxed">Obtenez des certificats de réussite pour valoriser vos compétences.</p>
+            </div>
+            
+            <div class="group bg-gray-50 rounded-2xl p-8 hover:bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-transparent hover:border-gray-100">
+                <div class="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <i class="fas fa-graduation-cap text-2xl text-primary-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">Formations modulaires</h3>
+                <p class="text-gray-600 leading-relaxed">Des parcours complets vendus à l’unité, indépendants de l’abonnement. Payez, suivez et maîtrisez des compétences spécifiques.</p>
+                <a href="{{ route('formations.index') }}" class="text-primary-600 hover:text-primary-700 inline-block mt-3 font-semibold">Voir les formations <i class="fas fa-arrow-right ml-1"></i></a>
             </div>
             
             <div class="group bg-gray-50 rounded-2xl p-8 hover:bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-transparent hover:border-gray-100">

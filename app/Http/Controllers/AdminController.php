@@ -124,7 +124,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,teacher,free,subscribed',
+            'role' => 'required|in:admin,free,subscribed',
             'subscription_expires_at' => 'nullable|date',
         ]);
 

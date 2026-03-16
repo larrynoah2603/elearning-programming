@@ -10,7 +10,7 @@
             <p class="text-gray-600 mt-2">Voici votre progression, vos quick wins et vos prochaines recommandations.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 flex items-center">
                 <div class="w-14 h-14 bg-success-100 rounded-xl flex items-center justify-center mr-4">
                     <i class="fas fa-check-circle text-2xl text-success-600"></i>
@@ -50,6 +50,16 @@
                     <div class="text-gray-500">Temps d'étude (semaine)</div>
                 </div>
             </div>
+
+            <a href="{{ route('formations.my') }}" class="bg-white rounded-xl shadow-sm p-6 flex items-center hover:bg-gray-50 transition-colors">
+                <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-graduation-cap text-2xl text-indigo-600"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-gray-900">{{ $stats['purchased_formations'] ?? 0 }}</div>
+                    <div class="text-gray-500">Formations achetées</div>
+                </div>
+            </a>
         </div>
 
         @if(!auth()->user()->isSubscribed())

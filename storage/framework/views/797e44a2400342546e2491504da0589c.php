@@ -126,7 +126,7 @@
 
             <!-- Pagination -->
             <div class="mt-8">
-                <?php echo e($videos->links()); ?>
+                <?php echo e($videos->links('vendor.pagination.custom')); ?>
 
             </div>
         <?php else: ?>

@@ -3,8 +3,10 @@
 @section('title', $formation->title)
 
 @section('content')
-@php($hasAccess = $hasAccess ?? false)
-@php($enrollment = $enrollment ?? null)
+@php
+    $hasAccess = $hasAccess ?? false;
+    $enrollment = $enrollment ?? null;
+@endphp
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
@@ -35,21 +37,91 @@
         @endif
 
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Modules de la formation</h2>
-        <div class="space-y-3">
+        <div class="space-y-4">
             @forelse($formation->modules as $index => $module)
-                <div class="border border-gray-100 rounded-lg p-4">
-                    <div class="flex justify-between items-start gap-3">
-                        <div>
-                            <p class="font-semibold text-gray-900">Module {{ $index + 1 }} - {{ $module->title }}</p>
+                <div class="border border-gray-100 rounded-lg p-6 hover:shadow-md transition">
+                    <div class="flex justify-between items-start gap-3 mb-4">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900 text-lg">Module {{ $index + 1 }} - {{ $module->title }}</p>
                             <p class="text-sm text-gray-600 mt-1">{{ $module->description }}</p>
                         </div>
-                        <span class="text-xs text-gray-500">{{ $module->duration_minutes }} min</span>
+                        <div class="flex items-center gap-2 whitespace-nowrap">
+                            <span class="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">{{ $module->duration_minutes }} min</span>
+                            @if($hasAccess)
+                                <a href="{{ route('formations.module.show', ['formation' => $formation, 'module' => $module->id]) }}" class="btn btn-sm btn-primary">Commencer le module</a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @empty
                 <p class="text-gray-500">Le programme détaillé sera bientôt disponible.</p>
             @endforelse
         </div>
+
+        @if($hasAccess)
+            <div class="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Ressources complémentaires</h3>
+                <p class="text-blue-700 mb-4">Accédez aux leçons et vidéos liées à cette formation :</p>
+                <div class="flex gap-3">
+                    <a href="{{ route('lessons.index') }}" class="btn btn-sm btn-outline-primary">Voir les leçons</a>
+                    <a href="{{ route('videos.index') }}" class="btn btn-sm btn-outline-primary">Voir les vidéos</a>
+                </div>
+            </div>
+        @endif
+
+        @if($formation->quizzes->count() > 0)
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 mt-8">Quizzes de validation</h2>
+            <div class="space-y-3">
+                @foreach($formation->quizzes as $quiz)
+                    <div class="border border-gray-100 rounded-lg p-4">
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900">{{ $quiz->title }}</p>
+                                <p class="text-sm text-gray-600 mt-1">{{ $quiz->description ?? 'Quiz de validation' }}</p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    {{ $quiz->questions->count() }} question{{ $quiz->questions->count() > 1 ? 's' : '' }} •
+                                    Score min: {{ $quiz->passing_score }}% •
+                                    {{ $quiz->max_attempts }} tentative{{ $quiz->max_attempts > 1 ? 's' : '' }} •
+                                    {{ $quiz->duration_minutes }}min
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                @php
+                                    $userSubmission = auth()->check() ? $quiz->submissions()->where('user_id', auth()->id())->first() : null;
+                                    $hasPassed = $userSubmission && $userSubmission->isPassed();
+                                    $attemptCount = auth()->check() ? $quiz->submissions()->where('user_id', auth()->id())->count() : 0;
+                                @endphp
+
+                                @if($hasPassed)
+                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                        ✅ Réussi ({{ $userSubmission->score }}%)
+                                    </span>
+                                @elseif($userSubmission && !$hasPassed)
+                                    <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                                        ❌ Échec ({{ $userSubmission->score }}%)
+                                    </span>
+                                @endif
+
+                                @if($hasAccess)
+                                    @if($hasPassed)
+                                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Validé ✓</span>
+                                    @elseif($attemptCount >= $quiz->max_attempts)
+                                        <span class="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">Tentatives épuisées</span>
+                                    @else
+                                        <a href="{{ route('quiz.show', $quiz) }}" class="btn btn-sm btn-primary">
+                                            {{ $attemptCount > 0 ? 'Retenter' : 'Commencer' }}
+                                        </a>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-gray-500">Achetez pour accéder</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
         <div class="mt-8">
             @auth
@@ -61,7 +133,10 @@
                     </a>
                 @endif
             @else
-                <a href="{{ route('login') }}" class="btn btn-primary">Se connecter pour acheter</a>
+                <div class="space-x-2">
+                    <a href="{{ route('login') }}" class="btn btn-primary">Se connecter</a>
+                    <a href="{{ route('register') }}" class="btn btn-secondary">S'inscrire</a>
+                </div>
             @endauth
         </div>
     </div>

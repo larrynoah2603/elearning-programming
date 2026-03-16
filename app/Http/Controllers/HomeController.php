@@ -20,6 +20,7 @@ class HomeController extends Controller
             'exercises' => Exercise::active()->count(),
             'videos' => Video::active()->count(),
             'categories' => Category::active()->count(),
+            'formations' => \App\Models\Formation::active()->count(),
         ];
 
         $featuredLessons = Lesson::active()
@@ -149,5 +150,29 @@ class HomeController extends Controller
         $results = $lessons->merge($exercises)->merge($videos);
 
         return response()->json($results);
+    }
+
+    /**
+     * Display the privacy policy page.
+     */
+    public function privacy()
+    {
+        return view('legal.privacy');
+    }
+
+    /**
+     * Display the terms of service page.
+     */
+    public function terms()
+    {
+        return view('legal.terms');
+    }
+
+    /**
+     * Display the legal notice page.
+     */
+    public function legal()
+    {
+        return view('legal.legal');
     }
 }

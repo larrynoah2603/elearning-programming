@@ -1,13 +1,13 @@
-<nav x-data="{ open: false }" class="fixed top-0 inset-x-0 z-50 bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="fixed top-0 inset-x-0 z-50 nav-shell">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="<?php echo e(auth()->check() && auth()->user()->isAdmin() ? 'max-w-full' : 'max-w-7xl'); ?> mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <!-- Logo and Left Navigation -->
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="<?php echo e(route('home')); ?>" class="flex items-center space-x-2">
-                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 via-secondary-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30">
                             <i class="fas fa-code text-white text-lg"></i>
                         </div>
                         <span class="font-bold text-xl text-gray-800 hidden sm:block">CodeLearn</span>
@@ -15,32 +15,41 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex <?php echo e(auth()->check() && auth()->user()->isAdmin() ? 'sm:overflow-x-auto sm:flex-wrap' : ''); ?>">
                     <?php if(auth()->check() && auth()->user()->isAdmin() && request()->routeIs('admin.*')): ?>
-                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'nav-link-active' : ''); ?>">Tableau admin</a>
-                        <a href="<?php echo e(route('admin.users.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.users.*') ? 'nav-link-active' : ''); ?>">Utilisateurs</a>
-                        <a href="<?php echo e(route('admin.lessons.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.lessons.*') ? 'nav-link-active' : ''); ?>">Leçons</a>
-                        <a href="<?php echo e(route('admin.exercises.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.exercises.*') ? 'nav-link-active' : ''); ?>">Exercices</a>
-                        <a href="<?php echo e(route('admin.videos.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.videos.*') ? 'nav-link-active' : ''); ?>">Vidéos</a>
-                        <a href="<?php echo e(route('admin.categories.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.categories.*') ? 'nav-link-active' : ''); ?>">Catégories</a>
-                        <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.submissions.*') ? 'nav-link-active' : ''); ?>">Soumissions</a>
-                        <a href="<?php echo e(route('admin.statistics')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.statistics') ? 'nav-link-active' : ''); ?>">Statistiques</a>
+                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.dashboard') ? 'nav-link-active' : ''); ?>">Tableau admin</a>
+                        <a href="<?php echo e(route('admin.users.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.users.*') ? 'nav-link-active' : ''); ?>">Utilisateurs</a>
+                        <a href="<?php echo e(route('admin.lessons.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.lessons.*') ? 'nav-link-active' : ''); ?>">Leçons</a>
+                        <a href="<?php echo e(route('admin.exercises.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.exercises.*') ? 'nav-link-active' : ''); ?>">Exercices</a>
+                        <a href="<?php echo e(route('admin.videos.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.videos.*') ? 'nav-link-active' : ''); ?>">Vidéos</a>
+                        <a href="<?php echo e(route('admin.categories.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.categories.*') ? 'nav-link-active' : ''); ?>">Catégories</a>
+                        <a href="<?php echo e(route('admin.formations.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.formations.*') ? 'nav-link-active' : ''); ?>">Formations</a>
+                        <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.submissions.*') ? 'nav-link-active' : ''); ?>">Soumissions</a>
+                        <a href="<?php echo e(route('admin.statistics')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('admin.statistics') ? 'nav-link-active' : ''); ?>">Statistiques</a>
                     <?php else: ?>
-                    <a href="<?php echo e(route('home')); ?>" class="nav-link <?php echo e(request()->routeIs('home') ? 'nav-link-active' : ''); ?>">
+                    <a href="<?php echo e(route('home')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('home') ? 'nav-link-active' : ''); ?>">
                         Accueil
                     </a>
-                    <a href="<?php echo e(route('lessons.index')); ?>" class="nav-link <?php echo e(request()->routeIs('lessons.*') ? 'nav-link-active' : ''); ?>">
+                    <a href="<?php echo e(route('lessons.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('lessons.*') ? 'nav-link-active' : ''); ?>">
                         Leçons
                     </a>
-                    <a href="<?php echo e(route('exercises.index')); ?>" class="nav-link <?php echo e(request()->routeIs('exercises.*') ? 'nav-link-active' : ''); ?>">
+                    <a href="<?php echo e(route('exercises.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('exercises.*') ? 'nav-link-active' : ''); ?>">
                         Exercices
                     </a>
-                    <a href="<?php echo e(route('videos.index')); ?>" class="nav-link <?php echo e(request()->routeIs('videos.*') ? 'nav-link-active' : ''); ?>">
+                    <a href="<?php echo e(route('videos.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('videos.*') ? 'nav-link-active' : ''); ?>">
                         Vidéos
                     </a>
-                    <a href="<?php echo e(route('categories.index')); ?>" class="nav-link <?php echo e(request()->routeIs('categories.*') ? 'nav-link-active' : ''); ?>">
+                    <a href="<?php echo e(route('categories.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('categories.*') ? 'nav-link-active' : ''); ?>">
                         Catégories
                     </a>
+                    <a href="<?php echo e(route('formations.index')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('formations.*') ? 'nav-link-active' : ''); ?>">
+                        Formations
+                    </a>
+                    <?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(route('formations.my')); ?>" class="nav-link nav-link-fancy <?php echo e(request()->routeIs('formations.my') ? 'nav-link-active' : ''); ?>">
+                        Mes formations
+                    </a>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -53,7 +62,7 @@
                 <?php if(auth()->guard()->check()): ?>
                     <!-- Admin Link -->
                     <?php if(auth()->user()->isAdmin()): ?>
-                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link mr-4 <?php echo e(request()->routeIs('admin.*') ? 'nav-link-active' : ''); ?>">
+                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link nav-link-fancy mr-4 <?php echo e(request()->routeIs('admin.*') ? 'nav-link-active' : ''); ?>">
                             <i class="fas fa-cog mr-1"></i> Admin
                         </a>
                     <?php endif; ?>
@@ -146,6 +155,7 @@
                 <a href="<?php echo e(route('admin.exercises.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.exercises.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Exercices</a>
                 <a href="<?php echo e(route('admin.videos.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.videos.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Vidéos</a>
                 <a href="<?php echo e(route('admin.categories.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Catégories</a>
+                <a href="<?php echo e(route('admin.formations.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.formations.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Formations</a>
                 <a href="<?php echo e(route('admin.submissions.pending')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.submissions.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Soumissions</a>
                 <a href="<?php echo e(route('admin.statistics')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('admin.statistics') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">Statistiques</a>
             <?php else: ?>
@@ -164,6 +174,14 @@
                 <a href="<?php echo e(route('categories.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('categories.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">
                     Catégories
                 </a>
+                <a href="<?php echo e(route('formations.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('formations.*') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">
+                    Formations
+                </a>
+                <?php if(auth()->guard()->check()): ?>
+                <a href="<?php echo e(route('formations.my')); ?>" class="block pl-3 pr-4 py-2 border-l-4 <?php echo e(request()->routeIs('formations.my') ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'); ?> text-base font-medium transition duration-150 ease-in-out">
+                    Mes formations
+                </a>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
 

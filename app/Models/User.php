@@ -247,6 +247,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Quiz submissions by user
+     */
+    public function quizSubmissions()
+    {
+        return $this->hasMany(QuizSubmission::class);
+    }
+
+    /**
+     * Certificates earned by user
+     */
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    /**
+     * Project submissions by user
+     */
+    public function projectSubmissions()
+    {
+        return $this->hasMany(ProjectSubmission::class);
+    }
+
+    /**
      * Get completed exercises count
      */
     public function getCompletedExercisesCountAttribute(): int

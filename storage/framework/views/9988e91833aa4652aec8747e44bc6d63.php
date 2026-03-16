@@ -111,7 +111,7 @@
 
         <!-- Pagination -->
         <div class="mt-8">
-            <?php echo e($lessons->links()); ?>
+            <?php echo e($lessons->links('vendor.pagination.custom')); ?>
 
         </div>
     </div>

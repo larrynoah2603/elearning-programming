@@ -8,10 +8,11 @@
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Formations modulaires</h1>
             <p class="mt-2 text-gray-600">Un espace de formations payantes indépendant des contenus Free et Premium.</p>
-        </div>
-        @auth
-            <a href="{{ route('formations.my') }}" class="btn btn-secondary">Mes formations achetées</a>
-        @endauth
+            @guest
+                <p class="mt-2 text-sm text-gray-600">
+                    Pour acheter une formation, <a href="{{ route('login') }}" class="text-primary-600 hover:underline">connectez-vous</a> ou <a href="{{ route('register') }}" class="text-primary-600 hover:underline">inscrivez-vous</a>.
+                </p>
+            @endguest
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

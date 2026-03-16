@@ -29,7 +29,6 @@
                     <select name="role" class="form-select w-full">
                         <option value="all">Tous les rôles</option>
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Administrateur</option>
-                        <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Enseignant</option>
                         <option value="free" {{ request('role') == 'free' ? 'selected' : '' }}>Gratuit</option>
                         <option value="subscribed" {{ request('role') == 'subscribed' ? 'selected' : '' }}>Abonné</option>
                     </select>

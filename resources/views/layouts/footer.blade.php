@@ -61,10 +61,10 @@
                 <h3 class="text-lg font-semibold mb-4">Ressources</h3>
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('about') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Documentation</a>
+                        <a href="{{ route('formations.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Formations</a>
                     </li>
                     <li>
-                        <a href="{{ route('categories.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a>
+                        <a href="{{ route('categories.index') }}" class="text-gray-400 hover:text-white transition-colors text-sm">Catégories</a>
                     </li>
                     <li>
                         <a href="{{ route('contact') }}" class="text-gray-400 hover:text-white transition-colors text-sm">FAQ</a>
@@ -105,9 +105,9 @@
                     &copy; {{ date('Y') }} CodeLearn. Tous droits réservés.
                 </p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Mentions légales</a>
+                    <a href="{{ route('privacy') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
+                    <a href="{{ route('terms') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
+                    <a href="{{ route('legal') }}" class="text-gray-400 hover:text-white text-sm transition-colors">Mentions légales</a>
                 </div>
             </div>
         </div>
