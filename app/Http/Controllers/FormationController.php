@@ -74,7 +74,13 @@ class FormationController extends Controller
                 ->with('info', 'Vous avez déjà acheté cette formation.');
         }
 
-        return view('formations.checkout', compact('formation'));
+        $accountType = match (true) {
+            $user->isAdmin() => 'Administrateur',
+            $user->isSubscribed() => 'Premium',
+            default => 'Gratuit',
+        };
+
+        return view('formations.checkout', compact('formation', 'user', 'accountType'));
     }
 
     public function purchase(Request $request, Formation $formation)
@@ -83,9 +89,17 @@ class FormationController extends Controller
 
         $request->validate([
             'payment_method' => ['required', 'in:card,mobile_money,bank_transfer,cryptocurrency'],
+            'billing_email' => ['required', 'email'],
+            'accept_terms' => ['accepted'],
         ]);
 
         $user = $request->user();
+
+        if (strtolower($request->input('billing_email')) !== strtolower($user->email)) {
+            return back()
+                ->withInput()
+                ->withErrors(['billing_email' => 'L\'email de facturation doit correspondre à votre compte utilisateur.']);
+        }
 
         FormationEnrollment::updateOrCreate(
             [
