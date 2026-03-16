@@ -17,10 +17,10 @@
 
         @if($submission->ai_score !== null)
             <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-3">Pré-correction IA</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">Pré-analyse système</h2>
                 <div class="grid md:grid-cols-3 gap-4 mb-4">
                     <div>
-                        <p class="text-sm text-gray-500">Score IA</p>
+                        <p class="text-sm text-gray-500">Score système</p>
                         <p class="text-xl font-bold text-gray-900">{{ $submission->ai_score }}%</p>
                     </div>
                     <div>
@@ -36,7 +36,7 @@
                 </div>
 
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Feedback IA</p>
+                    <p class="text-sm text-gray-500 mb-1">Feedback système</p>
                     <p class="text-sm text-gray-800 whitespace-pre-line">{{ $submission->ai_feedback }}</p>
                 </div>
             </div>

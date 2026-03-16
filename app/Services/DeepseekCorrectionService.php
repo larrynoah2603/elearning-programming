@@ -37,7 +37,7 @@ class DeepseekCorrectionService
         if (empty($apiKey) || empty($baseUrl)) {
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (configuration Gemini manquante). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique indisponible pour le moment. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $model,
             ];
@@ -125,7 +125,7 @@ class DeepseekCorrectionService
 
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (erreur de connexion au service Gemini). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique temporairement indisponible. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
             ];
@@ -134,7 +134,7 @@ class DeepseekCorrectionService
         if ($response === null) {
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (aucune réponse Gemini). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique indisponible pour le moment. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
             ];
@@ -154,7 +154,7 @@ class DeepseekCorrectionService
             if ($status === 402 || str_contains(strtolower((string) $errorMessage), 'insufficient')) {
                 return [
                     'score' => 0,
-                    'feedback' => 'Pré-correction IA indisponible (quota/solde API insuffisant). Une correction humaine est requise.',
+                    'feedback' => 'Correction automatique momentanément indisponible. Une validation manuelle est requise.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
                 ];
@@ -163,7 +163,7 @@ class DeepseekCorrectionService
             if ($status === 429) {
                 return [
                     'score' => 0,
-                    'feedback' => 'Pré-correction IA indisponible (limite de requêtes Gemini atteinte). Réessayez plus tard ou augmentez le quota API. Une correction humaine est requise.',
+                    'feedback' => 'Correction automatique momentanément indisponible. Merci de réessayer plus tard.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
                 ];
@@ -171,7 +171,7 @@ class DeepseekCorrectionService
 
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (Gemini: '.($status ?: 'erreur inconnue').'). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique indisponible (code: '.($status ?: 'erreur inconnue').'). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
             ];
@@ -182,7 +182,7 @@ class DeepseekCorrectionService
         if (!is_string($content) || trim($content) === '') {
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (réponse vide du modèle). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique indisponible (réponse vide). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => data_get($response->json(), 'modelVersion', $selectedModel),
             ];
@@ -203,14 +203,14 @@ class DeepseekCorrectionService
         if (!is_array($parsed)) {
             return [
                 'score' => 0,
-                'feedback' => 'Pré-correction IA indisponible (format de réponse non exploitable). Une correction humaine est requise.',
+                'feedback' => 'Correction automatique indisponible (format de réponse non exploitable). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => data_get($response->json(), 'modelVersion', $selectedModel),
             ];
         }
 
         $score = max(0, min(100, (int) data_get($parsed, 'score', 0)));
-        $feedback = (string) data_get($parsed, 'feedback', 'Correction IA indisponible.');
+        $feedback = (string) data_get($parsed, 'feedback', 'Correction automatique indisponible.');
         $requiresHumanReview = (bool) data_get($parsed, 'requires_human_review', false);
 
         return [
