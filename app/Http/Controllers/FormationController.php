@@ -94,6 +94,17 @@ class FormationController extends Controller
             'payment_method' => ['required', 'in:card,mobile_money,bank_transfer,cryptocurrency'],
             'billing_email' => ['required', 'email'],
             'accept_terms' => ['accepted'],
+            'card_name' => ['required_if:payment_method,card', 'nullable', 'string', 'max:120'],
+            'card_number' => ['required_if:payment_method,card', 'nullable', 'string', 'max:25'],
+            'card_expiry' => ['required_if:payment_method,card', 'nullable', 'string', 'max:7'],
+            'card_cvv' => ['required_if:payment_method,card', 'nullable', 'string', 'max:4'],
+            'mobile_operator' => ['required_if:payment_method,mobile_money', 'nullable', 'string', 'max:50'],
+            'mobile_number' => ['required_if:payment_method,mobile_money', 'nullable', 'string', 'max:30'],
+            'bank_name' => ['required_if:payment_method,bank_transfer', 'nullable', 'string', 'max:100'],
+            'account_name' => ['required_if:payment_method,bank_transfer', 'nullable', 'string', 'max:120'],
+            'transfer_reference' => ['required_if:payment_method,bank_transfer', 'nullable', 'string', 'max:120'],
+            'crypto_network' => ['required_if:payment_method,cryptocurrency', 'nullable', 'string', 'max:50'],
+            'wallet_address' => ['required_if:payment_method,cryptocurrency', 'nullable', 'string', 'max:255'],
         ]);
 
         $user = $request->user();
