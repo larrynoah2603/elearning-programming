@@ -17,7 +17,7 @@
 
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
             <p class="font-semibold text-gray-900">{{ $formation->title }}</p>
-            <p class="text-primary-700 text-xl font-bold mt-2">{{ number_format($formation->price, 2, ',', ' ') }} €</p>
+            <p class="text-primary-700 text-xl font-bold mt-2">{{ number_format($formation->price, 0, ',', ' ') }} Ar</p>
         </div>
 
         <form method="POST" action="{{ route('formations.purchase', $formation) }}" class="space-y-5">

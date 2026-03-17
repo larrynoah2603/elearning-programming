@@ -25,7 +25,7 @@
                 @forelse($formations as $formation)
                     <tr>
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $formation->title }}</td>
-                        <td class="px-4 py-3 text-gray-700">{{ number_format($formation->price, 2, ',', ' ') }} €</td>
+                        <td class="px-4 py-3 text-gray-700">{{ number_format($formation->price, 0, ',', ' ') }} Ar</td>
                         <td class="px-4 py-3 text-gray-700">{{ $formation->modules_count }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ $formation->enrollments_count }}</td>
                         <td class="px-4 py-3">{!! $formation->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>' !!}</td>

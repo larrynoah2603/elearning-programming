@@ -32,7 +32,7 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Prix (€)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Prix (Ar)</label>
             <input type="number" step="0.01" min="0" name="price" class="w-full border-gray-300 rounded-lg" value="{{ old('price', $formation->price ?? '0.00') }}" required>
         </div>
         <div>
