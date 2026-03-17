@@ -319,12 +319,17 @@ class VideoController extends Controller
      */
     public function store(Request $request)
     {
+        $ffmpegAvailable = $this->isFfmpegAvailable();
+        $acceptedVideoMimes = $ffmpegAvailable
+            ? 'mp4,webm,ogg,avi,mov,wmv,flv,mkv'
+            : 'mp4,webm,ogg';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'required|file|mimes:mp4,webm,ogg,avi,mov,wmv,flv,mkv|max:512000', // Max 500MB - formats étendus si conversion possible
+            'video_file' => 'required|file|mimes:'.$acceptedVideoMimes.'|max:512000',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
@@ -337,7 +342,7 @@ class VideoController extends Controller
         $videoPath = $this->normalizeVideoForWeb($videoPath);
         
         // Vérifier si la conversion a eu lieu
-        $ffmpegAvailable = trim(shell_exec('which ffmpeg') ?: '') !== '';
+        // Déjà calculé avant la validation pour contrôler les formats acceptés.
         $wasConverted = $videoPath !== $originalPath;
         
         $validated['video_file'] = $videoPath;
@@ -418,12 +423,17 @@ class VideoController extends Controller
      */
     public function update(Request $request, Video $video)
     {
+        $ffmpegAvailable = $this->isFfmpegAvailable();
+        $acceptedVideoMimes = $ffmpegAvailable
+            ? 'mp4,webm,ogg,avi,mov,wmv,flv,mkv'
+            : 'mp4,webm,ogg';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:512000', // Corrigé: 512000 au lieu de 524288
+            'video_file' => 'nullable|file|mimes:'.$acceptedVideoMimes.'|max:512000',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
@@ -564,6 +574,11 @@ class VideoController extends Controller
         return $slug;
     }
 
+    private function isFfmpegAvailable(): bool
+    {
+        return trim(shell_exec('which ffmpeg') ?: '') !== '';
+    }
+
     /**
      * Convert uploaded video to a browser-friendly MP4 (H.264/AAC) when ffmpeg is available.
      */
@@ -575,7 +590,7 @@ class VideoController extends Controller
             return $publicPath;
         }
 
-        $ffmpegPath = trim(shell_exec('which ffmpeg') ?: '');
+        $ffmpegPath = $this->isFfmpegAvailable() ? trim(shell_exec('which ffmpeg') ?: '') : '';
         if ($ffmpegPath === '') {
             \Log::warning('FFmpeg not found. Video conversion skipped for: ' . $publicPath);
             return $publicPath;
