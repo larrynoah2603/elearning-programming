@@ -120,8 +120,7 @@
                                             <span id="videoFileName">Télécharger un fichier</span>
                                             <input id="video_file" name="video_file" type="file" 
                                                    class="sr-only @error('video_file') border-red-500 @enderror"
-                                                   accept="video/mp4,video/webm,video/ogg"
-                                                   required>
+                                                   accept="video/mp4,video/webm,video/ogg">
                                         </label>
                                         <p class="pl-1">ou glisser-déposer</p>
                                     </div>
@@ -133,6 +132,21 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             <input type="hidden" name="duration" id="duration">
+                        </div>
+
+                        <div>
+                            <label for="external_video_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                Ou lien vidéo externe
+                                <span class="text-gray-500 text-sm font-normal">(YouTube, Vimeo, etc.)</span>
+                            </label>
+                            <input type="url" name="external_video_url" id="external_video_url"
+                                   class="form-input w-full @error('external_video_url') border-red-500 @enderror"
+                                   value="{{ old('external_video_url') }}"
+                                   placeholder="https://www.youtube.com/watch?v=...">
+                            @error('external_video_url')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-sm text-gray-500">Renseignez un fichier vidéo ou un lien externe.</p>
                         </div>
 
                         <div>

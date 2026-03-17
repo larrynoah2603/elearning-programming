@@ -329,23 +329,28 @@ class VideoController extends Controller
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'required|file|mimes:'.$acceptedVideoMimes.'|max:512000',
+            'video_file' => 'nullable|file|mimes:'.$acceptedVideoMimes.'|max:512000|required_without:external_video_url',
+            'external_video_url' => 'nullable|url|max:2048|required_without:video_file',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
             'order' => 'nullable|integer|min:0',
         ]);
 
-        // Handle video upload + normalize to web-compatible MP4 when possible
-        $videoPath = $request->file('video_file')->store('videos', 'public');
-        $originalPath = $videoPath;
-        $videoPath = $this->normalizeVideoForWeb($videoPath);
-        
-        // Vérifier si la conversion a eu lieu
-        // Déjà calculé avant la validation pour contrôler les formats acceptés.
-        $wasConverted = $videoPath !== $originalPath;
-        
-        $validated['video_file'] = $videoPath;
+        $wasConverted = false;
+
+        if ($request->hasFile('video_file')) {
+            // Handle video upload + normalize to web-compatible MP4 when possible
+            $videoPath = $request->file('video_file')->store('videos', 'public');
+            $originalPath = $videoPath;
+            $videoPath = $this->normalizeVideoForWeb($videoPath);
+
+            // Vérifier si la conversion a eu lieu
+            $wasConverted = $videoPath !== $originalPath;
+            $validated['video_file'] = $videoPath;
+        } else {
+            $validated['video_file'] = trim((string) $request->input('external_video_url'));
+        }
 
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
@@ -360,10 +365,12 @@ class VideoController extends Controller
         $validated['order'] = $validated['order'] ?? 0;
 
         // Auto-detect duration if not provided and file exists
-        if (empty($validated['duration']) && isset($videoPath)) {
+        if ($request->hasFile('video_file') && empty($validated['duration']) && isset($videoPath)) {
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
         }
+
+        unset($validated['external_video_url']);
 
         $video = Video::create($validated);
 
@@ -434,6 +441,7 @@ class VideoController extends Controller
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
             'video_file' => 'nullable|file|mimes:'.$acceptedVideoMimes.'|max:512000',
+            'external_video_url' => 'nullable|url|max:2048',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
@@ -443,8 +451,8 @@ class VideoController extends Controller
 
         // Handle video upload
         if ($request->hasFile('video_file')) {
-            // Delete old video
-            if ($video->video_file && Storage::disk('public')->exists($video->video_file)) {
+            // Delete old video if it is a local stored file
+            if ($video->video_file && !filter_var($video->video_file, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($video->video_file)) {
                 Storage::disk('public')->delete($video->video_file);
             }
 
@@ -455,6 +463,12 @@ class VideoController extends Controller
             // Auto-detect duration for new video
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
+        } elseif ($request->filled('external_video_url')) {
+            if ($video->video_file && !filter_var($video->video_file, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($video->video_file)) {
+                Storage::disk('public')->delete($video->video_file);
+            }
+
+            $validated['video_file'] = trim((string) $request->input('external_video_url'));
         } else {
             unset($validated['video_file']);
         }
@@ -479,6 +493,8 @@ class VideoController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['order'] = $validated['order'] ?? $video->order ?? 0;
+
+        unset($validated['external_video_url']);
 
         $video->update($validated);
 
