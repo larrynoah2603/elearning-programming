@@ -337,9 +337,10 @@ class VideoController extends Controller
             'order' => 'nullable|integer|min:0',
         ]);
 
+        $hasUploadedFile = $request->hasFile('video_file');
         $wasConverted = false;
 
-        if ($request->hasFile('video_file')) {
+        if ($hasUploadedFile) {
             // Handle video upload + normalize to web-compatible MP4 when possible
             $videoPath = $request->file('video_file')->store('videos', 'public');
             $originalPath = $videoPath;
@@ -365,7 +366,7 @@ class VideoController extends Controller
         $validated['order'] = $validated['order'] ?? 0;
 
         // Auto-detect duration if not provided and file exists
-        if ($request->hasFile('video_file') && empty($validated['duration']) && isset($videoPath)) {
+        if ($hasUploadedFile && empty($validated['duration']) && isset($videoPath)) {
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
         }
@@ -375,9 +376,9 @@ class VideoController extends Controller
         $video = Video::create($validated);
 
         $message = 'Vidéo créée avec succès.';
-        if (!$ffmpegAvailable) {
+        if ($hasUploadedFile && !$ffmpegAvailable) {
             $message .= ' Attention : FFmpeg n\'est pas installé. La vidéo pourrait ne pas être lisible dans tous les navigateurs. Installez FFmpeg pour une compatibilité optimale.';
-        } elseif (!$wasConverted) {
+        } elseif ($hasUploadedFile && !$wasConverted) {
             $message .= ' Note : La vidéo n\'a pas été convertie (déjà au bon format ou erreur de conversion).';
         }
 
@@ -592,7 +593,25 @@ class VideoController extends Controller
 
     private function isFfmpegAvailable(): bool
     {
-        return trim(shell_exec('which ffmpeg') ?: '') !== '';
+        return $this->resolveBinaryPath('ffmpeg') !== null;
+    }
+
+    private function resolveBinaryPath(string $binary): ?string
+    {
+        $isWindows = strcasecmp(PHP_OS_FAMILY, 'Windows') === 0;
+        $command = $isWindows ? 'where ' : 'which ';
+        $stderrRedirection = $isWindows ? ' 2>NUL' : ' 2>/dev/null';
+
+        $output = trim((string) shell_exec($command . escapeshellarg($binary) . $stderrRedirection));
+
+        if ($output === '') {
+            return null;
+        }
+
+        $lines = preg_split('/\r?\n/', $output) ?: [];
+        $candidate = trim((string) ($lines[0] ?? ''));
+
+        return $candidate !== '' ? $candidate : null;
     }
 
     /**
@@ -606,7 +625,7 @@ class VideoController extends Controller
             return $publicPath;
         }
 
-        $ffmpegPath = $this->isFfmpegAvailable() ? trim(shell_exec('which ffmpeg') ?: '') : '';
+        $ffmpegPath = $this->resolveBinaryPath('ffmpeg') ?? '';
         if ($ffmpegPath === '') {
             \Log::warning('FFmpeg not found. Video conversion skipped for: ' . $publicPath);
             return $publicPath;
@@ -648,12 +667,15 @@ class VideoController extends Controller
         }
 
         // Try ffprobe first
-        $ffprobePath = trim(shell_exec('which ffprobe') ?: '');
+        $ffprobePath = $this->resolveBinaryPath('ffprobe') ?? '';
         if (!empty($ffprobePath)) {
+            $ffprobeStderrRedirection = strcasecmp(PHP_OS_FAMILY, 'Windows') === 0 ? ' 2>NUL' : ' 2>/dev/null';
+
             $command = sprintf(
-                '%s -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s 2>/dev/null',
+                '%s -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s%s',
                 escapeshellarg($ffprobePath),
-                escapeshellarg($path)
+                escapeshellarg($path),
+                $ffprobeStderrRedirection
             );
             $output = shell_exec($command);
             if ($output !== null && is_numeric(trim($output))) {
