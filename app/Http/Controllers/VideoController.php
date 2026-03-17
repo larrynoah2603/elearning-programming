@@ -319,28 +319,39 @@ class VideoController extends Controller
      */
     public function store(Request $request)
     {
+        $ffmpegAvailable = $this->isFfmpegAvailable();
+        $acceptedVideoMimes = $ffmpegAvailable
+            ? 'mp4,webm,ogg,avi,mov,wmv,flv,mkv'
+            : 'mp4,webm,ogg';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'required|file|mimes:mp4,webm,ogg,avi,mov,wmv,flv,mkv|max:512000', // Max 500MB - formats étendus si conversion possible
+            'video_file' => 'nullable|file|mimes:'.$acceptedVideoMimes.'|max:512000|required_without:external_video_url',
+            'external_video_url' => 'nullable|url|max:2048|required_without:video_file',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
             'order' => 'nullable|integer|min:0',
         ]);
 
-        // Handle video upload + normalize to web-compatible MP4 when possible
-        $videoPath = $request->file('video_file')->store('videos', 'public');
-        $originalPath = $videoPath;
-        $videoPath = $this->normalizeVideoForWeb($videoPath);
-        
-        // Vérifier si la conversion a eu lieu
-        $ffmpegAvailable = trim(shell_exec('which ffmpeg') ?: '') !== '';
-        $wasConverted = $videoPath !== $originalPath;
-        
-        $validated['video_file'] = $videoPath;
+        $hasUploadedFile = $request->hasFile('video_file');
+        $wasConverted = false;
+
+        if ($hasUploadedFile) {
+            // Handle video upload + normalize to web-compatible MP4 when possible
+            $videoPath = $request->file('video_file')->store('videos', 'public');
+            $originalPath = $videoPath;
+            $videoPath = $this->normalizeVideoForWeb($videoPath);
+
+            // Vérifier si la conversion a eu lieu
+            $wasConverted = $videoPath !== $originalPath;
+            $validated['video_file'] = $videoPath;
+        } else {
+            $validated['video_file'] = trim((string) $request->input('external_video_url'));
+        }
 
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
@@ -355,17 +366,19 @@ class VideoController extends Controller
         $validated['order'] = $validated['order'] ?? 0;
 
         // Auto-detect duration if not provided and file exists
-        if (empty($validated['duration']) && isset($videoPath)) {
+        if ($hasUploadedFile && empty($validated['duration']) && isset($videoPath)) {
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
         }
 
+        unset($validated['external_video_url']);
+
         $video = Video::create($validated);
 
         $message = 'Vidéo créée avec succès.';
-        if (!$ffmpegAvailable) {
+        if ($hasUploadedFile && !$ffmpegAvailable) {
             $message .= ' Attention : FFmpeg n\'est pas installé. La vidéo pourrait ne pas être lisible dans tous les navigateurs. Installez FFmpeg pour une compatibilité optimale.';
-        } elseif (!$wasConverted) {
+        } elseif ($hasUploadedFile && !$wasConverted) {
             $message .= ' Note : La vidéo n\'a pas été convertie (déjà au bon format ou erreur de conversion).';
         }
 
@@ -418,12 +431,18 @@ class VideoController extends Controller
      */
     public function update(Request $request, Video $video)
     {
+        $ffmpegAvailable = $this->isFfmpegAvailable();
+        $acceptedVideoMimes = $ffmpegAvailable
+            ? 'mp4,webm,ogg,avi,mov,wmv,flv,mkv'
+            : 'mp4,webm,ogg';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'level' => 'required|in:debutant,intermediaire,avance',
             'access_level' => 'required|in:free,subscribed',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:512000', // Corrigé: 512000 au lieu de 524288
+            'video_file' => 'nullable|file|mimes:'.$acceptedVideoMimes.'|max:512000',
+            'external_video_url' => 'nullable|url|max:2048',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'duration' => 'nullable|integer|min:1',
             'lesson_id' => 'nullable|exists:lessons,id',
@@ -433,8 +452,8 @@ class VideoController extends Controller
 
         // Handle video upload
         if ($request->hasFile('video_file')) {
-            // Delete old video
-            if ($video->video_file && Storage::disk('public')->exists($video->video_file)) {
+            // Delete old video if it is a local stored file
+            if ($video->video_file && !filter_var($video->video_file, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($video->video_file)) {
                 Storage::disk('public')->delete($video->video_file);
             }
 
@@ -445,6 +464,12 @@ class VideoController extends Controller
             // Auto-detect duration for new video
             $fullPath = Storage::disk('public')->path($videoPath);
             $validated['duration'] = $this->getVideoDuration($fullPath);
+        } elseif ($request->filled('external_video_url')) {
+            if ($video->video_file && !filter_var($video->video_file, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($video->video_file)) {
+                Storage::disk('public')->delete($video->video_file);
+            }
+
+            $validated['video_file'] = trim((string) $request->input('external_video_url'));
         } else {
             unset($validated['video_file']);
         }
@@ -469,6 +494,8 @@ class VideoController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['order'] = $validated['order'] ?? $video->order ?? 0;
+
+        unset($validated['external_video_url']);
 
         $video->update($validated);
 
@@ -564,6 +591,29 @@ class VideoController extends Controller
         return $slug;
     }
 
+    private function isFfmpegAvailable(): bool
+    {
+        return $this->resolveBinaryPath('ffmpeg') !== null;
+    }
+
+    private function resolveBinaryPath(string $binary): ?string
+    {
+        $isWindows = strcasecmp(PHP_OS_FAMILY, 'Windows') === 0;
+        $command = $isWindows ? 'where ' : 'which ';
+        $stderrRedirection = $isWindows ? ' 2>NUL' : ' 2>/dev/null';
+
+        $output = trim((string) shell_exec($command . escapeshellarg($binary) . $stderrRedirection));
+
+        if ($output === '') {
+            return null;
+        }
+
+        $lines = preg_split('/\r?\n/', $output) ?: [];
+        $candidate = trim((string) ($lines[0] ?? ''));
+
+        return $candidate !== '' ? $candidate : null;
+    }
+
     /**
      * Convert uploaded video to a browser-friendly MP4 (H.264/AAC) when ffmpeg is available.
      */
@@ -575,7 +625,7 @@ class VideoController extends Controller
             return $publicPath;
         }
 
-        $ffmpegPath = trim(shell_exec('which ffmpeg') ?: '');
+        $ffmpegPath = $this->resolveBinaryPath('ffmpeg') ?? '';
         if ($ffmpegPath === '') {
             \Log::warning('FFmpeg not found. Video conversion skipped for: ' . $publicPath);
             return $publicPath;
@@ -617,12 +667,15 @@ class VideoController extends Controller
         }
 
         // Try ffprobe first
-        $ffprobePath = trim(shell_exec('which ffprobe') ?: '');
+        $ffprobePath = $this->resolveBinaryPath('ffprobe') ?? '';
         if (!empty($ffprobePath)) {
+            $ffprobeStderrRedirection = strcasecmp(PHP_OS_FAMILY, 'Windows') === 0 ? ' 2>NUL' : ' 2>/dev/null';
+
             $command = sprintf(
-                '%s -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s 2>/dev/null',
+                '%s -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s%s',
                 escapeshellarg($ffprobePath),
-                escapeshellarg($path)
+                escapeshellarg($path),
+                $ffprobeStderrRedirection
             );
             $output = shell_exec($command);
             if ($output !== null && is_numeric(trim($output))) {

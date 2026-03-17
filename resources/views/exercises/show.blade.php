@@ -114,16 +114,13 @@
                             </p>
 
                             <p id="submission-human-review" class="text-warning-700 mt-2 @if(!($submission?->ai_requires_human_review)) hidden @endif">
-                                <strong>Note :</strong> Cette correction automatique nécessite une validation humaine par l'administration.
+                                <strong>Note :</strong> Cette correction nécessite une validation par l'administration.
                             </p>
 
                             <p id="submission-feedback-text" class="text-{{ $submission?->status_badge_color ?? 'secondary' }}-700 mt-2 @if(!$submission?->feedback) hidden @endif">
                                 <strong>Feedback :</strong> <span id="submission-feedback-content">{{ $submission?->feedback }}</span>
                             </p>
 
-                            <p id="submission-ai-model" class="text-xs text-gray-500 mt-2 @if(!$submission?->ai_model) hidden @endif">
-                                Modèle IA : <span>{{ $submission?->ai_model }}</span>
-                            </p>
                             <p id="submission-unit-tests" class="text-xs text-gray-600 mt-2 @if(($submission?->unit_tests_total ?? 0) === 0) hidden @endif">
                                 Tests unitaires : <span id="submission-unit-tests-content">{{ (int) ($submission?->unit_tests_passed ?? 0) }}/{{ (int) ($submission?->unit_tests_total ?? 0) }}</span>
                             </p>
@@ -220,7 +217,6 @@
     const reportHumanReview = document.getElementById('submission-human-review');
     const reportFeedbackText = document.getElementById('submission-feedback-text');
     const reportFeedbackContent = document.getElementById('submission-feedback-content');
-    const reportAiModel = document.getElementById('submission-ai-model');
     const reportUnitTests = document.getElementById('submission-unit-tests');
     const reportUnitTestsContent = document.getElementById('submission-unit-tests-content');
     const submissionStatusUrl = '{{ route('exercises.submission-status', ['exercise' => $exercise->id]) }}';
@@ -265,16 +261,6 @@
                 reportHumanReview.classList.add('hidden');
             }
         }
-
-        const modelTarget = reportAiModel?.querySelector('span');
-        if (reportAiModel && modelTarget) {
-            if (report.ai_model) {
-                reportAiModel.classList.remove('hidden');
-                modelTarget.textContent = report.ai_model;
-            } else {
-                reportAiModel.classList.add('hidden');
-            }
-        }
     }
 
 
@@ -305,7 +291,7 @@
 
             if (data.is_final) {
                 stopSubmissionPolling();
-                showFeedback('Correction IA terminée : score et feedback mis à jour automatiquement.', 'success');
+                showFeedback('Correction terminée : score et feedback mis à jour.', 'success');
             }
         } catch (error) {
             console.error('Polling error:', error);

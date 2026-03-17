@@ -18,7 +18,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiant</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exercice</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pré-correction IA</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pré-analyse système</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Soumis le</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
                         </tr>

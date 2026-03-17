@@ -1,15 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Modifier une vidéo - Admin')
+@section('title', 'Modifier la vidéo')
 
 @section('content')
 <div class="py-8">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mb-8 flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Modifier une vidéo</h1>
-                <p class="text-gray-600 mt-2">Mettez à jour les informations de la vidéo.</p>
-            </div>
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900">Modifier la vidéo</h1>
             <a href="{{ route('admin.videos.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
             </a>
@@ -53,10 +50,26 @@
                         <div>
                             <label for="video_file" class="block text-sm font-medium text-gray-700 mb-2">Remplacer la vidéo</label>
                             <input type="file" name="video_file" id="video_file" class="form-input w-full" accept="video/mp4,video/webm,video/ogg">
+                            @error('video_file')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                             @if($video->video_file)
-                                <p class="text-xs text-gray-500 mt-1">Fichier actuel: {{ $video->video_file }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Source actuelle: {{ $video->video_file }}</p>
                             @endif
                         </div>
+                        <div>
+                            <label for="external_video_url" class="block text-sm font-medium text-gray-700 mb-2">Ou utiliser un lien vidéo externe</label>
+                            <input type="url" name="external_video_url" id="external_video_url" class="form-input w-full"
+                                   value="{{ old('external_video_url', filter_var($video->video_file, FILTER_VALIDATE_URL) ? $video->video_file : '') }}"
+                                   placeholder="https://www.youtube.com/watch?v=...">
+                            @error('external_video_url')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-500 mt-1">Optionnel : YouTube, Vimeo, ou autre URL vidéo directe.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">Remplacer la miniature</label>
                             <input type="file" name="thumbnail" id="thumbnail" class="form-input w-full" accept="image/*">
