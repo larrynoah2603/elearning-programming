@@ -27,7 +27,7 @@
                 <div class="bg-orange-50 rounded-xl border border-orange-100 p-5">
                     <p class="text-sm text-orange-700">Formation</p>
                     <p class="text-lg font-bold text-orange-900 mt-1">{{ $formation->title }}</p>
-                    <p class="text-sm text-orange-700 mt-2">Paiement : {{ number_format($formation->price, 2, ',', ' ') }} €</p>
+                    <p class="text-sm text-orange-700 mt-2">Paiement : {{ number_format($formation->price, 0, ',', ' ') }} Ar</p>
                 </div>
 
                 <div class="bg-amber-50 rounded-xl border border-amber-100 p-5">

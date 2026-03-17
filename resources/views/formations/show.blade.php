@@ -20,7 +20,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-primary-50 rounded-lg p-4">
                 <p class="text-sm text-primary-700">Tarif unique</p>
-                <p class="text-2xl font-bold text-primary-900">{{ number_format($formation->price, 2, ',', ' ') }} €</p>
+                <p class="text-2xl font-bold text-primary-900">{{ number_format($formation->price, 0, ',', ' ') }} Ar</p>
             </div>
             <div class="bg-orange-50 rounded-lg p-4">
                 <p class="text-sm text-orange-700">Validité</p>

@@ -16,7 +16,7 @@
 
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
             <p class="font-semibold text-gray-900">{{ $formation->title }}</p>
-            <p class="text-primary-700 text-xl font-bold mt-2">{{ number_format($formation->price, 2, ',', ' ') }} €</p>
+            <p class="text-primary-700 text-xl font-bold mt-2">{{ number_format($formation->price, 0, ',', ' ') }} Ar</p>
             <p class="text-sm text-gray-500 mt-1">Référence : {{ $enrollment->payment_reference }}</p>
         </div>
 

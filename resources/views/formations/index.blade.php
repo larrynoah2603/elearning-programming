@@ -20,7 +20,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
                 <div class="flex items-center justify-between mb-3">
                     <span class="badge badge-info">{{ $formation->level_display }}</span>
-                    <span class="text-lg font-bold text-primary-700">{{ number_format($formation->price, 2, ',', ' ') }} €</span>
+                    <span class="text-lg font-bold text-primary-700">{{ number_format($formation->price, 0, ',', ' ') }} Ar</span>
                 </div>
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $formation->title }}</h2>
                 <p class="text-gray-600 text-sm mb-4">{{ Str::limit($formation->description, 140) }}</p>
