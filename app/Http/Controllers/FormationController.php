@@ -55,8 +55,11 @@ class FormationController extends Controller
     {
         $enrollments = auth()->user()
             ->formationEnrollments()
-            ->with('formation')
             ->where('status', 'paid')
+            ->whereHas('formation')
+            ->with(['formation' => function ($query) {
+                $query->withCount(['modules', 'quizzes']);
+            }])
             ->latest('paid_at')
             ->get();
 
@@ -112,12 +115,39 @@ class FormationController extends Controller
                 'payment_method' => $request->input('payment_method'),
                 'payment_reference' => 'FRM-' . strtoupper(Str::random(10)),
                 'paid_at' => now(),
+                'access_expires_at' => now()->addDays($formation->validity_days),
             ]
         );
 
         return redirect()
-            ->route('formations.access', $formation)
+            ->route('formations.subscription', ['formation' => $formation->id])
             ->with('success', 'Paiement validé. Vous pouvez maintenant suivre cette formation modulaire.');
+    }
+
+
+    public function subscription(Formation $formation)
+    {
+        $enrollment = auth()->user()
+            ->formationEnrollments()
+            ->where('formation_id', $formation->id)
+            ->where('status', 'paid')
+            ->latest('paid_at')
+            ->first();
+
+        if (!$enrollment) {
+            return redirect()->route('formations.show', $formation->slug)
+                ->with('error', 'Vous devez acheter cette formation pour y accéder.');
+        }
+
+        if (!$enrollment->access_expires_at && $enrollment->paid_at) {
+            $enrollment->access_expires_at = $enrollment->paid_at->copy()->addDays($formation->validity_days);
+            $enrollment->save();
+        }
+
+        $deadline = $enrollment->access_expires_at;
+        $remainingDays = $deadline ? max(0, now()->startOfDay()->diffInDays($deadline->copy()->startOfDay(), false)) : null;
+
+        return view('formations.subscription', compact('formation', 'enrollment', 'deadline', 'remainingDays'));
     }
 
     public function validation(Formation $formation)
@@ -150,6 +180,11 @@ class FormationController extends Controller
         if (!$enrollment) {
             return redirect()->route('formations.show', $formation->slug)
                 ->with('error', 'Vous devez acheter cette formation pour y accéder.');
+        }
+
+        if ($enrollment->access_expires_at && now()->greaterThan($enrollment->access_expires_at)) {
+            return redirect()->route('formations.subscription', $formation)
+                ->with('error', 'La période de validité de cette formation est expirée.');
         }
 
         return view('formations.access', compact('formation', 'enrollment'));
@@ -228,6 +263,7 @@ class FormationController extends Controller
             'description' => $validated['description'],
             'level' => $validated['level'],
             'price' => $validated['price'],
+            'validity_days' => $validated['validity_days'],
             'is_active' => $request->boolean('is_active', true),
         ]);
 
@@ -254,6 +290,7 @@ class FormationController extends Controller
             'description' => $validated['description'],
             'level' => $validated['level'],
             'price' => $validated['price'],
+            'validity_days' => $validated['validity_days'],
             'is_active' => $request->boolean('is_active', true),
         ]);
 
@@ -347,6 +384,10 @@ class FormationController extends Controller
             ->formationEnrollments()
             ->where('formation_id', $formationId)
             ->where('status', 'paid')
+            ->where(function ($query) {
+                $query->whereNull('access_expires_at')
+                    ->orWhere('access_expires_at', '>=', now());
+            })
             ->latest('paid_at')
             ->first();
     }
@@ -358,6 +399,7 @@ class FormationController extends Controller
             'description' => ['required', 'string'],
             'level' => ['required', 'in:debutant,intermediaire,avance'],
             'price' => ['required', 'numeric', 'min:0'],
+            'validity_days' => ['required', 'integer', 'min:1', 'max:3650'],
             'is_active' => ['nullable', 'boolean'],
             'modules' => ['required', 'array', 'min:1'],
             'modules.*.title' => ['required', 'string', 'max:255'],

@@ -25,6 +25,7 @@
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $formation->title }}</h2>
                 <p class="text-gray-600 text-sm mb-4">{{ Str::limit($formation->description, 140) }}</p>
                 <p class="text-sm text-gray-500 mb-2">{{ $formation->modules_count }} module(s)</p>
+                <p class="text-sm text-orange-700 mb-4">Validité : {{ $formation->validity_days }} jours</p>
                 @auth
                     @if(in_array($formation->id, $purchasedFormationIds, true))
                         <p class="text-xs text-success-700 mb-4">✅ Vous faites déjà partie de cette formation</p>

@@ -18,11 +18,13 @@ class FormationEnrollment extends Model
         'payment_method',
         'payment_reference',
         'paid_at',
+        'access_expires_at',
     ];
 
     protected $casts = [
         'amount_paid' => 'decimal:2',
         'paid_at' => 'datetime',
+        'access_expires_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -92,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/formations/{formation}/checkout', [FormationController::class, 'checkout'])->name('formations.checkout');
     Route::post('/formations/{formation}/purchase', [FormationController::class, 'purchase'])->name('formations.purchase');
     Route::get('/formations/{formation}/validation', [FormationController::class, 'validation'])->name('formations.validation');
+    Route::get('/formations/{formation}/subscription', [FormationController::class, 'subscription'])->name('formations.subscription');
     Route::get('/formations/{formation}/access', [FormationController::class, 'access'])->name('formations.access');
     Route::get('/formations/{formation}/modules/{module}', [FormationController::class, 'showModule'])->name('formations.module.show');
     Route::post('/formations/{formation}/modules/{module}/progress', [FormationController::class, 'updateModuleProgress'])->name('formations.module.progress');
