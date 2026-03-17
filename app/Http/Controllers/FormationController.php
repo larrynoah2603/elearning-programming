@@ -55,8 +55,11 @@ class FormationController extends Controller
     {
         $enrollments = auth()->user()
             ->formationEnrollments()
-            ->with('formation')
             ->where('status', 'paid')
+            ->whereHas('formation')
+            ->with(['formation' => function ($query) {
+                $query->withCount(['modules', 'quizzes']);
+            }])
             ->latest('paid_at')
             ->get();
 
@@ -117,7 +120,7 @@ class FormationController extends Controller
         );
 
         return redirect()
-            ->route('formations.subscription', $formation)
+            ->route('formations.subscription', ['formation' => $formation->id])
             ->with('success', 'Paiement validé. Vous pouvez maintenant suivre cette formation modulaire.');
     }
 
@@ -128,6 +131,7 @@ class FormationController extends Controller
             ->formationEnrollments()
             ->where('formation_id', $formation->id)
             ->where('status', 'paid')
+            ->latest('paid_at')
             ->first();
 
         if (!$enrollment) {
@@ -135,7 +139,12 @@ class FormationController extends Controller
                 ->with('error', 'Vous devez acheter cette formation pour y accéder.');
         }
 
-        $deadline = $enrollment->access_expires_at ?? $enrollment->paid_at?->copy()->addDays($formation->validity_days);
+        if (!$enrollment->access_expires_at && $enrollment->paid_at) {
+            $enrollment->access_expires_at = $enrollment->paid_at->copy()->addDays($formation->validity_days);
+            $enrollment->save();
+        }
+
+        $deadline = $enrollment->access_expires_at;
         $remainingDays = $deadline ? max(0, now()->startOfDay()->diffInDays($deadline->copy()->startOfDay(), false)) : null;
 
         return view('formations.subscription', compact('formation', 'enrollment', 'deadline', 'remainingDays'));

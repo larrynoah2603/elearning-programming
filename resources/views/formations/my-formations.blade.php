@@ -12,67 +12,56 @@
     @if($enrollments->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($enrollments as $enrollment)
+                @php
+                    $formation = $enrollment->formation;
+                    $deadline = $enrollment->access_expires_at ?? optional($enrollment->paid_at)?->copy()?->addDays($formation->validity_days ?? 30);
+                    $isExpired = $deadline ? now()->greaterThan($deadline) : false;
+                @endphp
+
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
-                    <!-- Card Header -->
-                    <div class="bg-gradient-to-r from-primary-500 to-primary-600 p-4 h-32 flex flex-col justify-between">
+                    <div class="p-4 h-32 flex flex-col justify-between {{ $isExpired ? 'bg-gradient-to-r from-gray-500 to-gray-600' : 'bg-gradient-to-r from-primary-500 to-primary-600' }}">
                         <div>
-                            <p class="text-white font-bold text-lg truncate">{{ $enrollment->formation->title }}</p>
-                            <span class="badge badge-info text-xs mt-2">{{ ucfirst($enrollment->formation->level) }}</span>
+                            <p class="text-white font-bold text-lg truncate">{{ $formation->title }}</p>
+                            <span class="badge badge-info text-xs mt-2">{{ ucfirst($formation->level) }}</span>
                         </div>
+                        <p class="text-xs text-white/90 mt-2">{{ $isExpired ? 'Accès expiré' : 'Accès actif' }}</p>
                     </div>
 
-                    <!-- Card Body -->
                     <div class="p-4 space-y-4">
-                        <!-- Description -->
                         <p class="text-sm text-gray-600 line-clamp-2">
-                            {{ $enrollment->formation->description }}
+                            {{ $formation->description }}
                         </p>
 
-                        <!-- Stats -->
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div class="bg-gray-50 p-2 rounded-lg">
                                 <p class="text-gray-500 text-xs">Modules</p>
-                                <p class="font-bold text-gray-900">{{ $enrollment->formation->modules->count() }}</p>
+                                <p class="font-bold text-gray-900">{{ $formation->modules_count ?? 0 }}</p>
                             </div>
                             <div class="bg-gray-50 p-2 rounded-lg">
                                 <p class="text-gray-500 text-xs">Quizzes</p>
-                                <p class="font-bold text-gray-900">{{ $enrollment->formation->quizzes->count() }}</p>
+                                <p class="font-bold text-gray-900">{{ $formation->quizzes_count ?? 0 }}</p>
                             </div>
                         </div>
 
-                        <!-- Progress -->
-                        <div>
-                            <p class="text-xs text-gray-500 mb-2">Progression</p>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-primary-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Enrollment Info -->
-                        @php
-                            $deadline = $enrollment->access_expires_at ?? optional($enrollment->paid_at)?->copy()?->addDays($enrollment->formation->validity_days);
-                        @endphp
                         <div class="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 border border-blue-200">
                             <p><strong>Acheté le :</strong> {{ optional($enrollment->paid_at)->format('d/m/Y') }}</p>
-                            <p><strong>Validité :</strong> {{ $enrollment->formation->validity_days }} jours</p>
+                            <p><strong>Validité :</strong> {{ $formation->validity_days }} jours</p>
                             <p><strong>Deadline :</strong> {{ $deadline?->format('d/m/Y H:i') ?? 'N/A' }}</p>
                             <p><strong>Ref :</strong> {{ $enrollment->payment_reference }}</p>
                         </div>
 
-                        <!-- Button -->
-                        <a href="{{ route('formations.subscription', $enrollment->formation) }}" class="btn btn-primary w-full">
-                            Continuer la formation
-                        </a>
+                        @if($isExpired)
+                            <a href="{{ route('formations.subscription', ['formation' => $formation->id]) }}" class="btn btn-secondary w-full">
+                                Voir les détails d'expiration
+                            </a>
+                        @else
+                            <a href="{{ route('formations.access', ['formation' => $formation->id]) }}" class="btn btn-primary w-full">
+                                Continuer la formation
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endforeach
-        </div>
-
-        <div class="mt-10 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 class="text-lg font-bold text-blue-900 mb-3">💡 Conseil</h3>
-            <p class="text-blue-700 text-sm">
-                Pour progresser rapidement, consacrez au moins 30 minutes par jour à votre formation. Commencez par les leçons, regardez les vidéos, puis pratiquez avec les exercices.
-            </p>
         </div>
     @else
         <div class="text-center py-12">
