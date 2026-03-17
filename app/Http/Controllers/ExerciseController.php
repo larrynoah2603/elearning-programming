@@ -133,14 +133,13 @@ class ExerciseController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Votre solution a été soumise. La pré-correction IA est en cours de traitement.',
+            'message' => 'Votre solution a été soumise. La correction est en cours de traitement.',
             'submission' => $latestSubmission,
             'report' => [
                 'status' => $latestSubmission->status_display,
                 'score' => $latestSubmission->score,
                 'feedback' => $latestSubmission->feedback,
                 'requires_human_review' => (bool) $latestSubmission->ai_requires_human_review,
-                'ai_model' => $latestSubmission->ai_model,
                 'unit_tests' => [
                     'passed' => (int) $latestSubmission->unit_tests_passed,
                     'total' => (int) $latestSubmission->unit_tests_total,
@@ -187,7 +186,6 @@ class ExerciseController extends Controller
                 'score' => $submission->score,
                 'feedback' => $submission->feedback,
                 'requires_human_review' => (bool) $submission->ai_requires_human_review,
-                'ai_model' => $submission->ai_model,
                 'unit_tests' => [
                     'passed' => (int) $submission->unit_tests_passed,
                     'total' => (int) $submission->unit_tests_total,

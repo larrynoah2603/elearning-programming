@@ -25,7 +25,7 @@
                         poster="{{ $video->thumbnail_url }}"
                         data-video-id="{{ $video->id }}"
                         @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
-                        <source src="{{ $video->video_url }}" type="{{ $video->video_mime_type }}">
+                        <source src="{{ $video->video_url }}" @if($video->video_mime_type) type="{{ $video->video_mime_type }}" @endif>
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
                     <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
