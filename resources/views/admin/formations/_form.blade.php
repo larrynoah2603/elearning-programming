@@ -22,7 +22,7 @@
         <textarea name="description" rows="4" class="w-full border-gray-300 rounded-lg" required>{{ old('description', $formation->description ?? '') }}</textarea>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
             <select name="level" class="w-full border-gray-300 rounded-lg" required>
@@ -34,6 +34,10 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Prix (€)</label>
             <input type="number" step="0.01" min="0" name="price" class="w-full border-gray-300 rounded-lg" value="{{ old('price', $formation->price ?? '0.00') }}" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Validité (jours)</label>
+            <input type="number" min="1" name="validity_days" class="w-full border-gray-300 rounded-lg" value="{{ old('validity_days', $formation->validity_days ?? 30) }}" required>
         </div>
         <div class="flex items-center gap-2 pt-6">
             <input id="is_active" type="checkbox" name="is_active" value="1" @checked(old('is_active', $formation->is_active ?? true))>
@@ -65,6 +69,7 @@
 @error('description') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
 @error('level') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
 @error('price') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
+@error('validity_days') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
 @error('modules') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
 
 <script>
