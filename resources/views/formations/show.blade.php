@@ -17,10 +17,14 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $formation->title }}</h1>
         <p class="text-gray-600 mb-6">{{ $formation->description }}</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-primary-50 rounded-lg p-4">
                 <p class="text-sm text-primary-700">Tarif unique</p>
                 <p class="text-2xl font-bold text-primary-900">{{ number_format($formation->price, 2, ',', ' ') }} €</p>
+            </div>
+            <div class="bg-orange-50 rounded-lg p-4">
+                <p class="text-sm text-orange-700">Validité</p>
+                <p class="font-semibold text-orange-900">{{ $formation->validity_days }} jours pour terminer la formation.</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-4">
                 <p class="text-sm text-gray-600">Accès</p>

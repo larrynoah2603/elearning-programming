@@ -49,13 +49,18 @@
                         </div>
 
                         <!-- Enrollment Info -->
+                        @php
+                            $deadline = $enrollment->access_expires_at ?? optional($enrollment->paid_at)?->copy()?->addDays($enrollment->formation->validity_days);
+                        @endphp
                         <div class="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 border border-blue-200">
                             <p><strong>Acheté le :</strong> {{ optional($enrollment->paid_at)->format('d/m/Y') }}</p>
+                            <p><strong>Validité :</strong> {{ $enrollment->formation->validity_days }} jours</p>
+                            <p><strong>Deadline :</strong> {{ $deadline?->format('d/m/Y H:i') ?? 'N/A' }}</p>
                             <p><strong>Ref :</strong> {{ $enrollment->payment_reference }}</p>
                         </div>
 
                         <!-- Button -->
-                        <a href="{{ route('formations.show', $enrollment->formation->slug) }}" class="btn btn-primary w-full">
+                        <a href="{{ route('formations.subscription', $enrollment->formation) }}" class="btn btn-primary w-full">
                             Continuer la formation
                         </a>
                     </div>

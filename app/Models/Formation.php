@@ -18,11 +18,13 @@ class Formation extends Model
         'description',
         'level',
         'price',
+        'validity_days',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'validity_days' => 'integer',
         'is_active' => 'boolean',
     ];
 
