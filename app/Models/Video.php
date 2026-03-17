@@ -262,18 +262,24 @@ class Video extends Model
     /**
      * Get video MIME type for HTML5 source.
      */
-    public function getVideoMimeTypeAttribute(): string
+    public function getVideoMimeTypeAttribute(): ?string
     {
         if (!$this->video_file) {
-            return 'video/mp4';
+            return null;
         }
 
         $extension = strtolower(pathinfo(parse_url($this->video_file, PHP_URL_PATH) ?: $this->video_file, PATHINFO_EXTENSION));
 
         return match ($extension) {
+            'mp4', 'm4v' => 'video/mp4',
             'webm' => 'video/webm',
             'ogg', 'ogv' => 'video/ogg',
-            default => 'video/mp4',
+            'mov' => 'video/quicktime',
+            'avi' => 'video/x-msvideo',
+            'wmv' => 'video/x-ms-wmv',
+            'flv' => 'video/x-flv',
+            'mkv' => 'video/x-matroska',
+            default => null,
         };
     }
 

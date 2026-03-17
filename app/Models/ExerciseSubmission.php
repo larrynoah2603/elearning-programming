@@ -123,7 +123,7 @@ class ExerciseSubmission extends Model
         return match($this->status) {
             'en_cours' => 'En cours',
             'soumis' => 'Soumis',
-            'corrige' => $this->ai_requires_human_review ? 'À valider (IA)' : 'Corrigé',
+            'corrige' => $this->ai_requires_human_review ? 'À valider' : 'Corrigé',
             'reussi' => 'Réussi',
             'echoue' => 'Échoué',
             default => $this->status,
