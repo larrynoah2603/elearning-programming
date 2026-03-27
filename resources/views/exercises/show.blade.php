@@ -54,22 +54,28 @@
                         {!! nl2br(e($exercise->instructions)) !!}
                     </div>
 
-                    @if($exercise->hints)
+                    @if(auth()->check())
                         <div class="mt-4">
-                            <button
-                                type="button"
-                                onclick="document.getElementById('hints').classList.toggle('hidden')"
-                                class="btn bg-warning-100 text-warning-700 hover:bg-warning-200"
-                            >
-                                <i class="fas fa-lightbulb mr-2"></i> Afficher l'indice
-                            </button>
-                        </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Indices progressifs</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @for($level = 1; $level <= 3; $level++)
+                                    <button
+                                        type="button"
+                                        class="hint-btn btn text-sm {{ in_array($level, $availableHintLevels ?? [1]) ? 'bg-warning-100 text-warning-700 hover:bg-warning-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}"
+                                        data-level="{{ $level }}"
+                                        @disabled(!in_array($level, $availableHintLevels ?? [1]))
+                                    >
+                                        Indice {{ $level }}
+                                    </button>
+                                @endfor
+                            </div>
 
-                        <div id="hints" class="hidden mt-4 p-4 bg-warning-50 border-l-4 border-warning-500 rounded-lg">
-                            <h4 class="font-bold text-warning-800 mb-2">
-                                <i class="fas fa-lightbulb mr-2"></i> Indice
-                            </h4>
-                            <p class="text-warning-700">{{ $exercise->hints }}</p>
+                            <div id="hints" class="hidden mt-4 p-4 bg-warning-50 border-l-4 border-warning-500 rounded-lg">
+                                <h4 class="font-bold text-warning-800 mb-2">
+                                    <i class="fas fa-lightbulb mr-2"></i> Indice <span id="hint-level">1</span>
+                                </h4>
+                                <p id="hint-content" class="text-warning-700"></p>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -120,6 +126,8 @@
                             <p id="submission-feedback-text" class="text-{{ $submission?->status_badge_color ?? 'secondary' }}-700 mt-2 @if(!$submission?->feedback) hidden @endif">
                                 <strong>Feedback :</strong> <span id="submission-feedback-content">{{ $submission?->feedback }}</span>
                             </p>
+
+                            <div id="submission-structured" class="mt-3 text-sm text-gray-700 space-y-2"></div>
 
                             <p id="submission-unit-tests" class="text-xs text-gray-600 mt-2 @if(($submission?->unit_tests_total ?? 0) === 0) hidden @endif">
                                 Tests unitaires : <span id="submission-unit-tests-content">{{ (int) ($submission?->unit_tests_passed ?? 0) }}/{{ (int) ($submission?->unit_tests_total ?? 0) }}</span>
@@ -219,10 +227,46 @@
     const reportFeedbackContent = document.getElementById('submission-feedback-content');
     const reportUnitTests = document.getElementById('submission-unit-tests');
     const reportUnitTestsContent = document.getElementById('submission-unit-tests-content');
+    const reportStructured = document.getElementById('submission-structured');
     const submissionStatusUrl = '{{ route('exercises.submission-status', ['exercise' => $exercise->id]) }}';
     let submissionPollingInterval = null;
     let submissionPollingAttempts = 0;
     const maxSubmissionPollingAttempts = 40;
+
+    const hintButtons = document.querySelectorAll('.hint-btn');
+    const hintsBox = document.getElementById('hints');
+    const hintContent = document.getElementById('hint-content');
+    const hintLevel = document.getElementById('hint-level');
+
+    hintButtons.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const level = btn.dataset.level;
+            try {
+                const response = await fetch(`{{ route('exercises.hints.show', ['exercise' => $exercise->id, 'level' => '__LEVEL__']) }}`.replace('__LEVEL__', level), {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Indice indisponible');
+                }
+
+                if (hintsBox && hintContent && hintLevel) {
+                    hintsBox.classList.remove('hidden');
+                    hintLevel.textContent = `${data.level}`;
+                    hintContent.textContent = data.content;
+                }
+
+                const next = document.querySelector(`.hint-btn[data-level="${Number(level) + 1}"]`);
+                if (next) {
+                    next.disabled = false;
+                    next.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+                    next.classList.add('bg-warning-100', 'text-warning-700', 'hover:bg-warning-200');
+                }
+            } catch (error) {
+                showFeedback(error.message, 'error');
+            }
+        });
+    });
 
     function renderSubmissionReport(report) {
         if (!reportBox || !report) {
@@ -252,6 +296,15 @@
                 reportFeedbackText.classList.add('hidden');
                 reportFeedbackContent.textContent = '';
             }
+        }
+
+        if (reportStructured) {
+            const structured = report.feedback_structured || {};
+            reportStructured.innerHTML = `
+                <div><strong>✅ Points forts :</strong> ${structured.strengths ?? '-'}</div>
+                <div><strong>🛠️ Points bloquants :</strong> ${structured.blocking_points ?? '-'}</div>
+                <div><strong>➡️ Prochaine action :</strong> ${structured.next_action ?? '-'}</div>
+            `;
         }
 
         if (reportHumanReview) {

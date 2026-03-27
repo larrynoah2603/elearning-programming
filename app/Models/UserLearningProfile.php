@@ -6,25 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ForumReply extends Model
+class UserLearningProfile extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'thread_id',
         'user_id',
-        'body',
-        'is_accepted',
+        'level',
+        'goal',
+        'minutes_per_day',
+        'preferred_languages',
+        'onboarding_completed_at',
     ];
 
     protected $casts = [
-        'is_accepted' => 'boolean',
+        'preferred_languages' => 'array',
+        'minutes_per_day' => 'integer',
+        'onboarding_completed_at' => 'datetime',
     ];
-
-    public function thread(): BelongsTo
-    {
-        return $this->belongsTo(ForumThread::class, 'thread_id');
-    }
 
     public function user(): BelongsTo
     {

@@ -6,6 +6,7 @@ use App\Http\Requests\SaveExerciseProgressRequest;
 use App\Http\Requests\SubmitExerciseRequest;
 use App\Jobs\EvaluateSubmissionWithAiJob;
 use App\Models\Exercise;
+use App\Models\ExerciseHintView;
 use App\Models\ExerciseSubmission;
 use App\Models\Lesson;
 use App\Services\DeepseekCorrectionService;
@@ -76,6 +77,24 @@ class ExerciseController extends Controller
             $submission = $exercise->getUserSubmission(auth()->user());
         }
 
+        $availableHintLevels = [];
+        if (auth()->check()) {
+            $viewedLevels = ExerciseHintView::query()
+                ->where('user_id', auth()->id())
+                ->where('exercise_id', $exercise->id)
+                ->pluck('hint_level')
+                ->map(fn ($lvl) => (int) $lvl)
+                ->all();
+
+            $availableHintLevels = [1];
+            if (in_array(1, $viewedLevels, true)) {
+                $availableHintLevels[] = 2;
+            }
+            if (in_array(2, $viewedLevels, true)) {
+                $availableHintLevels[] = 3;
+            }
+        }
+
         // Get related exercises
         $relatedExercises = Exercise::active()
             ->where('id', '!=', $exercise->id)
@@ -84,7 +103,7 @@ class ExerciseController extends Controller
             ->take(3)
             ->get();
 
-        return view('exercises.show', compact('exercise', 'submission', 'relatedExercises'));
+        return view('exercises.show', compact('exercise', 'submission', 'relatedExercises', 'availableHintLevels'));
     }
 
     /**
@@ -139,6 +158,7 @@ class ExerciseController extends Controller
                 'status' => $latestSubmission->status_display,
                 'score' => $latestSubmission->score,
                 'feedback' => $latestSubmission->feedback,
+                'feedback_structured' => $this->buildStructuredFeedback($latestSubmission),
                 'requires_human_review' => (bool) $latestSubmission->ai_requires_human_review,
                 'unit_tests' => [
                     'passed' => (int) $latestSubmission->unit_tests_passed,
@@ -185,6 +205,7 @@ class ExerciseController extends Controller
                 'status' => $submission->status_display,
                 'score' => $submission->score,
                 'feedback' => $submission->feedback,
+                'feedback_structured' => $this->buildStructuredFeedback($submission),
                 'requires_human_review' => (bool) $submission->ai_requires_human_review,
                 'unit_tests' => [
                     'passed' => (int) $submission->unit_tests_passed,
@@ -271,6 +292,13 @@ Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total
             $submission->update([
                 'score' => $finalScore,
                 'feedback' => $feedback,
+                'feedback_structured' => [
+                    'strengths' => $finalScore >= 50 ? 'Bonne logique globale.' : 'Tentative complète soumise.',
+                    'blocking_points' => $aiCorrection['feedback'],
+                    'next_action' => $submission->unit_tests_total > 0
+                        ? "Corrigez les tests unitaires en échec ({$submission->unit_tests_passed}/{$submission->unit_tests_total})."
+                        : 'Revoyez les cas limites et améliorez votre approche.',
+                ],
                 'status' => $status,
                 'corrected_at' => now(),
                 'corrected_by' => null,
@@ -283,6 +311,26 @@ Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total
         } finally {
             optional($lock)->release();
         }
+    }
+
+    private function buildStructuredFeedback(ExerciseSubmission $submission): array
+    {
+        if (is_array($submission->feedback_structured) && !empty($submission->feedback_structured)) {
+            return $submission->feedback_structured;
+        }
+
+        $unitTestsTotal = (int) ($submission->unit_tests_total ?? 0);
+        $unitTestsPassed = (int) ($submission->unit_tests_passed ?? 0);
+
+        return [
+            'strengths' => $submission->score !== null && $submission->score >= 50
+                ? 'Bonne base de solution. Continuez sur cette logique.'
+                : 'Vous avez soumis une tentative complète, c’est une bonne progression.',
+            'blocking_points' => $submission->feedback ?: 'Des ajustements sont nécessaires pour valider tous les cas.',
+            'next_action' => $unitTestsTotal > 0
+                ? "Corrigez d'abord les tests unitaires en échec ({$unitTestsPassed}/{$unitTestsTotal} réussis)."
+                : 'Revoyez les instructions puis améliorez la gestion des cas limites.',
+        ];
     }
 
     /**

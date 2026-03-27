@@ -4,10 +4,13 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\ExerciseHintController;
 use App\Http\Controllers\WeeklyChallengeController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\LearningPlanController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\SubscriptionController;
@@ -61,6 +64,9 @@ Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('cat
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::patch('/dashboard/plan/items/{item}/done', [LearningPlanController::class, 'completeItem'])->name('dashboard.plan.items.done');
     
     // Profile
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
@@ -71,6 +77,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/exercises/{exercise}/submit', [ExerciseController::class, 'submit'])->name('exercises.submit');
     Route::post('/exercises/{exercise}/progress', [ExerciseController::class, 'saveProgress'])->name('exercises.progress');
     Route::get('/exercises/{exercise}/submission-status', [ExerciseController::class, 'submissionStatus'])->name('exercises.submission-status');
+    Route::get('/exercises/{exercise}/hints/{level}', [ExerciseHintController::class, 'show'])
+        ->whereNumber('level')
+        ->name('exercises.hints.show');
     
     // Video Progress
     Route::post('/videos/{video}/progress', [VideoController::class, 'updateProgress'])->name('videos.progress');
@@ -112,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/forum/threads', [ForumController::class, 'storeThread'])->name('forum.threads.store');
     Route::post('/forum/threads/{thread}/replies', [ForumController::class, 'storeReply'])->name('forum.replies.store');
     Route::patch('/forum/threads/{thread}/resolve', [ForumController::class, 'resolve'])->name('forum.threads.resolve');
+    Route::patch('/forum/threads/{thread}/replies/{reply}/accept', [ForumController::class, 'markAcceptedReply'])->name('forum.replies.accept');
 });
 
 // Admin Routes

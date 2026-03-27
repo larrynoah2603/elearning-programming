@@ -59,6 +59,13 @@ Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total
         $submission->update([
             'score' => $finalScore,
             'feedback' => $feedback,
+            'feedback_structured' => [
+                'strengths' => $finalScore >= 50 ? 'Bonne logique globale.' : 'Tentative complète soumise.',
+                'blocking_points' => $aiCorrection['feedback'],
+                'next_action' => $submission->unit_tests_total > 0
+                    ? "Corriger les tests unitaires en échec ({$submission->unit_tests_passed}/{$submission->unit_tests_total})."
+                    : 'Améliorer la gestion des cas limites selon le feedback.',
+            ],
             'status' => $status,
             'corrected_at' => now(),
             'corrected_by' => null,
