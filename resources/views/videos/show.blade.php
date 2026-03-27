@@ -19,18 +19,34 @@
             <div class="lg:col-span-2">
                 <!-- Video Player -->
                 <div class="bg-black rounded-xl overflow-hidden mb-6">
-                    <video id="video-player" 
-                        class="w-full aspect-video" 
-                        controls 
-                        poster="{{ $video->thumbnail_url }}"
-                        data-video-id="{{ $video->id }}"
-                        @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
-                        <source src="{{ $video->video_url }}" @if($video->video_mime_type) type="{{ $video->video_mime_type }}" @endif>
-                        Votre navigateur ne supporte pas la lecture de vidéos.
-                    </video>
-                    <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
-                        Si la lecture échoue, <a href="{{ $video->video_url }}" class="underline text-primary-300">ouvrez la vidéo directement</a>.
-                    </div>
+                    @if($video->is_embeddable_external_video)
+                        <iframe
+                            class="w-full aspect-video"
+                            src="{{ $video->embed_video_url }}"
+                            title="{{ $video->title }}"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen>
+                        </iframe>
+                        <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
+                            Lecture via plateforme externe.
+                            <a href="{{ $video->video_url }}" target="_blank" rel="noopener noreferrer" class="underline text-primary-300">Ouvrir l'original</a>.
+                        </div>
+                    @else
+                        <video id="video-player" 
+                            class="w-full aspect-video" 
+                            controls 
+                            poster="{{ $video->thumbnail_url }}"
+                            data-video-id="{{ $video->id }}"
+                            @if($progress) data-current-time="{{ $progress->current_time }}" @endif>
+                            <source src="{{ $video->video_url }}" @if($video->video_mime_type) type="{{ $video->video_mime_type }}" @endif>
+                            Votre navigateur ne supporte pas la lecture de vidéos.
+                        </video>
+                        <div class="bg-gray-900 text-gray-300 text-xs px-4 py-2">
+                            Si la lecture échoue, <a href="{{ $video->video_url }}" class="underline text-primary-300">ouvrez la vidéo directement</a>.
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Video Info -->

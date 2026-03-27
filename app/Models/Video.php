@@ -44,6 +44,9 @@ class Video extends Model
     // Ajoutez ces accesseurs pour l'affichage dans les vues
     protected $appends = [
         'video_url',
+        'is_external_video',
+        'is_embeddable_external_video',
+        'embed_video_url',
         'thumbnail_url',
         'level_display',
         'level_badge_color',
@@ -166,11 +169,85 @@ class Video extends Model
             return null;
         }
 
-        if (filter_var($this->video_file, FILTER_VALIDATE_URL)) {
+        if ($this->isExternalVideo()) {
             return $this->video_file;
         }
 
         return route('videos.stream', $this->id);
+    }
+
+    /**
+     * Check whether the video source is an external URL.
+     */
+    public function isExternalVideo(): bool
+    {
+        return !empty($this->video_file) && filter_var($this->video_file, FILTER_VALIDATE_URL) !== false;
+    }
+
+    /**
+     * Accessor: whether this video source is external.
+     */
+    public function getIsExternalVideoAttribute(): bool
+    {
+        return $this->isExternalVideo();
+    }
+
+    /**
+     * Accessor: whether this external source should be displayed in an iframe.
+     */
+    public function getIsEmbeddableExternalVideoAttribute(): bool
+    {
+        return $this->getEmbedVideoUrlAttribute() !== null;
+    }
+
+    /**
+     * Accessor: embed URL for supported providers (YouTube/Vimeo), null otherwise.
+     */
+    public function getEmbedVideoUrlAttribute(): ?string
+    {
+        if (!$this->isExternalVideo()) {
+            return null;
+        }
+
+        $url = trim((string) $this->video_file);
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['host'])) {
+            return null;
+        }
+
+        $host = strtolower((string) $parts['host']);
+        $host = preg_replace('/^www\./', '', $host);
+        $path = (string) ($parts['path'] ?? '');
+        $query = (string) ($parts['query'] ?? '');
+
+        // YouTube variants: youtu.be/{id}, youtube.com/watch?v={id}, /shorts/{id}, /embed/{id}
+        if (in_array($host, ['youtube.com', 'm.youtube.com', 'youtu.be'], true)) {
+            $videoId = null;
+
+            if ($host === 'youtu.be') {
+                $videoId = trim($path, '/');
+            } elseif (str_starts_with($path, '/watch')) {
+                parse_str($query, $queryParams);
+                $videoId = $queryParams['v'] ?? null;
+            } elseif (str_starts_with($path, '/shorts/')) {
+                $videoId = basename($path);
+            } elseif (str_starts_with($path, '/embed/')) {
+                $videoId = basename($path);
+            }
+
+            if (is_string($videoId) && $videoId !== '') {
+                return 'https://www.youtube.com/embed/'.rawurlencode($videoId);
+            }
+        }
+
+        // Vimeo variants: vimeo.com/{id}, player.vimeo.com/video/{id}
+        if (in_array($host, ['vimeo.com', 'player.vimeo.com'], true)) {
+            if (preg_match('#(?:/video/)?(\d+)#', $path, $matches)) {
+                return 'https://player.vimeo.com/video/'.rawurlencode($matches[1]);
+            }
+        }
+
+        return null;
     }
 
     /**
