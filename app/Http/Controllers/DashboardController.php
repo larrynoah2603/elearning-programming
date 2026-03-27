@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use App\Models\ExerciseSubmission;
+use App\Models\LearningPlan;
 use App\Models\Lesson;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoProgress;
+use App\Services\DashboardCoachService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -17,7 +19,7 @@ class DashboardController extends Controller
     /**
      * Display the user dashboard.
      */
-    public function index()
+    public function index(DashboardCoachService $coachService)
     {
         $user = auth()->user();
 
@@ -73,6 +75,14 @@ class DashboardController extends Controller
         $recommendations = $this->buildRecommendations($user);
         $quickWins = $this->buildQuickWins($user, $studyMetrics);
         $leaderboard = $this->buildLeaderboard($user, $streak['current']);
+        $activePlan = LearningPlan::query()
+            ->with('items')
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+        $needsOnboarding = $user->learningProfile?->onboarding_completed_at === null;
+        $coach = $coachService->buildCoachPayload($user, $recommendations, $quickWins, $streak);
 
         return view('dashboard', compact(
             'stats',
@@ -86,7 +96,10 @@ class DashboardController extends Controller
             'availableLessons',
             'availableExercises',
             'availableVideos',
-            'exerciseProgress'
+            'exerciseProgress',
+            'activePlan',
+            'needsOnboarding',
+            'coach'
         ));
     }
 

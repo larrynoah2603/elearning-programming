@@ -18,6 +18,8 @@ class ExerciseSubmission extends Model
         'score',
         'ai_score',
         'feedback',
+        'feedback_structured',
+        'hint_penalty',
         'ai_feedback',
         'ai_requires_human_review',
         'ai_corrected_at',
@@ -44,6 +46,8 @@ class ExerciseSubmission extends Model
         'unit_tests_passed' => 'integer',
         'unit_tests_total' => 'integer',
         'unit_test_score' => 'integer',
+        'feedback_structured' => 'array',
+        'hint_penalty' => 'integer',
     ];
 
     /**

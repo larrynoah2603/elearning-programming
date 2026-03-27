@@ -10,6 +10,16 @@
             <p class="text-gray-600 mt-2">Voici votre progression, vos quick wins et vos prochaines recommandations.</p>
         </div>
 
+        @if($needsOnboarding)
+            <div class="bg-primary-50 border border-primary-100 rounded-xl p-5 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 class="font-bold text-primary-900">Activez votre mode autodidacte</h2>
+                    <p class="text-sm text-primary-700">Complétez le mini onboarding pour obtenir un plan personnalisé sur 7 jours.</p>
+                </div>
+                <a href="{{ route('onboarding.show') }}" class="btn btn-primary">Démarrer l'onboarding</a>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 flex items-center">
                 <div class="w-14 h-14 bg-success-100 rounded-xl flex items-center justify-center mr-4">
@@ -100,6 +110,34 @@
                     </div>
                 </div>
 
+                @if($activePlan)
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">🗺️ Plan personnalisé</h3>
+                        <div class="space-y-3">
+                            @foreach($activePlan->items->take(5) as $item)
+                                <div class="flex items-center justify-between gap-3 p-3 rounded-lg {{ $item->is_done ? 'bg-success-50 border border-success-100' : 'bg-gray-50' }}">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $item->title }}</p>
+                                        <p class="text-xs text-gray-500">{{ $item->estimated_minutes }} min • {{ ucfirst(str_replace('_', ' ', $item->type)) }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @if($item->url)
+                                            <a href="{{ $item->url }}" class="text-primary-600 text-sm font-medium">Ouvrir</a>
+                                        @endif
+                                        @unless($item->is_done)
+                                            <form method="POST" action="{{ route('dashboard.plan.items.done', $item) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="text-xs px-2 py-1 rounded bg-success-100 text-success-700 hover:bg-success-200">Terminé</button>
+                                            </form>
+                                        @endunless
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4">🤖 Recommandation leçon</h3>
@@ -166,6 +204,26 @@
             </div>
 
             <div class="space-y-8">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">🧭 Coach d'apprentissage</h3>
+                    <div class="space-y-3">
+                        @forelse($coach['next_actions'] as $action)
+                            <a href="{{ $action['url'] }}" class="block rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
+                                <p class="text-xs uppercase tracking-wide text-gray-500">{{ $action['label'] }} • {{ $action['duration'] }} min</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $action['title'] }}</p>
+                            </a>
+                        @empty
+                            <p class="text-sm text-gray-500">Aucune action suggérée pour le moment.</p>
+                        @endforelse
+                    </div>
+                    @if($coach['recovery_action'])
+                        <a href="{{ $coach['recovery_action']['url'] }}" class="mt-4 inline-flex text-sm text-primary-700 font-semibold">
+                            {{ $coach['recovery_action']['label'] }}
+                        </a>
+                    @endif
+                    <p class="mt-3 text-xs text-gray-500">Soumissions en échec récentes : {{ $coach['failed_submissions'] }}</p>
+                </div>
+
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">🔥 Streak & progression</h3>
                     <div class="space-y-3 text-sm text-gray-600">

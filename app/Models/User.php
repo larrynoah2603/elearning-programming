@@ -235,6 +235,16 @@ class User extends Authenticatable
         return $this->hasMany(FormationEnrollment::class);
     }
 
+    public function learningProfile()
+    {
+        return $this->hasOne(UserLearningProfile::class);
+    }
+
+    public function learningPlans()
+    {
+        return $this->hasMany(LearningPlan::class);
+    }
+
     /**
      * Check if the user has already purchased a formation.
      */

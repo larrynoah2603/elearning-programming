@@ -19,6 +19,9 @@
             <div class="lg:col-span-2">
                 <!-- Video Player -->
                 <div class="bg-black rounded-xl overflow-hidden mb-6">
+                    <div id="network-status" class="hidden text-xs px-4 py-2 bg-warning-100 text-warning-800">
+                        Connexion faible détectée. La lecture peut être ralentie.
+                    </div>
                     @if($video->is_embeddable_external_video)
                         <iframe
                             class="w-full aspect-video"
@@ -132,7 +135,7 @@
                                     <div class="flex space-x-3">
                                         <div class="w-24 h-16 bg-gray-900 rounded-lg overflow-hidden flex-shrink-0">
                                             @if($related->thumbnail)
-                                                <img src="{{ $related->thumbnail_url }}" alt="{{ $related->title }}" class="w-full h-full object-cover">
+                                                <img src="{{ $related->thumbnail_url }}" alt="{{ $related->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                                             @else
                                                 <div class="w-full h-full bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center">
                                                     <i class="fas fa-play text-white/50"></i>
@@ -175,6 +178,20 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const videoPlayer = document.getElementById('video-player');
+        const networkStatus = document.getElementById('network-status');
+
+        window.addEventListener('offline', function () {
+            if (networkStatus) {
+                networkStatus.classList.remove('hidden');
+                networkStatus.textContent = 'Vous êtes hors ligne. La vidéo peut se mettre en pause.';
+            }
+        });
+
+        window.addEventListener('online', function () {
+            if (networkStatus) {
+                networkStatus.classList.add('hidden');
+            }
+        });
         
         if (videoPlayer) {
             let lastUpdate = 0;

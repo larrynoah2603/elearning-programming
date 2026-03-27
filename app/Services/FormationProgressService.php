@@ -40,12 +40,8 @@ class FormationProgressService
      */
     public function calculateFormationProgress($userId, $formationId): array
     {
-        $userProgress = FormationUserProgress::where('user_id', $userId)
-            ->where('formation_id', $formationId)
-            ->get();
+        $totalModules = FormationModule::where('formation_id', $formationId)->count();
 
-        $totalModules = $userProgress->count();
-        
         if ($totalModules === 0) {
             return [
                 'percentage' => 0,
@@ -54,7 +50,10 @@ class FormationProgressService
             ];
         }
 
-        $completedModules = $userProgress->where('is_completed', true)->count();
+        $completedModules = FormationUserProgress::where('user_id', $userId)
+            ->where('formation_id', $formationId)
+            ->where('is_completed', true)
+            ->count();
 
         return [
             'percentage' => round(($completedModules / $totalModules) * 100),

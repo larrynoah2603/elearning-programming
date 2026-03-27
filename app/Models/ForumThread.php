@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ForumThread extends Model
@@ -42,5 +43,10 @@ class ForumThread extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(ForumReply::class, 'thread_id');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(ForumTag::class, 'forum_thread_tag', 'forum_thread_id', 'forum_tag_id');
     }
 }
