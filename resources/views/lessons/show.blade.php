@@ -189,7 +189,6 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-Q0zjQfduV91vP5+qY8f4v8f7Q27eVcHSt5lI+8qJ9z4fL7i6lJej8P35h8aEtf1NRb8dPYvP/Jk4fksMvD5fXw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         (() => {
             const button = document.getElementById('ai-read-btn');
@@ -202,7 +201,7 @@
 
             const synth = window.speechSynthesis;
 
-            if (!synth || !window.pdfjsLib) {
+            if (!synth) {
                 button.disabled = true;
                 button.classList.add('opacity-60', 'cursor-not-allowed');
                 status.textContent = 'La lecture vocale IA n\'est pas prise en charge par ce navigateur.';
@@ -210,11 +209,36 @@
                 return;
             }
 
-            const pdfjs = window.pdfjsLib;
-            pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
             const pdfUrl = button.dataset.pdfUrl;
             let extractedText = null;
+
+            const fallbackText = @json(trim($lesson->title . '. ' . $lesson->description));
+
+            const loadPdfJs = () => new Promise((resolve, reject) => {
+                if (window.pdfjsLib) {
+                    resolve(window.pdfjsLib);
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.crossOrigin = 'anonymous';
+                script.referrerPolicy = 'no-referrer';
+
+                script.onload = () => {
+                    if (!window.pdfjsLib) {
+                        reject(new Error('pdfjs_not_loaded'));
+                        return;
+                    }
+
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve(window.pdfjsLib);
+                };
+
+                script.onerror = () => reject(new Error('pdfjs_load_error'));
+
+                document.head.appendChild(script);
+            });
 
             const setStatus = (message) => {
                 status.textContent = message;
@@ -264,6 +288,7 @@
             };
 
             const extractPdfText = async () => {
+                const pdfjs = await loadPdfJs();
                 const loadingTask = pdfjs.getDocument({
                     url: pdfUrl,
                     withCredentials: true,
@@ -307,13 +332,19 @@
 
                 try {
                     if (!extractedText) {
-                        extractedText = await extractPdfText();
+                        try {
+                            extractedText = await extractPdfText();
+                        } catch (error) {
+                            console.error(error);
+                            extractedText = fallbackText;
+                            setStatus('Lecture du résumé en mode compatibilité (texte PDF non accessible).');
+                        }
                     }
 
                     readText(extractedText);
                 } catch (error) {
                     console.error(error);
-                    setStatus('Impossible d\'extraire le texte du PDF. Téléchargez le fichier pour une lecture manuelle.');
+                    setStatus('Impossible de démarrer la lecture vocale.');
                 } finally {
                     button.disabled = false;
                 }
