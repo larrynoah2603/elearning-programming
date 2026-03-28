@@ -37,16 +37,29 @@
                     
                     <p class="text-gray-600">{{ $lesson->description }}</p>
 
-                    <div class="mt-6 flex items-center space-x-4">
+                    <div class="mt-6 flex flex-wrap items-center gap-3">
                         <a href="{{ route('lessons.download', $lesson) }}" class="btn btn-primary">
                             <i class="fas fa-download mr-2"></i> Télécharger le PDF
                         </a>
+                        <button
+                            type="button"
+                            id="ai-read-btn"
+                            data-pdf-url="{{ route('lessons.preview', $lesson) }}"
+                            class="btn bg-secondary-100 text-secondary-800 hover:bg-secondary-200 focus:ring-2 focus:ring-secondary-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
+                        >
+                            <i class="fas fa-volume-high mr-2"></i>
+                            <span id="ai-read-btn-label">Lecture IA (bêta)</span>
+                        </button>
                         @if($lesson->page_count)
                             <span class="text-sm text-gray-500">
                                 <i class="fas fa-file-alt mr-1"></i> {{ $lesson->page_count }} pages
                             </span>
                         @endif
                     </div>
+
+                    <p id="ai-read-status" class="mt-3 text-xs text-gray-500 dark:text-slate-400" aria-live="polite">
+                        Le bouton lit automatiquement le texte détecté dans le PDF avec une voix IA du navigateur.
+                    </p>
                 </div>
 
                 <!-- PDF Viewer -->
@@ -174,3 +187,143 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-Q0zjQfduV91vP5+qY8f4v8f7Q27eVcHSt5lI+8qJ9z4fL7i6lJej8P35h8aEtf1NRb8dPYvP/Jk4fksMvD5fXw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        (() => {
+            const button = document.getElementById('ai-read-btn');
+            const buttonLabel = document.getElementById('ai-read-btn-label');
+            const status = document.getElementById('ai-read-status');
+
+            if (!button || !buttonLabel || !status) {
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+
+            if (!synth || !window.pdfjsLib) {
+                button.disabled = true;
+                button.classList.add('opacity-60', 'cursor-not-allowed');
+                status.textContent = 'La lecture vocale IA n\'est pas prise en charge par ce navigateur.';
+
+                return;
+            }
+
+            const pdfjs = window.pdfjsLib;
+            pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const pdfUrl = button.dataset.pdfUrl;
+            let extractedText = null;
+
+            const setStatus = (message) => {
+                status.textContent = message;
+            };
+
+            const stopReading = () => {
+                synth.cancel();
+                buttonLabel.textContent = 'Lecture IA (bêta)';
+                setStatus('Lecture arrêtée. Cliquez pour relancer la lecture du PDF.');
+            };
+
+            const chooseVoice = () => {
+                const voices = synth.getVoices();
+
+                return voices.find((voice) => voice.lang.toLowerCase().startsWith('fr'))
+                    || voices.find((voice) => voice.lang.toLowerCase().startsWith('en'))
+                    || null;
+            };
+
+            const readText = (text) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'fr-FR';
+                utterance.rate = 1;
+                utterance.pitch = 1;
+
+                const voice = chooseVoice();
+                if (voice) {
+                    utterance.voice = voice;
+                }
+
+                utterance.onstart = () => {
+                    buttonLabel.textContent = 'Arrêter la lecture';
+                    setStatus('Lecture en cours...');
+                };
+
+                utterance.onend = () => {
+                    buttonLabel.textContent = 'Lecture IA (bêta)';
+                    setStatus('Lecture terminée.');
+                };
+
+                utterance.onerror = () => {
+                    buttonLabel.textContent = 'Lecture IA (bêta)';
+                    setStatus('Une erreur est survenue pendant la lecture vocale.');
+                };
+
+                synth.speak(utterance);
+            };
+
+            const extractPdfText = async () => {
+                const loadingTask = pdfjs.getDocument({
+                    url: pdfUrl,
+                    withCredentials: true,
+                });
+
+                const pdf = await loadingTask.promise;
+                const maxPages = Math.min(pdf.numPages, 12);
+                const chunks = [];
+
+                for (let pageNumber = 1; pageNumber <= maxPages; pageNumber++) {
+                    const page = await pdf.getPage(pageNumber);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items
+                        .map((item) => item.str || '')
+                        .join(' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    if (pageText.length > 0) {
+                        chunks.push(pageText);
+                    }
+                }
+
+                const joined = chunks.join(' ').trim();
+
+                if (!joined) {
+                    throw new Error('empty_text');
+                }
+
+                return joined.slice(0, 14000);
+            };
+
+            button.addEventListener('click', async () => {
+                if (synth.speaking) {
+                    stopReading();
+                    return;
+                }
+
+                button.disabled = true;
+                setStatus('Analyse du PDF en cours...');
+
+                try {
+                    if (!extractedText) {
+                        extractedText = await extractPdfText();
+                    }
+
+                    readText(extractedText);
+                } catch (error) {
+                    console.error(error);
+                    setStatus('Impossible d\'extraire le texte du PDF. Téléchargez le fichier pour une lecture manuelle.');
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (synth.speaking) {
+                    synth.cancel();
+                }
+            });
+        })();
+    </script>
+@endpush
