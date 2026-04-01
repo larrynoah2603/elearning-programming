@@ -36,10 +36,12 @@ class DeepseekCorrectionService
 
         if (empty($apiKey) || empty($baseUrl)) {
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique indisponible pour le moment. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $model,
+                'is_fallback' => true,
+                'fallback_reason' => 'missing_configuration',
             ];
         }
 
@@ -124,19 +126,23 @@ class DeepseekCorrectionService
             ]);
 
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique temporairement indisponible. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
+                'is_fallback' => true,
+                'fallback_reason' => 'connection_exception',
             ];
         }
 
         if ($response === null) {
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique indisponible pour le moment. Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
+                'is_fallback' => true,
+                'fallback_reason' => 'no_response',
             ];
         }
 
@@ -153,27 +159,33 @@ class DeepseekCorrectionService
 
             if ($status === 402 || str_contains(strtolower((string) $errorMessage), 'insufficient')) {
                 return [
-                    'score' => 0,
+                    'score' => null,
                     'feedback' => 'Correction automatique momentanément indisponible. Une validation manuelle est requise.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
+                    'is_fallback' => true,
+                    'fallback_reason' => 'billing_or_quota',
                 ];
             }
 
             if ($status === 429) {
                 return [
-                    'score' => 0,
+                    'score' => null,
                     'feedback' => 'Correction automatique momentanément indisponible. Merci de réessayer plus tard.',
                     'requires_human_review' => true,
                     'model' => $selectedModel,
+                    'is_fallback' => true,
+                    'fallback_reason' => 'rate_limited',
                 ];
             }
 
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique indisponible (code: '.($status ?: 'erreur inconnue').'). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => $selectedModel,
+                'is_fallback' => true,
+                'fallback_reason' => 'http_'.$status,
             ];
         }
 
@@ -181,10 +193,12 @@ class DeepseekCorrectionService
 
         if (!is_string($content) || trim($content) === '') {
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique indisponible (réponse vide). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => data_get($response->json(), 'modelVersion', $selectedModel),
+                'is_fallback' => true,
+                'fallback_reason' => 'empty_response',
             ];
         }
 
@@ -202,10 +216,12 @@ class DeepseekCorrectionService
 
         if (!is_array($parsed)) {
             return [
-                'score' => 0,
+                'score' => null,
                 'feedback' => 'Correction automatique indisponible (format de réponse non exploitable). Une validation manuelle est requise.',
                 'requires_human_review' => true,
                 'model' => data_get($response->json(), 'modelVersion', $selectedModel),
+                'is_fallback' => true,
+                'fallback_reason' => 'invalid_json_payload',
             ];
         }
 
@@ -218,6 +234,8 @@ class DeepseekCorrectionService
             'feedback' => $feedback,
             'requires_human_review' => $requiresHumanReview,
             'model' => data_get($response->json(), 'modelVersion', $selectedModel),
+            'is_fallback' => false,
+            'fallback_reason' => null,
         ];
     }
 }

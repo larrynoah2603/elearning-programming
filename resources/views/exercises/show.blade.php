@@ -300,10 +300,15 @@
 
         if (reportStructured) {
             const structured = report.feedback_structured || {};
+            const aiDiagnostic = structured.ai_diagnostic || null;
+            const aiDiagnosticLine = aiDiagnostic
+                ? `<div><strong>🧪 Diagnostic IA :</strong> mode=${aiDiagnostic.mode ?? '-'}, raison=${aiDiagnostic.reason ?? '-'}</div>`
+                : '';
             reportStructured.innerHTML = `
                 <div><strong>✅ Points forts :</strong> ${structured.strengths ?? '-'}</div>
                 <div><strong>🛠️ Points bloquants :</strong> ${structured.blocking_points ?? '-'}</div>
                 <div><strong>➡️ Prochaine action :</strong> ${structured.next_action ?? '-'}</div>
+                ${aiDiagnosticLine}
             `;
         }
 
