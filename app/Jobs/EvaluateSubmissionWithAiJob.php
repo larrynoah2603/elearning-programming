@@ -39,15 +39,17 @@ class EvaluateSubmissionWithAiJob implements ShouldQueue
         }
 
         $unitTestScore = $submission->unit_test_score;
-        $finalScore = $aiCorrection['score'];
+        $isFallback = (bool) data_get($aiCorrection, 'is_fallback', false);
+        $aiScore = data_get($aiCorrection, 'score');
+        $finalScore = $aiScore;
 
-        if ($unitTestScore !== null) {
-            $finalScore = (int) round(($aiCorrection['score'] * 0.7) + ($unitTestScore * 0.3));
+        if (!$isFallback && $unitTestScore !== null && $aiScore !== null) {
+            $finalScore = (int) round(($aiScore * 0.7) + ($unitTestScore * 0.3));
         }
 
-        $status = $aiCorrection['requires_human_review']
+        $status = $aiCorrection['requires_human_review'] || $isFallback
             ? 'corrige'
-            : ($finalScore >= 50 ? 'reussi' : 'echoue');
+            : (($finalScore ?? 0) >= 50 ? 'reussi' : 'echoue');
 
         $feedback = $aiCorrection['feedback'];
         if ($submission->unit_tests_total > 0) {
@@ -60,16 +62,20 @@ Tests unitaires: {$submission->unit_tests_passed}/{$submission->unit_tests_total
             'score' => $finalScore,
             'feedback' => $feedback,
             'feedback_structured' => [
-                'strengths' => $finalScore >= 50 ? 'Bonne logique globale.' : 'Tentative complète soumise.',
+                'strengths' => ($finalScore !== null && $finalScore >= 50) ? 'Bonne logique globale.' : 'Tentative complète soumise.',
                 'blocking_points' => $aiCorrection['feedback'],
                 'next_action' => $submission->unit_tests_total > 0
                     ? "Corriger les tests unitaires en échec ({$submission->unit_tests_passed}/{$submission->unit_tests_total})."
                     : 'Améliorer la gestion des cas limites selon le feedback.',
+                'ai_diagnostic' => $isFallback ? [
+                    'mode' => 'fallback_manual_review',
+                    'reason' => data_get($aiCorrection, 'fallback_reason', 'unknown'),
+                ] : null,
             ],
             'status' => $status,
             'corrected_at' => now(),
             'corrected_by' => null,
-            'ai_score' => $aiCorrection['score'],
+            'ai_score' => $aiScore,
             'ai_feedback' => $aiCorrection['feedback'],
             'ai_requires_human_review' => $aiCorrection['requires_human_review'],
             'ai_corrected_at' => now(),
