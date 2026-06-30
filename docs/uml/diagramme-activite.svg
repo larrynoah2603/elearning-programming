@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #1f2937; }
+      .label { font: 16px Arial, sans-serif; fill: #111827; }
+      .small { font: 14px Arial, sans-serif; fill: #111827; }
+      .node { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 10; }
+      .decision { fill: #fef3c7; stroke: #d97706; stroke-width: 2; }
+      .line { stroke: #374151; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0,0 10,4 0,8" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <text x="550" y="50" text-anchor="middle" class="title">Diagramme d'activité - Parcours d'un apprenant</text>
+
+  <circle cx="120" cy="120" r="22" fill="#111827"/>
+  <text x="120" y="165" text-anchor="middle" class="small">Début</text>
+
+  <rect x="220" y="90" width="220" height="60" class="node"/>
+  <text x="330" y="127" text-anchor="middle" class="label">Se connecter</text>
+
+  <rect x="500" y="90" width="260" height="60" class="node"/>
+  <text x="630" y="127" text-anchor="middle" class="label">Consulter le catalogue</text>
+
+  <rect x="820" y="90" width="220" height="60" class="node"/>
+  <text x="930" y="127" text-anchor="middle" class="label">Choisir une leçon</text>
+
+  <polygon points="930,210 990,260 930,310 870,260" class="decision"/>
+  <text x="930" y="266" text-anchor="middle" class="small">Abonné ?</text>
+
+  <rect x="730" y="370" width="220" height="60" class="node"/>
+  <text x="840" y="406" text-anchor="middle" class="label">Regarder la vidéo</text>
+
+  <rect x="730" y="490" width="220" height="60" class="node"/>
+  <text x="840" y="526" text-anchor="middle" class="label">Soumettre l'exercice</text>
+
+  <rect x="220" y="370" width="260" height="60" class="node"/>
+  <text x="350" y="406" text-anchor="middle" class="label">Souscrire un abonnement</text>
+
+  <rect x="220" y="490" width="260" height="60" class="node"/>
+  <text x="350" y="526" text-anchor="middle" class="label">Valider le paiement</text>
+
+  <circle cx="840" cy="630" r="24" fill="#111827"/>
+  <circle cx="840" cy="630" r="14" fill="#ffffff"/>
+  <text x="840" y="670" text-anchor="middle" class="small">Fin</text>
+
+  <path d="M142 120 L220 120" class="line"/>
+  <path d="M440 120 L500 120" class="line"/>
+  <path d="M760 120 L820 120" class="line"/>
+  <path d="M930 150 L930 210" class="line"/>
+
+  <path d="M900 290 L860 370" class="line"/>
+  <text x="890" y="345" class="small">Oui</text>
+
+  <path d="M870 260 L480 260 L480 400" class="line"/>
+  <text x="650" y="246" class="small">Non</text>
+
+  <path d="M350 430 L350 490" class="line"/>
+  <path d="M480 520 L730 520" class="line"/>
+
+  <path d="M840 430 L840 490" class="line"/>
+  <path d="M840 550 L840 606" class="line"/>
+</svg>
