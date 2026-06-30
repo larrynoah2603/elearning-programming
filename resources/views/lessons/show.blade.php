@@ -57,9 +57,17 @@
                         @endif
                     </div>
 
-                    <p id="ai-read-status" class="mt-3 text-xs text-gray-500 dark:text-slate-400" aria-live="polite">
-                        Le bouton lit automatiquement le texte détecté dans le PDF avec une voix IA du navigateur.
-                    </p>
+                    <div class="mt-4 rounded-xl border border-secondary-100 bg-secondary-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p id="ai-read-status" class="text-xs text-gray-600 dark:text-slate-300" aria-live="polite">
+                                Le bouton lit automatiquement le texte détecté dans le PDF avec une voix IA du navigateur.
+                            </p>
+                            <span id="ai-read-progress" class="hidden rounded-full bg-white px-3 py-1 text-xs font-semibold text-secondary-700 shadow-sm dark:bg-slate-900 dark:text-secondary-200">
+                                Ligne 0/0
+                            </span>
+                        </div>
+                        <div id="ai-read-lines" class="mt-3 hidden max-h-48 space-y-2 overflow-y-auto pr-1 text-sm" aria-live="polite" aria-label="Suivi de la lecture ligne par ligne"></div>
+                    </div>
                 </div>
 
                 <!-- PDF Viewer -->
@@ -186,6 +194,16 @@
         </div>
     </div>
 </div>
+
+<button
+    type="button"
+    id="ai-floating-pause-btn"
+    class="fixed bottom-6 right-6 z-50 hidden items-center gap-2 rounded-full bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-2xl shadow-primary-600/30 transition hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:shadow-black/40"
+    aria-pressed="false"
+>
+    <i class="fas fa-pause" aria-hidden="true"></i>
+    <span>Pause</span>
+</button>
 @endsection
 
 @push('scripts')
@@ -194,8 +212,11 @@
             const button = document.getElementById('ai-read-btn');
             const buttonLabel = document.getElementById('ai-read-btn-label');
             const status = document.getElementById('ai-read-status');
+            const progress = document.getElementById('ai-read-progress');
+            const linesContainer = document.getElementById('ai-read-lines');
+            const floatingPauseButton = document.getElementById('ai-floating-pause-btn');
 
-            if (!button || !buttonLabel || !status) {
+            if (!button || !buttonLabel || !status || !progress || !linesContainer || !floatingPauseButton) {
                 return;
             }
 
@@ -210,9 +231,11 @@
             }
 
             const pdfUrl = button.dataset.pdfUrl;
-            let extractedText = null;
-
             const fallbackText = @json(trim($lesson->title . '. ' . $lesson->description));
+            let extractedLines = null;
+            let currentLineIndex = 0;
+            let isReading = false;
+            let isStopping = false;
 
             const loadPdfJs = () => new Promise((resolve, reject) => {
                 if (window.pdfjsLib) {
@@ -244,9 +267,76 @@
                 status.textContent = message;
             };
 
+            const splitIntoReadableLines = (text) => text
+                .replace(/\s+/g, ' ')
+                .split(/(?<=[.!?])\s+|\s+-\s+/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .slice(0, 80);
+
+            const updateFloatingPauseButton = () => {
+                const isPaused = synth.paused;
+                floatingPauseButton.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
+                floatingPauseButton.querySelector('i').className = `fas ${isPaused ? 'fa-play' : 'fa-pause'}`;
+                floatingPauseButton.querySelector('span').textContent = isPaused ? 'Reprendre' : 'Pause';
+            };
+
+            const setReadingUi = (active) => {
+                isReading = active;
+                buttonLabel.textContent = active ? 'Arrêter la lecture' : 'Lecture IA (bêta)';
+                floatingPauseButton.classList.toggle('hidden', !active);
+                floatingPauseButton.classList.toggle('flex', active);
+                updateFloatingPauseButton();
+            };
+
+            const renderLines = (lines) => {
+                linesContainer.innerHTML = '';
+                lines.forEach((line, index) => {
+                    const item = document.createElement('p');
+                    item.id = `ai-read-line-${index}`;
+                    item.className = 'rounded-lg border border-transparent bg-white/70 px-3 py-2 text-gray-600 transition dark:bg-slate-900/60 dark:text-slate-300';
+                    item.textContent = line;
+                    linesContainer.appendChild(item);
+                });
+
+                linesContainer.classList.remove('hidden');
+                progress.classList.remove('hidden');
+            };
+
+            const highlightLine = (index) => {
+                currentLineIndex = index;
+                progress.textContent = `Ligne ${Math.min(index + 1, extractedLines.length)}/${extractedLines.length}`;
+
+                linesContainer.querySelectorAll('p').forEach((item, itemIndex) => {
+                    const isCurrent = itemIndex === index;
+                    item.classList.toggle('border-primary-200', isCurrent);
+                    item.classList.toggle('bg-primary-50', isCurrent);
+                    item.classList.toggle('text-primary-900', isCurrent);
+                    item.classList.toggle('font-semibold', isCurrent);
+                    item.classList.toggle('shadow-sm', isCurrent);
+                    item.classList.toggle('dark:border-primary-500/50', isCurrent);
+                    item.classList.toggle('dark:bg-primary-500/10', isCurrent);
+                    item.classList.toggle('dark:text-primary-100', isCurrent);
+                });
+
+                document.getElementById(`ai-read-line-${index}`)?.scrollIntoView({
+                    block: 'nearest',
+                    behavior: 'smooth',
+                });
+            };
+
+            const resetTracking = () => {
+                currentLineIndex = 0;
+                progress.classList.add('hidden');
+                linesContainer.classList.add('hidden');
+                linesContainer.innerHTML = '';
+            };
+
             const stopReading = () => {
+                isStopping = true;
                 synth.cancel();
-                buttonLabel.textContent = 'Lecture IA (bêta)';
+                setReadingUi(false);
+                resetTracking();
                 setStatus('Lecture arrêtée. Cliquez pour relancer la lecture du PDF.');
             };
 
@@ -258,8 +348,15 @@
                     || null;
             };
 
-            const readText = (text) => {
-                const utterance = new SpeechSynthesisUtterance(text);
+            const speakLine = (index) => {
+                if (!extractedLines || index >= extractedLines.length) {
+                    setReadingUi(false);
+                    setStatus('Lecture terminée.');
+                    return;
+                }
+
+                highlightLine(index);
+                const utterance = new SpeechSynthesisUtterance(extractedLines[index]);
                 utterance.lang = 'fr-FR';
                 utterance.rate = 1;
                 utterance.pitch = 1;
@@ -270,24 +367,28 @@
                 }
 
                 utterance.onstart = () => {
-                    buttonLabel.textContent = 'Arrêter la lecture';
+                    setReadingUi(true);
                     setStatus('Lecture en cours...');
                 };
 
                 utterance.onend = () => {
-                    buttonLabel.textContent = 'Lecture IA (bêta)';
-                    setStatus('Lecture terminée.');
+                    if (isStopping) {
+                        isStopping = false;
+                        return;
+                    }
+
+                    speakLine(index + 1);
                 };
 
                 utterance.onerror = () => {
-                    buttonLabel.textContent = 'Lecture IA (bêta)';
+                    setReadingUi(false);
                     setStatus('Une erreur est survenue pendant la lecture vocale.');
                 };
 
                 synth.speak(utterance);
             };
 
-            const extractPdfText = async () => {
+            const extractPdfLines = async () => {
                 const pdfjs = await loadPdfJs();
                 const loadingTask = pdfjs.getDocument({
                     url: pdfUrl,
@@ -296,7 +397,7 @@
 
                 const pdf = await loadingTask.promise;
                 const maxPages = Math.min(pdf.numPages, 12);
-                const chunks = [];
+                const lines = [];
 
                 for (let pageNumber = 1; pageNumber <= maxPages; pageNumber++) {
                     const page = await pdf.getPage(pageNumber);
@@ -308,21 +409,19 @@
                         .trim();
 
                     if (pageText.length > 0) {
-                        chunks.push(pageText);
+                        lines.push(...splitIntoReadableLines(pageText));
                     }
                 }
 
-                const joined = chunks.join(' ').trim();
-
-                if (!joined) {
+                if (lines.length === 0) {
                     throw new Error('empty_text');
                 }
 
-                return joined.slice(0, 14000);
+                return lines.slice(0, 80);
             };
 
             button.addEventListener('click', async () => {
-                if (synth.speaking) {
+                if (isReading || synth.speaking || synth.paused) {
                     stopReading();
                     return;
                 }
@@ -331,17 +430,19 @@
                 setStatus('Analyse du PDF en cours...');
 
                 try {
-                    if (!extractedText) {
+                    if (!extractedLines) {
                         try {
-                            extractedText = await extractPdfText();
+                            extractedLines = await extractPdfLines();
                         } catch (error) {
                             console.error(error);
-                            extractedText = fallbackText;
+                            extractedLines = splitIntoReadableLines(fallbackText);
                             setStatus('Lecture du résumé en mode compatibilité (texte PDF non accessible).');
                         }
                     }
 
-                    readText(extractedText);
+                    isStopping = false;
+                    renderLines(extractedLines);
+                    speakLine(0);
                 } catch (error) {
                     console.error(error);
                     setStatus('Impossible de démarrer la lecture vocale.');
@@ -350,8 +451,24 @@
                 }
             });
 
+            floatingPauseButton.addEventListener('click', () => {
+                if (!isReading) {
+                    return;
+                }
+
+                if (synth.paused) {
+                    synth.resume();
+                    setStatus('Lecture reprise.');
+                } else {
+                    synth.pause();
+                    setStatus(`Lecture en pause à la ligne ${currentLineIndex + 1}.`);
+                }
+
+                updateFloatingPauseButton();
+            });
+
             window.addEventListener('beforeunload', () => {
-                if (synth.speaking) {
+                if (synth.speaking || synth.paused) {
                     synth.cancel();
                 }
             });
