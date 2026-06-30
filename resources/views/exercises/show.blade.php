@@ -96,6 +96,23 @@
                             </div>
 
                             <div id="submission-feedback" class="hidden mb-4 rounded-lg p-3 text-sm"></div>
+
+                            <div class="mb-4 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
+                                <div class="flex flex-col gap-3 border-b border-gray-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">
+                                            <i class="fas fa-terminal mr-2 text-primary-500"></i> Fenêtre de résultats
+                                        </h3>
+                                        <p class="text-xs text-gray-500">Exécutez un aperçu local de votre code avant de le soumettre.</p>
+                                    </div>
+                                    <button type="button" id="run-code" class="btn bg-success-100 text-success-700 hover:bg-success-200">
+                                        <i class="fas fa-play mr-2"></i> Voir le résultat
+                                    </button>
+                                </div>
+                                <div id="runner-message" class="hidden border-b border-gray-200 px-4 py-3 text-sm"></div>
+                                <iframe id="result-preview" title="Aperçu du résultat du code" sandbox="allow-scripts" class="hidden h-80 w-full bg-white"></iframe>
+                                <pre id="result-console" class="hidden min-h-40 whitespace-pre-wrap bg-gray-950 p-4 font-mono text-sm text-gray-100"></pre>
+                            </div>
                             
                             <div class="flex justify-between items-center">
                                 <button type="button" id="save-progress" class="btn bg-gray-100 text-gray-700 hover:bg-gray-200">
@@ -229,6 +246,11 @@
     const reportUnitTestsContent = document.getElementById('submission-unit-tests-content');
     const reportStructured = document.getElementById('submission-structured');
     const submissionStatusUrl = '{{ route('exercises.submission-status', ['exercise' => $exercise->id]) }}';
+    const exerciseLanguage = @json($exercise->programming_language);
+    const runCodeButton = document.getElementById('run-code');
+    const runnerMessage = document.getElementById('runner-message');
+    const resultPreview = document.getElementById('result-preview');
+    const resultConsole = document.getElementById('result-console');
     let submissionPollingInterval = null;
     let submissionPollingAttempts = 0;
     const maxSubmissionPollingAttempts = 40;
@@ -267,6 +289,105 @@
             }
         });
     });
+
+
+    function setRunnerMessage(message, type = 'info') {
+        if (!runnerMessage) {
+            return;
+        }
+
+        runnerMessage.className = 'border-b border-gray-200 px-4 py-3 text-sm';
+        runnerMessage.classList.remove('hidden');
+
+        if (type === 'error') {
+            runnerMessage.classList.add('bg-danger-50', 'text-danger-700');
+        } else if (type === 'success') {
+            runnerMessage.classList.add('bg-success-50', 'text-success-700');
+        } else {
+            runnerMessage.classList.add('bg-primary-50', 'text-primary-700');
+        }
+
+        runnerMessage.textContent = message;
+    }
+
+    function escapeHtml(value) {
+        return value
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function buildJavascriptPreview(code) {
+        const safeCode = code.replaceAll('</script', '<\/script');
+
+        return `<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 1rem; color: #111827; }
+        #app { margin-bottom: 1rem; }
+        pre { background: #111827; color: #f9fafb; border-radius: .75rem; padding: 1rem; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <pre id="console">Console prête...</pre>
+    <script>
+        const output = document.getElementById('console');
+        const lines = [];
+        ['log', 'info', 'warn', 'error'].forEach((method) => {
+            const original = console[method];
+            console[method] = (...args) => {
+                lines.push(args.map((arg) => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' '));
+                output.textContent = lines.join('\n') || 'Aucune sortie console.';
+                original.apply(console, args);
+            };
+        });
+        window.onerror = (message, source, lineno, colno) => {
+            console.error(message + ' (ligne ' + lineno + ', colonne ' + colno + ')');
+        };
+    <\/script>
+    <script>${safeCode}<\/script>
+</body>
+</html>`;
+    }
+
+    function runStudentCode() {
+        if (!codeEditor || !resultPreview || !resultConsole) {
+            return;
+        }
+
+        const code = codeEditor.value;
+        resultPreview.classList.add('hidden');
+        resultConsole.classList.add('hidden');
+        resultConsole.textContent = '';
+
+        if (!code.trim()) {
+            setRunnerMessage('Écrivez du code pour afficher un résultat.', 'error');
+            return;
+        }
+
+        if (exerciseLanguage === 'html_css') {
+            resultPreview.srcdoc = code;
+            resultPreview.classList.remove('hidden');
+            setRunnerMessage('Aperçu HTML/CSS généré dans le navigateur.', 'success');
+            return;
+        }
+
+        if (exerciseLanguage === 'javascript') {
+            resultPreview.srcdoc = buildJavascriptPreview(code);
+            resultPreview.classList.remove('hidden');
+            setRunnerMessage('Code JavaScript exécuté dans un aperçu isolé. Utilisez console.log() pour afficher des valeurs.', 'success');
+            return;
+        }
+
+        resultConsole.innerHTML = `L'exécution directe du langage « ${escapeHtml(exerciseLanguage)} » n'est pas disponible dans le navigateur.\n\nVotre code est affiché ci-dessous pour vérification visuelle :\n\n${escapeHtml(code)}`;
+        resultConsole.classList.remove('hidden');
+        setRunnerMessage('Aperçu d’exécution limité : ce langage nécessite un serveur ou un interpréteur dédié.', 'info');
+    }
 
     function renderSubmissionReport(report) {
         if (!reportBox || !report) {
@@ -400,6 +521,8 @@
     }
 
     if (codeEditor) {
+        runCodeButton?.addEventListener('click', runStudentCode);
+
         // Auto-save every 30 seconds
         autoSaveInterval = setInterval(() => {
             saveProgress();
